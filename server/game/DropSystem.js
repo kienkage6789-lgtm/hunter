@@ -132,10 +132,6 @@ class DropSystem {
     if (Math.random() < blueChance) {
       player.diamond_blue = (player.diamond_blue || 0) + 1;
       drops.push('💎');
-      events.push({
-        type: 'drop',
-        msg: `✨ Nhận được 💎 Kim cương xanh`
-      });
       player.drop_log.push({ a: 'diamond_drop', n: 'Kim cương xanh', q: 1, ts: now });
     }
 
@@ -146,10 +142,6 @@ class DropSystem {
       if (Math.random() < redChance) {
         player.diamond_red = (player.diamond_red || 0) + 1;
         drops.push('💎');
-        events.push({
-          type: 'drop',
-          msg: `✨ Nhận được 💎 Kim cương đỏ`
-        });
         player.drop_log.push({ a: 'diamond_drop', n: 'Kim cương đỏ', q: 1, ts: now });
       }
     }
@@ -183,10 +175,6 @@ class DropSystem {
       
       player.cards = JSON.stringify(cards);
       drops.push('🎴');
-      events.push({
-        type: 'drop',
-        msg: `✨ Nhận được 🎴 Thẻ bài ${monster.name}`
-      });
       player.drop_log.push({ a: 'card_drop', n: `Thẻ bài ${monster.name}`, q: 1, ts: now });
     }
 
@@ -222,10 +210,6 @@ class DropSystem {
       eggs[mid] = eggObj;
       player.eggs = JSON.stringify(eggs);
       drops.push('🥚');
-      events.push({
-        type: 'drop',
-        msg: `✨ Nhận được 🥚 Trứng ${monster.name}`
-      });
       player.drop_log.push({ a: 'egg_drop', n: `Trứng ${monster.name}`, q: 1, ts: now });
     }
 
@@ -280,10 +264,6 @@ class DropSystem {
       
       player[invField] = JSON.stringify(inv);
       drops.push('🔧');
-      events.push({
-        type: 'drop',
-        msg: `✨ Nhận được 🔧 Mô-đun ${weapon.toUpperCase()} (T${modRarity})`
-      });
       player.drop_log.push({ a: 'module_drop', n: `Mô-đun ${weapon.toUpperCase()} (T${modRarity})`, q: 1, ts: now });
     }
 
@@ -358,10 +338,6 @@ class DropSystem {
       const gearEmoji = slotEmojis[slot] || '💍';
       
       drops.push(gearEmoji);
-      events.push({
-        type: 'drop',
-        msg: `✨ Nhận được ${gearEmoji} Trang bị ${slot.toUpperCase()} T${eq2Tier}`
-      });
       player.drop_log.push({ a: 'mvp_drop', n: `Trang bị ${slot.toUpperCase()} T${eq2Tier}`, q: 1, ts: now });
     }
 
@@ -378,10 +354,6 @@ class DropSystem {
         const field = `module_box${boxTier}`;
         player[field] = (player[field] || 0) + 1;
         drops.push('📦');
-        events.push({
-          type: 'drop',
-          msg: `✨ Nhận được 📦 Hộp mô-đun T${boxTier}`
-        });
         player.drop_log.push({ a: 'box_drop', n: `Hộp mô-đun T${boxTier}`, q: 1, ts: now });
       }
       
@@ -398,10 +370,6 @@ class DropSystem {
         
         player[field] = (player[field] || 0) + 1;
         drops.push('📦');
-        events.push({
-          type: 'drop',
-          msg: `✨ Nhận được 📦 Hộp ${isCard ? 'thẻ bài' : 'trứng'} T${boxTier}`
-        });
         player.drop_log.push({ a: 'box_drop', n: `Hộp ${isCard ? 'thẻ bài' : 'trứng'} T${boxTier}`, q: 1, ts: now });
       }
     }

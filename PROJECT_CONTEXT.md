@@ -69,11 +69,11 @@ Scope:   Xác minh hoạt động hệ thống game trên môi trường thực 
 
 ## RECENT COMPLETED (last 5)
 ```
+[TASK-013] Thêm nút Trang bị (🛡️) vào menu dưới để mở bảng Equipment  DONE  25/08/2026
+[TASK-012] Di chuyển nút Xếp hạng lên góc trên trái cạnh nút âm lượng  DONE  25/08/2026
+[TASK-011] Sửa lỗi sai chức năng khi click nút Trang bị (Equipment) và Vật phẩm (Item)  DONE  25/08/2026
+[TASK-010] Đồng bộ cơ chế thuộc tính và chiến đấu theo game gốc  DONE  25/08/2026
 [TASK-009] Tạo Premium Shop Route (xhrpg_premium.php)  DONE  25/08/2026
-[TASK-007] GM Admin Endpoints (give_p, give_gold, set_level)  DONE  25/08/2026
-[TASK-008] Hồi MP/Giáp tự động & cơ chế hấp thụ sát thương  DONE  23/08/2026
-[TASK-001] Triển khai hệ thống Bang hội & Quốc chiến  DONE  23/08/2026
-[TASK-002] Tích hợp DropSystem  DONE  22/08/2026
 ```
 
 ## KNOWN ISSUES
@@ -83,18 +83,17 @@ Không có lỗi nghiêm trọng nào được ghi nhận.
 
 ## DECISIONS LOG (last 5, newest first)
 ```
+[2026-08-25] Thêm nút Trang bị (🛡️) vào hàng 2 menu dưới, kích hoạt bảng Equipment (openEq2Panel).
+[2026-08-25] Di chuyển nút Xếp hạng (🏆) từ thanh menu dưới lên thành nút tròn nhỏ (26px) cạnh nút âm lượng.
+[2026-08-25] Đồng bộ lại mảng _menu trong applyLang() khớp thứ tự DOM thực tế và bổ sung dịch từ 'Chợ' cho 'ตลาด·เทรด'.
+[2026-08-25] Cập nhật CombatEngine, game.js và upgrade.js đồng bộ thuộc tính và sát thương game gốc.
 [2026-08-25] Điều chỉnh tốc độ hồi giáp cơ bản từ Math.max(1, vit / 10) lên cố định 5 giáp mỗi giây.
-[2026-08-25] Khắc phục lỗi crash trong combat loop khi target chết (null pointer và duplicate reward handles).
-[2026-08-25] Tích hợp lock để tránh race condition trên database JSON phẳng cho Premium Shop.
-[2026-08-25] Hoàn thành Premium Shop endpoint (xhrpg_premium.php) và GM Admin endpoints.
-[2026-08-23] Tích hợp hồi MP/Giáp tự động và hấp thụ sát thương qua giáp ở server.
 ```
 
 ## SESSION NOTES
 ```
 Đã hoàn thành hệ thống Bang hội (Guild) & Quốc chiến (cwar) cục bộ, máy chủ hoạt động tốt.
+Đã đồng bộ cơ chế thuộc tính (Stats), sát thương đa vũ khí và chỉ số phòng thủ DEF chuẩn theo game gốc.
 Đã điều chỉnh tốc độ hồi giáp mặc định lên 5 giáp/s theo phản hồi người dùng.
 Đã tích hợp cơ chế tự động hồi phục Giáp/MP và hấp thụ sát thương qua Giáp cho người chơi.
-Đã hoàn thành Premium Shop (xhrpg_premium.php) và GM Admin API.
-Sửa lỗi crash combat loop (`TypeError: Cannot read properties of null (reading 'id')`) trong `game.js`.
 ```

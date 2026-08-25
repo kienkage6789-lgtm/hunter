@@ -16698,8 +16698,7 @@ const xhrpg = (() => {
     document.documentElement.lang = LANG();
     const lb = document.getElementById('lang-toggle'); if (lb) lb.textContent = (LANGS[LANG()] || {}).short || LANG().toUpperCase(); // ปุ่มเล็ก 26×26 เหนือ 🏠 — โชว์ภาษาปัจจุบัน (กดแล้วเปิด popup เลือก)
     // เมนูล่าง 10 ปุ่ม (ตามลำดับ DOM)
-    const _menu = ['อาวุธ','Equipment','STAT ทักษะ','ผู้ติดตาม','ยานบิน','การ์ด','ตลาด·เทรด','สัตว์เลี้ยง','ไอเทม','PREMIUM']; // 🛡️ Equipment สลับที่กับไอเทม (เจ้าของสั่ง 2026-07-19) · อันดับอยู่ปุ่มกลม 🏆 ซ้ายบน
-    //    ⚠️ 'Equipment' เป็นคีย์แปลจริง (เดิมคิดว่า latin ไม่ต้องแปล → zh/ja เห็นอังกฤษคำเดียวกลางแถว · แก้ 2026-07-29)
+    const _menu = ['อาวุธ','ไอเทม','STAT ทักษะ','ผู้ติดตาม','ยานบิน','การ์ด','ตลาด·เทรด','สัตว์เลี้ยง','ของสวมใส่','PREMIUM']; // 🛡️ Bổ sung nút Trang bị (ของสวมใส่) vào menu dưới trước PREMIUM
     document.querySelectorAll('.menu-icon-label').forEach((el, i) => { if (_menu[i]) el.textContent = T(_menu[i]); });
     // 💠 ป้าย "Hỗ trợ VND!" / "JPY対応!" ฯลฯ บนปุ่ม PREMIUM — โชว์เมื่อภาษา/IP แมพสกุล Xsolla ได้ (ชวนกดเข้าไปดูช่องจ่ายท้องถิ่น)
     const _pvb = document.getElementById('premium-vnd-badge');

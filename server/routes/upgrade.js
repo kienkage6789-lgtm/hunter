@@ -187,6 +187,57 @@ function getPetSlots(olv, mvp) {
   return s;
 }
 
+function backfillModuleCards(playerObj) {
+  if (!playerObj) return;
+  const fields = [
+    'pistol_modules', 'sniper_modules', 'knife_modules', 'axe_modules',
+    'robot_modules', 'robot_gun_modules', 'railgun_modules',
+    'armor_modules', 'house_modules', 'turret_modules'
+  ];
+  fields.forEach(f => {
+    let raw = playerObj[f];
+    if (!raw) return;
+    let isStr = typeof raw === 'string';
+    let obj;
+    if (isStr) {
+      try { obj = JSON.parse(raw); } catch (e) { return; }
+    } else {
+      obj = raw;
+    }
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+      let changed = false;
+      Object.keys(obj).forEach(slot => {
+        const m = obj[slot];
+        if (m) {
+          if (Array.isArray(m.cards)) {
+            m.cards.forEach(c => {
+              if (c && typeof c === 'object') {
+                if (c.stat && c.s === undefined) { c.s = c.stat; changed = true; }
+                if (c.value !== undefined && c.v === undefined) { c.v = c.value; changed = true; }
+                if (c.s && c.stat === undefined) { c.stat = c.s; changed = true; }
+                if (c.v !== undefined && c.value === undefined) { c.value = c.v; changed = true; }
+              }
+            });
+          }
+          if (Array.isArray(m.c)) {
+            m.c.forEach(c => {
+              if (c && typeof c === 'object') {
+                if (c.stat && c.s === undefined) { c.s = c.stat; changed = true; }
+                if (c.value !== undefined && c.v === undefined) { c.v = c.value; changed = true; }
+                if (c.s && c.stat === undefined) { c.stat = c.s; changed = true; }
+                if (c.v !== undefined && c.value === undefined) { c.value = c.v; changed = true; }
+              }
+            });
+          }
+        }
+      });
+      if (changed) {
+        playerObj[f] = isStr ? JSON.stringify(obj) : obj;
+      }
+    }
+  });
+}
+
 router.post('/', async (req, res) => {
   const { line_uid, action } = req.body;
   if (!line_uid) {
@@ -208,6 +259,9 @@ router.post('/', async (req, res) => {
     } catch (e) {
       playerObj = {};
     }
+
+    // Backfill module cards format for client/server compatibility
+    backfillModuleCards(playerObj);
 
     // Sanitize cards and eggs at the start of the request
     playerObj.cards = sanitizeCardOrEggCollection(playerObj.cards);
@@ -854,7 +908,16 @@ router.post('/', async (req, res) => {
     } else {
       const heal = Math.round(30 + ((playerObj.intel || 5) - 5) * 5);
       playerObj.hp_potion = (playerObj.hp_potion || 0) - 1;
-      playerObj.hp = Math.min(playerObj.hp_max || 300, (playerObj.hp || 300) + heal);
+      
+      const vitEff = playerObj.vit_eff ?? playerObj.vit ?? 5;
+      const vitBase = playerObj.vit ?? 5;
+      const vitHpB = Math.max(0, Math.max(0, vitEff - 5) * 2 - Math.max(0, vitBase - 5));
+      const ragHpMult = 1 + 0.001 * Math.max(0, parseInt(playerObj.rag_hp) || 0);
+      const skills = typeof playerObj.skills === 'string' ? JSON.parse(playerObj.skills || '{}') : (playerObj.skills || {});
+      const toughHpMul = 1 + 0.01 * (skills.tough_body || 0);
+      const hpMaxEff = Math.floor(((playerObj.hp_max || 300) + vitHpB) * ragHpMult * toughHpMul);
+
+      playerObj.hp = Math.min(hpMaxEff, (playerObj.hp || 300) + heal);
       msg = `Bơm Potion thành công (+${heal} HP).`;
     }
   }
@@ -1755,6 +1818,8 @@ router.post('/', async (req, res) => {
           m.cards[socketIndex] = {
             mid: cid,
             mvp: mvp,
+            s: mon.cs || 'str',
+            v: statVal,
             stat: mon.cs || 'str',
             lv: mon.lv || 1,
             sName: (mon.cs || 'str').toUpperCase(),

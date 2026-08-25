@@ -103,6 +103,162 @@ function getEq2FxSum(playerObj, key) {
   return sum;
 }
 
+function backfillModuleCards(playerObj) {
+  if (!playerObj) return;
+  const fields = [
+    'pistol_modules', 'sniper_modules', 'knife_modules', 'axe_modules',
+    'robot_modules', 'robot_gun_modules', 'railgun_modules',
+    'armor_modules', 'house_modules', 'turret_modules'
+  ];
+  fields.forEach(f => {
+    let raw = playerObj[f];
+    if (!raw) return;
+    let isStr = typeof raw === 'string';
+    let obj;
+    if (isStr) {
+      try { obj = JSON.parse(raw); } catch (e) { return; }
+    } else {
+      obj = raw;
+    }
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+      let changed = false;
+      Object.keys(obj).forEach(slot => {
+        const m = obj[slot];
+        if (m) {
+          if (Array.isArray(m.cards)) {
+            m.cards.forEach(c => {
+              if (c && typeof c === 'object') {
+                if (c.stat && c.s === undefined) { c.s = c.stat; changed = true; }
+                if (c.value !== undefined && c.v === undefined) { c.v = c.value; changed = true; }
+                if (c.s && c.stat === undefined) { c.stat = c.s; changed = true; }
+                if (c.v !== undefined && c.value === undefined) { c.value = c.v; changed = true; }
+              }
+            });
+          }
+          if (Array.isArray(m.c)) {
+            m.c.forEach(c => {
+              if (c && typeof c === 'object') {
+                if (c.stat && c.s === undefined) { c.s = c.stat; changed = true; }
+                if (c.value !== undefined && c.v === undefined) { c.v = c.value; changed = true; }
+                if (c.s && c.stat === undefined) { c.stat = c.s; changed = true; }
+                if (c.v !== undefined && c.value === undefined) { c.value = c.v; changed = true; }
+              }
+            });
+          }
+        }
+      });
+      if (changed) {
+        playerObj[f] = isStr ? JSON.stringify(obj) : obj;
+      }
+    }
+  });
+}
+
+function getEffectiveStats(player) {
+  // Normalize module cards for display & calculation
+  backfillModuleCards(player);
+
+  const stats = {
+    str: player.str || 5,
+    agi: player.agi || 5,
+    vit: player.vit || 5,
+    intel: player.intel || 5,
+    dex: player.dex || 5,
+    luk: player.luk || 5
+  };
+
+  const modBonus = { str: 0, agi: 0, vit: 0, intel: 0, dex: 0, luk: 0 };
+  
+  function safeParse(val, fallback) {
+    if (!val) return fallback;
+    if (typeof val === 'object') return val;
+    try { return JSON.parse(val) || fallback; } catch (e) { return fallback; }
+  }
+
+  function getPlayerModules(p, w) {
+    return safeParse(p[w + '_modules'], {});
+  }
+
+  const railOn = (parseInt(player.robot_railgun_expires) || 0) > Math.floor(Date.now() / 1000);
+  const mdcFams = ['pistol', 'sniper', 'knife', 'axe', 'robot', 'robot_gun', 'railgun', 'armor', 'house', 'turret'];
+  mdcFams.forEach(w => {
+    if (w === 'railgun' && !railOn) return;
+    const mo = getPlayerModules(player, w);
+    Object.keys(mo).forEach(slot => {
+      const m = mo[slot];
+      if (m) {
+        if (m.stat && modBonus[m.stat] !== undefined) {
+          modBonus[m.stat] += Math.max(1, Math.min(7, parseInt(m.rarity) || 1));
+        }
+        // Card Socket Bonus from Modules
+        if (Array.isArray(m.cards)) {
+          m.cards.forEach(c => {
+            if (!c) return;
+            const sKey = (c.s || c.stat || '').toLowerCase();
+            const val = parseInt(c.v || c.value) || 0;
+            if (sKey && val && modBonus[sKey] !== undefined) {
+              modBonus[sKey] += val;
+            }
+            if (c.mvp && c.mb && c.mb.t && modBonus[c.mb.t] !== undefined && (parseInt(c.mb.a) || 0) > 0) {
+              modBonus[c.mb.t] += parseInt(c.mb.a);
+            }
+          });
+        }
+      }
+    });
+  });
+
+  // Card Socket Bonus from Pet
+  if (player.pet_mid && player.pet_mid > 0) {
+    let petCards = player.pet_cards;
+    if (typeof petCards === 'string') { try { petCards = JSON.parse(petCards || '[]'); } catch(e) { petCards = []; } }
+    if (Array.isArray(petCards)) {
+      petCards.forEach(c => {
+        if (!c) return;
+        const sKey = (c.s || c.stat || '').toLowerCase();
+        const val = parseInt(c.v || c.value) || 0;
+        if (sKey && val && modBonus[sKey] !== undefined) {
+          modBonus[sKey] += val;
+        }
+        if (c.mvp && c.mb && c.mb.t && modBonus[c.mb.t] !== undefined && (parseInt(c.mb.a) || 0) > 0) {
+          modBonus[c.mb.t] += parseInt(c.mb.a);
+        }
+      });
+    }
+  }
+
+  // Card Socket Bonus from Divine Pet
+  if (player.dv_pet && player.dv_pet > 0) {
+    let dvCards = player.dv_cards;
+    if (typeof dvCards === 'string') { try { dvCards = JSON.parse(dvCards || '[]'); } catch(e) { dvCards = []; } }
+    if (Array.isArray(dvCards)) {
+      dvCards.forEach(c => {
+        if (!c) return;
+        const sKey = (c.s || c.stat || '').toLowerCase();
+        const val = parseInt(c.v || c.value) || 0;
+        if (sKey && val && modBonus[sKey] !== undefined) {
+          modBonus[sKey] += val;
+        }
+        if (c.mvp && c.mb && c.mb.t && modBonus[c.mb.t] !== undefined && (parseInt(c.mb.a) || 0) > 0) {
+          modBonus[c.mb.t] += parseInt(c.mb.a);
+        }
+      });
+    }
+  }
+
+  const eq2Bonus = { str: 0, agi: 0, vit: 0, intel: 0, dex: 0, luk: 0 };
+  Object.keys(eq2Bonus).forEach(k => {
+    const key = k === 'intel' ? 'int' : k;
+    eq2Bonus[k] = getEq2FxSum(player, key);
+  });
+
+  const eff = {};
+  Object.keys(stats).forEach(k => {
+    eff[k] = stats[k] + modBonus[k] + eq2Bonus[k];
+  });
+  return { eff, modBonus, eq2Bonus };
+}
+
 router.post('/', async (req, res) => {
   const { line_uid, session_token, explore_cx, explore_cy, explore_radius, target_monster_id, have_static, bot, manual_dir, traveling } = req.body;
   
@@ -174,6 +330,114 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Calculate and assign effective stats (str_eff, etc.)
+    const { eff, modBonus, eq2Bonus } = getEffectiveStats(playerObj);
+    playerObj.str_eff = eff.str;
+    playerObj.agi_eff = eff.agi;
+    playerObj.vit_eff = eff.vit;
+    playerObj.intel_eff = eff.intel;
+    playerObj.dex_eff = eff.dex;
+    playerObj.luk_eff = eff.luk;
+
+    // --- HỆ THỐNG VÔ HẠN ĐẠN & NĂNG LƯỢNG (AUTO-FILL MAX CAPACITIES) ---
+    function getAmmoMaxCap(tierIdx, player, gun) {
+      const AMMO_TIER_CARRY_CAPS = [50, 40, 35, 30, 27, 25];
+      const lv = player.lv || 1;
+      const eq2Pam = gun === 'pistol' ? getEq2FxSum(player, 'pam') : 0;
+      return AMMO_TIER_CARRY_CAPS[tierIdx] + Math.max(0, lv - 1) * 5 + eq2Pam;
+    }
+
+    function getRobotModEnergyTotal(player) {
+      let s = 0;
+      try {
+        let cores = {};
+        if (player.robot_modules) {
+          cores = typeof player.robot_modules === 'string' ? JSON.parse(player.robot_modules) : player.robot_modules;
+        }
+        if (cores && typeof cores === 'object') {
+          Object.keys(cores).forEach(k => {
+            const m = cores[k];
+            if (m) s += (parseInt(m.plus) || 0) + 1;
+          });
+        }
+      } catch (e) {}
+      return s;
+    }
+
+    function getRobotEnergyMax(player) {
+      const lv = player.robot_lv || 1;
+      let max = 300 + (lv - 1) * 30;
+      try {
+        let hw = [];
+        if (player.hardware) {
+          hw = Array.isArray(player.hardware) ? player.hardware : JSON.parse(player.hardware);
+        }
+        const HW_MAP = { 14: 50, 6: 100, 15: 150, 16: 200, 17: 250, 18: 300 };
+        hw.forEach(id => {
+          if (HW_MAP[id]) max += HW_MAP[id];
+        });
+      } catch (e) {}
+      max += getRobotModEnergyTotal(player);
+      max += getEq2FxSum(player, 'ene');
+      return max;
+    }
+
+    function getHouseModEnergyTotal(player) {
+      let s = 0;
+      try {
+        let cores = {};
+        if (player.house_modules) {
+          cores = typeof player.house_modules === 'string' ? JSON.parse(player.house_modules) : player.house_modules;
+        }
+        if (cores && typeof cores === 'object') {
+          Object.keys(cores).forEach(k => {
+            const m = cores[k];
+            if (m) s += (parseInt(m.plus) || 0) + 1;
+          });
+        }
+      } catch (e) {}
+      return s;
+    }
+
+    function getHouseEnergyMax(player) {
+      const lv = player.house_lv || 1;
+      return lv * 60 + getHouseModEnergyTotal(player);
+    }
+
+    // Auto-fill and lock all ammo & energy to max limits
+    const pMax = getAmmoMaxCap(0, playerObj, 'pistol');
+    const sMax = getAmmoMaxCap(0, playerObj, 'sniper');
+    const rMax = getAmmoMaxCap(0, playerObj, 'robot');
+    
+    playerObj.ammo_pistol = pMax;
+    playerObj.ammo_sniper = sMax;
+    playerObj.ammo_robot_gun = rMax;
+    
+    playerObj.ammo_pistol_extra = [
+      getAmmoMaxCap(1, playerObj, 'pistol'),
+      getAmmoMaxCap(2, playerObj, 'pistol'),
+      getAmmoMaxCap(3, playerObj, 'pistol'),
+      getAmmoMaxCap(4, playerObj, 'pistol'),
+      getAmmoMaxCap(5, playerObj, 'pistol')
+    ];
+    playerObj.ammo_sniper_extra = [
+      getAmmoMaxCap(1, playerObj, 'sniper'),
+      getAmmoMaxCap(2, playerObj, 'sniper'),
+      getAmmoMaxCap(3, playerObj, 'sniper'),
+      getAmmoMaxCap(4, playerObj, 'sniper'),
+      getAmmoMaxCap(5, playerObj, 'sniper')
+    ];
+    playerObj.ammo_robot_extra = [
+      getAmmoMaxCap(1, playerObj, 'robot'),
+      getAmmoMaxCap(2, playerObj, 'robot'),
+      getAmmoMaxCap(3, playerObj, 'robot'),
+      getAmmoMaxCap(4, playerObj, 'robot'),
+      getAmmoMaxCap(5, playerObj, 'robot')
+    ];
+
+    playerObj.robot_energy = getRobotEnergyMax(playerObj);
+    playerObj.house_energy = getHouseEnergyMax(playerObj);
+
   const mapId = playerObj.map || pRow.map || 1;
 
   // --- ANTI-CHEAT: RATE LIMIT CHECK (COOLDOWN 900MS) ---
@@ -192,8 +456,8 @@ router.post('/', async (req, res) => {
       ally: [],
       events: [{ type: "explore", msg: "⏳ Hệ thống bảo vệ: Vui lòng không spam request quá nhanh!" }],
       drop_fx: [],
-      equipment_bonus: {},
-      module_stat_bonus: {},
+      equipment_bonus: eq2Bonus,
+      module_stat_bonus: modBonus,
       stat_parts_bonus: [],
       target_monster_id: playerObj.target_monster_id || null,
       card_coll: card_coll,
@@ -289,23 +553,30 @@ router.post('/', async (req, res) => {
   }
   playerObj.hp_max = calculatedHpMax;
 
+  // Calculate hpMaxEff locally (matching client formula)
+  const vitEff = playerObj.vit_eff ?? playerObj.vit ?? 5;
+  const vitBase = playerObj.vit ?? 5;
+  const vitHpB = Math.max(0, Math.max(0, vitEff - 5) * 2 - Math.max(0, vitBase - 5));
+  const ragHpMult = 1 + 0.001 * Math.max(0, parseInt(playerObj.rag_hp) || 0);
+  const toughHpMul = 1 + 0.01 * toughBodyLv;
+  const hpMaxEff = Math.floor((playerObj.hp_max + vitHpB) * ragHpMult * toughHpMul);
+
   // --- PLAYER REGENERATION (HP, MP, ARMOR/SHIELD) ---
   
-  // 1. HP Regeneration
-  let regenAmount = 5 + Math.floor((playerObj.vit || 5) * 0.5);
+  // 1. HP Regeneration (client formula)
+  const hpRegenSkill = parseInt(skills.hp_regen) || 0;
+  let regenAmount = Math.floor(vitEff / 5) + hpRegenSkill + Math.floor((playerObj.armor_lv || 0) / 5);
   
-  if (skills.hp_regen) {
-    const hpRegenLv = skills.hp_regen;
-    const flatRegen = hpRegenLv * 1.5;
-    const pctRegen = playerObj.hp_max * (hpRegenLv * 0.001) * 1.5;
-    regenAmount += Math.round(flatRegen + pctRegen);
+  if (hpRegenSkill >= 5) {
+    regenAmount += hpRegenSkill + Math.floor(hpMaxEff * 0.001);
   }
+
   // Đồng đội hỗ trợ (Priest)
   if (playerObj.priest_on === 1 && (playerObj.priest_lv || 0) >= 1) {
     regenAmount += playerObj.priest_lv * 3;
   }
   
-  playerObj.hp = Math.min(playerObj.hp_max || 300, (playerObj.hp || 300) + regenAmount);
+  playerObj.hp = Math.min(hpMaxEff, (playerObj.hp || 300) + regenAmount);
 
   // 2. MP Regeneration
   const intel = playerObj.intel_eff ?? playerObj.intel ?? 5;
@@ -901,7 +1172,7 @@ router.post('/', async (req, res) => {
       if (isMeleeCharge) {
         // Húc/Nổ xung quanh, gây choáng
         let hitCount = 0;
-        const baseDmgResult = combatEngine.calculateDamage(playerObj, targetM);
+        const baseDmgResult = combatEngine.calculateDamage(playerObj, targetM, activeWeapon, { str: playerObj.str_eff, dex: playerObj.dex_eff, agi: playerObj.agi_eff }, (key) => getEq2FxSum(playerObj, key));
         const baseDmg = typeof baseDmgResult === 'object' ? baseDmgResult.dmg : baseDmgResult;
         let isCrit = typeof baseDmgResult === 'object' ? baseDmgResult.crit : 0;
         
@@ -931,7 +1202,7 @@ router.post('/', async (req, res) => {
       
       // 2. Tính sát thương chính lên targetM cho các skill gây damage đơn/chuỗi/AoE
       if (activeSkillTriggered !== 'pull_monster' && !isMeleeCharge) {
-        const baseDmgResult = combatEngine.calculateDamage(playerObj, targetM);
+        const baseDmgResult = combatEngine.calculateDamage(playerObj, targetM, activeWeapon, { str: playerObj.str_eff, dex: playerObj.dex_eff, agi: playerObj.agi_eff }, (key) => getEq2FxSum(playerObj, key));
         let baseDmg = typeof baseDmgResult === 'object' ? baseDmgResult.dmg : baseDmgResult;
         let isCrit = typeof baseDmgResult === 'object' ? baseDmgResult.crit : 0;
         
@@ -1116,7 +1387,34 @@ router.post('/', async (req, res) => {
       const isTargetStunned = targetM.stunned || (targetM.stun_until && Date.now() < targetM.stun_until);
       
       if (attackRes && !attackRes.killed && targetM.hp > 0 && !isTargetStunned) {
-        const rawDmg = Math.max(1, Math.round((targetM.lv * 2) - ((playerObj.vit || 5) * 0.3 + (playerObj.armor_lv || 1) * 1.5)));
+        // Tính toán chỉ số phòng thủ hiệu dụng của người chơi
+        const vitEffVal = playerObj.vit_eff ?? playerObj.vit ?? 5;
+        const armLvVal = playerObj.armor_lv || 0;
+        
+        let defMod = 0;
+        try {
+          let armorModules = {};
+          if (playerObj.armor_modules) {
+            armorModules = typeof playerObj.armor_modules === 'string' ? JSON.parse(playerObj.armor_modules || '{}') : playerObj.armor_modules;
+          }
+          function getArmorModDefOne(plus) {
+            const p = Math.max(0, Math.min(15, parseInt(plus) || 0));
+            if (p <= 5) return 3 * p;
+            if (p <= 10) return 15 + (p - 5) * 4;
+            return 35 + (p - 10) * 6;
+          }
+          ['a_max', 'a_regen', 'a_return'].forEach(k => {
+            const m = armorModules[k];
+            if (m) defMod += getArmorModDefOne(m.plus);
+          });
+        } catch (e) {
+          console.error("Lỗi parse armor_modules tính defMod:", e);
+        }
+
+        const eq2DefBonus = getEq2FxSum(playerObj, 'def');
+        const playerDef = 10 + Math.max(0, vitEffVal - 5) + armLvVal + defMod + eq2DefBonus;
+
+        const rawDmg = Math.max(1, Math.round((targetM.lv * 2) - playerDef));
         let dmgToHp = rawDmg;
         let absorbed = 0;
         
@@ -1141,7 +1439,7 @@ router.post('/', async (req, res) => {
         const armLv = playerObj.armor_lv || 0;
         if (meleeReturnLv > 0) {
           // Tính baseDmg cho phản đòn
-          const baseDmgResult = combatEngine.calculateDamage(playerObj, targetM);
+          const baseDmgResult = combatEngine.calculateDamage(playerObj, targetM, activeWeapon, { str: playerObj.str_eff, dex: playerObj.dex_eff, agi: playerObj.agi_eff }, (key) => getEq2FxSum(playerObj, key));
           const baseDmg = typeof baseDmgResult === 'object' ? baseDmgResult.dmg : baseDmgResult;
           
           const pctAtkMon = (8 + meleeReturnLv * 5) / 100 * (targetM.lv * 2);
@@ -1549,7 +1847,7 @@ router.post('/', async (req, res) => {
 
   // Xử lý khi nhân vật chết
   if (playerObj.hp <= 0) {
-    playerObj.hp = Math.round((playerObj.hp_max || 300) * 0.5);
+    playerObj.hp = Math.round(hpMaxEff * 0.5);
     playerObj.map = 1;
     playerObj.x = 1125;
     playerObj.y = 1125;
@@ -1592,8 +1890,8 @@ router.post('/', async (req, res) => {
     ally: [],
     events: events,
     drop_fx: drops,
-    equipment_bonus: {},
-    module_stat_bonus: {},
+    equipment_bonus: eq2Bonus,
+    module_stat_bonus: modBonus,
     stat_parts_bonus: [],
     target_monster_id: playerObj.target_monster_id || null,
     card_coll: card_coll,

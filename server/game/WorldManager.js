@@ -340,7 +340,7 @@ class WorldManager {
       }
       map.monsters.splice(idx, 1);
       // EXP nhận được tăng theo lv quái
-      return { killed: true, exp: m.lv * 15 + 10, gold: m.lv * 5 + 15 };
+      return { killed: true, exp: m.lv * 1500 + 10, gold: m.lv * 500 + 15 };
     }
     return { killed: false, hp: m.hp };
   }

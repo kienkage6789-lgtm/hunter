@@ -484,6 +484,8 @@
              style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7c3aed;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">📖</button>
           <button id="sfx-toggle-btn" onclick="xhrpg.toggleSfx()" title="Bật/Tắt âm thanh"
              style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#334155;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">🔇</button>
+          <button id="mbtn-rank" onclick="xhrpg.togglePanel('rank')" title="อันดับ"
+             style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#334155;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">🏆</button>
          </div>
         </div>
         <div class="spot-select-wrap">
@@ -567,9 +569,9 @@
             <span class="menu-icon-emoji">🐾</span>
             <span class="menu-icon-label">สัตว์เลี้ยง</span>
           </button>
-          <button class="menu-icon-btn" id="mbtn-rank" onclick="xhrpg.togglePanel('rank')">
-            <span class="menu-icon-emoji">🏆</span>
-            <span class="menu-icon-label">อันดับ</span>
+          <button class="menu-icon-btn" id="mbtn-eq2" onclick="xhrpg.openEq2Panel()">
+            <span class="menu-icon-emoji">🛡️</span>
+            <span class="menu-icon-label">ของสวมใส่</span>
           </button>
           <button class="menu-icon-btn" id="mbtn-premium" onclick="xhrpg.togglePanel('premium')">
             <span class="menu-icon-emoji">🅿️</span>

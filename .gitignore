@@ -6,3 +6,5 @@ data/accounts.json
 data/users.json
 .env
 logs/
+data/database.json
+

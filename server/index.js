@@ -39,6 +39,8 @@ const onlineCountRoutes = require('./routes/online_count');
 const translateRoutes = require('./routes/translate');
 const premiumRoutes = require('./routes/premium');
 const adminRoutes = require('./routes/admin');
+const eq2Routes = require('./routes/eq2');
+const mdcRoutes = require('./routes/mdc');
 
 app.use('/api', authRoutes);
 // Game gốc dùng đường dẫn php này
@@ -58,6 +60,8 @@ app.use('/xhrpg_chat.php', chatRoutes);
 app.use('/xhrpg_online_count.php', onlineCountRoutes);
 app.use('/xhrpg_translate.php', translateRoutes);
 app.use('/xhrpg_premium.php', premiumRoutes);
+app.use('/xhrpg_eq2.php', eq2Routes);
+app.use('/xhrpg_mdc.php', mdcRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/xhrpg_google_auth.php', authRoutes); // fallback
 
