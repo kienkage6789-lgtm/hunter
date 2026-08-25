@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ragnalok Battle Arena (Boss & PK Control Panel)</title>
+<link rel="stylesheet" href="/css/xhrpg_style.css">
+<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<script src="/js/jquery-3.6.0.min.js"></script>
+<style>
+  /* ══ BATTLE LAYOUT SYSTEM ══ */
+  body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #020617;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  .battle-layout-container {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .game-column {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background: #090d16;
+    height: 100%;
+  }
+
+  /* Ghi đè max-width của game-screen trên máy tính để có thể scale nhẹ hoặc căn lề đẹp */
+  #game-screen {
+    max-width: 480px;
+    margin: 0 auto !important;
+    height: 100% !important;
+    width: 100% !important;
+  }
+
+  .battle-panel-column {
+    width: 420px;
+    height: 100%;
+    background: #0b0f19;
+    border-left: 2px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #e2e8f0;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Responsive cho thiết bị di động */
+  @media (max-width: 991px) {
+    .battle-layout-container {
+      flex-direction: column;
+    }
+    .game-column {
+      height: 60vh;
+      flex: none;
+    }
+    .battle-panel-column {
+      width: 100%;
+      height: 40vh;
+      border-left: none;
+      border-top: 2px solid #1e293b;
+    }
+  }
+
+  /* ══ SPACE-DARK PREMIUM DESIGN SYSTEM ══ */
+  .panel-header {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-status {
+    font-size: 11px;
+    color: #94a3b8;
+    background: rgba(30, 41, 59, 0.7);
+    padding: 4px 8px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 8px #22c55e;
+  }
+
+  /* Navigation Tabs */
+  .tabs-bar {
+    display: flex;
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .tab-btn:hover {
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .tab-btn.active {
+    color: #a855f7;
+    border-bottom-color: #a855f7;
+    background: rgba(168, 85, 247, 0.05);
+  }
+
+  /* Content area */
+  .tab-content-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tab-pane {
+    display: none;
+    height: 100%;
+    flex-direction: column;
+  }
+
+  .tab-pane.active {
+    display: flex;
+  }
+
+  /* Table styles */
+  .battle-table-wrap {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.5);
+  }
+
+  .battle-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: left;
+  }
+
+  .battle-table th {
+    background: #0f172a;
+    padding: 8px 10px;
+    color: #94a3b8;
+    font-weight: 600;
+    border-bottom: 1px solid #1e293b;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .battle-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #1e293b;
+    vertical-align: middle;
+  }
+
+  .battle-table tr {
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+
+  .battle-table tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .battle-table tr.active-target {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border-left: 3px solid #ef4444;
+  }
+
+  .battle-table tr.active-target td {
+    color: #fca5a5;
+  }
+
+  /* Health bar in table */
+  .cell-hp-bar {
+    width: 50px;
+    height: 6px;
+    background: #334155;
+    border-radius: 3px;
+    overflow: hidden;
+    display: inline-block;
+  }
+
+  .cell-hp-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .hp-high { background: #22c55e; }
+  .hp-med { background: #f59e0b; }
+  .hp-low { background: #ef4444; }
+
+  /* Badges & Buttons */
+  .badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .badge-mvp {
+    background: #7f1d1d;
+    color: #fca5a5;
+    border: 1px solid #ef4444;
+  }
+
+  .badge-dead {
+    background: #334155;
+    color: #94a3b8;
+  }
+
+  .badge-live {
+    background: #14532d;
+    color: #4ade80;
+  }
+
+  .target-btn {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .target-btn:hover {
+    background: #1d4ed8;
+  }
+
+  .target-btn.active {
+    background: #dc2626;
+  }
+
+  /* Current Target Widget */
+  .current-target-card {
+    background: linear-gradient(135deg, #1e1b4b 0%, #111827 100%);
+    border: 1px solid #3b82f6;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  }
+
+  .target-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #60a5fa;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .target-card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .target-card-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .target-card-emoji {
+    font-size: 24px;
+  }
+
+  .target-card-name {
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .target-card-dist {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .cancel-target-btn {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .cancel-target-btn:hover {
+    background: #ef4444;
+    color: #fff;
+  }
+
+  /* Config quick settings */
+  .config-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .config-label {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Battle Log Window */
+  .battle-log-win {
+    height: 100px;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    background: #020617;
+    padding: 8px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 11px;
+    color: #38bdf8;
+    box-sizing: border-box;
+  }
+
+  .empty-msg {
+    text-align: center;
+    color: #64748b;
+    padding: 20px;
+    font-style: italic;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="battle-layout-container">
+  
+  <!-- ══ CỘT TRÁI: GAME SCREEN ══ -->
+  <div class="game-column">
+    <div id="login-overlay" style="display:none"></div>
+    
+    <div id="loading-screen">
+      <div class="loading-box">
+        <div class="loading-title">⚔ Ragnalok-Origin</div>
+        <div class="loading-sub" id="loading-msg">Đang khởi tạo kết nối trận đấu...</div>
+      </div>
+    </div>
+
+    <!-- Dùng nguyên vẹn giao diện game gốc để xhrpg_canvas.js tương tác -->
+    <div id="game-screen" style="display:none">
+      <!-- ══ TOP STATUS PANEL ══ -->
+      <div class="status-panel">
+        <div class="status-row1">
+          <span class="sp-name" id="hud-name">—</span>
+          <span class="sp-badge lv"   id="hud-lv">Lv.1</span>
+          <span class="sp-badge zone" id="hud-zone">Zone 0</span>
+          <span class="sp-badge gold" id="hud-gold">G 0</span>
+        </div>
+        <div class="status-row2">
+          <div class="sp-bar-wrap">
+            <div class="sp-bar-label" style="color:#4ade80">HP</div>
+            <div class="sp-bar hp-bar"><div class="sp-bar-fill hp-fill" id="hud-hp-fill"></div></div>
+            <div class="sp-bar-text" id="hud-hp">100/100</div>
+          </div>
+          <div class="sp-bar-wrap">
+            <div class="sp-bar-label" style="color:#818cf8">MP</div>
+            <div class="sp-bar" style="background:#1e1b4b"><div class="sp-bar-fill" id="hud-mp-fill" style="background:#818cf8"></div></div>
+            <div class="sp-bar-text" id="hud-mp">50/50</div>
+          </div>
+          <div class="sp-bar-wrap">
+            <div class="sp-bar-label" id="hud-armor-label" style="color:#fb923c">giáp</div>
+            <div class="sp-bar" style="background:#1c1917"><div class="sp-bar-fill" id="hud-armor-fill" style="background:#fb923c"></div></div>
+            <div class="sp-bar-text" id="hud-armor">100/100</div>
+          </div>
+          <div class="sp-bar-wrap">
+            <div class="sp-bar-label" style="color:#fbbf24">EXP</div>
+            <div class="sp-bar exp-bar"><div class="sp-bar-fill exp-fill" id="hud-exp-fill"></div></div>
+            <div class="sp-bar-text" id="hud-exp">0% (เหลือ 100)</div>
+          </div>
+        </div>
+        <div class="status-row3">
+          <span class="sp-ammo" id="hud-pistol">🔫 --/--</span>
+          <span class="sp-ammo" id="hud-sniper">🎯 --/--</span>
+          <span class="sp-ammo" id="hud-robot-ammo">🤖 --/--</span>
+          <span class="sp-ammo sp-rail" id="hud-rail-charge">
+            ⚡<span id="hud-rail-bar-wrap"><span id="hud-rail-bar"></span></span><span id="hud-rail-pct">0%</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- ══ MAP ══ -->
+      <div class="map-wrap">
+        <canvas id="gameCanvas"></canvas>
+        <canvas id="minimapCanvas"></canvas>
+        <!-- Nút bơm máu thủ công hiện mờ ở giữa màn hình -->
+        <button id="manual-heal-btn" onclick="triggerManualHeal(event)" 
+                style="position: absolute; left: 50%; top: 70%; transform: translate(-50%, -50%); 
+                       width: 60px; height: 60px; border-radius: 50%; 
+                       background: rgba(239, 68, 68, 0.35); border: 2px solid rgba(239, 68, 68, 0.6); 
+                       color: white; font-size: 26px; cursor: pointer; z-index: 9999; 
+                       display: flex; align-items: center; justify-content: center; 
+                       box-shadow: 0 4px 12px rgba(0,0,0,0.5); transition: all 0.2s ease-in-out;
+                       outline: none; user-select: none;"
+                onmouseover="this.style.background='rgba(239, 68, 68, 0.8)'; this.style.borderColor='rgba(239, 68, 68, 1)'; this.style.transform='translate(-50%, -50%) scale(1.1)';"
+                onmouseout="this.style.background='rgba(239, 68, 68, 0.35)'; this.style.borderColor='rgba(239, 68, 68, 0.6)'; this.style.transform='translate(-50%, -50%) scale(1)';"
+                title="Bơm Máu Khẩn Cấp (Manual Heal)">💊</button>
+        <button id="offline-btn" onclick="xhrpg.openOfflinePanel()" title="chọn zone farm khi offline (8h)"
+           style="position:absolute;top:93px;right:5px;width:84px;height:24px;background:#4338ca;color:#fff;border:1px solid #6366f1;border-radius:7px;font-size:9.5px;font-weight:700;cursor:pointer;line-height:1;white-space:nowrap;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,.3)">🌙 OFFLINE</button>
+        <div class="zoom-btns">
+          <button class="zoom-btn" id="lang-toggle" onclick="xhrpg.toggleLang()" title="Thay đổi ngôn ngữ" style="font-size:9.5px;background:#0ea5e9;color:#fff;border-color:#38bdf8">EN</button>
+          <button class="zoom-btn warp-btn" onclick="xhrpg.warpHome()" title="WARP về Phi Thuyền">🏠</button>
+          <button class="zoom-btn" onclick="xhrpg.zoom(1)">＋</button>
+          <button class="zoom-btn" onclick="xhrpg.zoom(-1)">－</button>
+          <button class="zoom-btn sm" onclick="xhrpg.zoom(0)">⊙</button>
+        </div>
+        <div style="position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:5px;z-index:10;align-items:flex-start">
+         <div style="display:flex;flex-direction:row;gap:5px">
+          <div id="online-badge" style="display:flex;align-items:center;gap:5px;height:26px;background:rgba(0,0,0,0.5);border-radius:13px;padding:0 9px;font-size:11px;color:#f1f5f9;white-space:nowrap">
+            <span style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;flex-shrink:0"></span>
+            <span id="online-count-label">Online 0</span>
+          </div>
+         </div>
+         <div style="display:flex;flex-direction:row;gap:5px">
+          <button onclick="xhrpg.togglePanel('guide')" title="Hướng dẫn chơi"
+             style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7c3aed;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">📖</button>
+          <button id="sfx-toggle-btn" onclick="xhrpg.toggleSfx()" title="Bật/Tắt âm thanh"
+             style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#334155;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">🔇</button>
+         </div>
+        </div>
+        <div class="spot-select-wrap">
+          <div id="boss-btns" class="boss-btns" style="display:none"></div> <!-- Ẩn boss-btns cũ vì đã có Panel chuyên nghiệp -->
+          <div class="mlog-row">
+            <button id="mlog-toggle" class="mlog-toggle" onclick="xhrpg.toggleMiniLog()" title="Bật/Tắt log bay">📜 LOG</button>
+            <button id="open-log-btn" class="mlog-toggle" onclick="xhrpg.togglePanel('log')" title="Mở nhật ký sự kiện">📖 Nhật Ký</button>
+            <button id="open-map-btn" class="mlog-toggle" onclick="xhrpg.openMapSelect()" title="Thay đổi bản đồ">🗺️ Bản Đồ</button>
+            <button id="open-chat-btn" class="mlog-toggle" onclick="xhrpg.togglePanel('chat')" title="Trò chuyện" style="position:relative">💬 Chat<span id="chat-badge" style="display:none;position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;line-height:15px;padding:0 3px;border-radius:8px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;text-align:center;box-shadow:0 1px 3px #0004"></span></button>
+          </div>
+          <div class="spot-row">
+            <select id="spot-select" onchange="xhrpg.goToSpot(this.value)">
+              <option value="">🗺️ Chọn địa điểm</option>
+            </select>
+            <button id="pvp-btn" onclick="xhrpg.openPvpPanel()" title="Thách đấu người chơi"
+               style="height:26px;background:#9f1239;color:#fff;border:1px solid #f43f5e;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;padding:0 7px;line-height:1;white-space:nowrap">⚔️ PVP</button>
+            <button id="arena-btn" onclick="xhrpg.openArenaPanel()" title="Thách đấu BOSS 1-1"
+               style="height:26px;background:#b45309;color:#fff;border:1px solid #f59e0b;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;padding:0 7px;line-height:1;white-space:nowrap">🏟️ BOSS</button>
+          </div>
+        </div>
+        <div class="map-auto-wrap">
+          <button class="bot-toggle-btn" id="bot-toggle-btn" onclick="xhrpg.toggleBot()">🤖 AUTO ON</button>
+          <button class="bot-toggle-btn" id="lock-btn" onclick="xhrpg.toggleLock()" style="background:#475569">🔓 LOCK ATK</button>
+          <button class="bot-toggle-btn" id="er-current" onclick="xhrpg.cycleExploreRadius()" style="background:#0e7490" title="Bán kính thăm dò">📍 300m</button>
+        </div>
+        <!-- D-PAD overlay -->
+        <div class="dpad-wrap dpad-overlay">
+          <div class="dpad-row">
+            <button class="dpad-btn" id="dpad-ul" onclick="xhrpg.setDir('ul')">↖</button>
+            <button class="dpad-btn" id="dpad-up" onclick="xhrpg.setDir('up')">▲</button>
+            <button class="dpad-btn" id="dpad-ur" onclick="xhrpg.setDir('ur')">↗</button>
+          </div>
+          <div class="dpad-row">
+            <button class="dpad-btn" id="dpad-left"  onclick="xhrpg.setDir('left')">◀</button>
+            <button class="dpad-btn center" onclick="xhrpg.setDir(null)">✕</button>
+            <button class="dpad-btn" id="dpad-right" onclick="xhrpg.setDir('right')">▶</button>
+          </div>
+          <div class="dpad-row">
+            <button class="dpad-btn" id="dpad-dl" onclick="xhrpg.setDir('dl')">↙</button>
+            <button class="dpad-btn" id="dpad-down" onclick="xhrpg.setDir('down')">▼</button>
+            <button class="dpad-btn" id="dpad-dr" onclick="xhrpg.setDir('dr')">↘</button>
+          </div>
+        </div>
+        <div id="mini-log"></div>
+      </div>
+
+      <!-- ══ MENU BAR ══ -->
+      <div class="menu-bar">
+        <div class="menu-bar-row">
+          <button class="menu-icon-btn" id="mbtn-gun" onclick="xhrpg.togglePanel('gun')">
+            <span class="menu-icon-emoji">⚔</span>
+            <span class="menu-icon-label">อาวุธ</span>
+          </button>
+          <button class="menu-icon-btn" id="mbtn-item" onclick="xhrpg.togglePanel('item')">
+            <span class="menu-icon-emoji">🎒</span>
+            <span class="menu-icon-label">ไอเทม</span>
+          </button>
+          <button class="menu-icon-btn" id="mbtn-stat" onclick="xhrpg.togglePanel('stat')">
+            <span class="menu-icon-emoji" style="position:relative">📊⚡<span id="stat-pts-badge" class="pts-badge">+0</span></span>
+            <span class="menu-icon-label">STAT ทักษะ</span>
+          </button>
+          <button class="menu-icon-btn" id="mbtn-robot" onclick="xhrpg.togglePanel('robot')">
+            <span class="menu-icon-emoji">🐱</span>
+            <span class="menu-icon-label">ผู้ติดตาม</span>
+          </button>
+          <button class="menu-icon-btn" id="mbtn-house" onclick="xhrpg.togglePanel('house')">
+            <span class="menu-icon-emoji">🛸</span>
+            <span class="menu-icon-label">ยานบิน</span>
+          </button>
+        </div>
+        <div class="menu-bar-row">
+          <button class="menu-icon-btn" id="mbtn-card" onclick="xhrpg.togglePanel('card')">
+            <span class="menu-icon-emoji">🎴</span>
+            <span class="menu-icon-label">การ์ด</span>
+          </button>
+          <button class="menu-icon-btn" id="mbtn-market" onclick="xhrpg.togglePanel('market')">
+            <span class="menu-icon-emoji">🏪</span>
+            <span class="menu-icon-label">ตลาด</span>
+          </button>
+          <button class="menu-icon-btn" id="mbtn-pet" onclick="xhrpg.togglePanel('pet')">
+            <span class="menu-icon-emoji">🐾</span>
+            <span class="menu-icon-label">สัตว์เลี้ยง</span>
+          </button>
+          <button class="menu-icon-btn" id="mbtn-rank" onclick="xhrpg.togglePanel('rank')">
+            <span class="menu-icon-emoji">🏆</span>
+            <span class="menu-icon-label">อันดับ</span>
+          </button>
+          <button class="menu-icon-btn" id="mbtn-premium" onclick="xhrpg.togglePanel('premium')">
+            <span class="menu-icon-emoji">🅿️</span>
+            <span class="menu-icon-label">PREMIUM</span>
+          </button>
+        </div>
+        <button class="logout-btn" id="logout-btn" onclick="location.href='/'">⬅ Trở về Dashboard</button>
+      </div>
+
+      <div class="panel-overlay" id="panel-overlay" onclick="xhrpg.closePanel()"></div>
+
+      <!-- Popups của game (Giữ nguyên để game engine xử lý bình thường) -->
+      <div class="panel-popup" id="panel-pet"><div class="popup-header"><span>🐾 สัตว์เลี้ยง</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="pet-list"></div></div>
+      <div class="panel-popup" id="panel-card"><div class="popup-header"><span>🎴 สมุดสะสมการ์ด</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="card-list"></div></div>
+      <div class="panel-popup" id="panel-stat">
+        <div class="popup-header"><span>📊⚡ STAT ทักษะ <button class="stat-help-btn" onclick="xhrpg.toggleStatHelp()">?</button></span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div>
+        <div id="stat-help-box" style="display:none"></div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+          <input id="rename-input" type="text" maxlength="16" placeholder="Tên nhân vật..." style="flex:1;background:#f1f5f9;color:#111827;border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px;font-size:13px;outline:none"/>
+          <button onclick="xhrpg.changeDisplayName()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Lưu</button>
+        </div>
+        <div id="stat-list"></div>
+      </div>
+      <div class="panel-popup" id="panel-guide"><div class="popup-header"><span>📖 คู่มือการเล่น</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="guide-root"></div></div>
+      <div class="panel-popup" id="panel-market"><div class="popup-header"><span>🏪 ตลาด</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="market-root"></div></div>
+      <div class="panel-popup" id="panel-gun"><div class="popup-header"><span>⚔ อาวุธ & ยา</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="gun-list"></div></div>
+      <div class="panel-popup" id="panel-item"><div class="popup-header"><span>🎒 ไอเทม</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="item-list"></div></div>
+      <div class="panel-popup" id="panel-robot"><div class="popup-header"><span>🦾 ไททัน & ผู้ติดตาม</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="robot-list"></div></div>
+      <div class="panel-popup" id="panel-house"><div class="popup-header"><span>🛸 ยานบิน Orion & เหมืองแร่</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="house-list"></div></div>
+      <div class="panel-popup" id="panel-arena"><div class="popup-header"><span>🏟️ ดันท้าสู้บอส 1-1</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="arena-root"></div></div>
+      <div class="panel-popup" id="panel-pvp"><div class="popup-header"><span>⚔️ ประลองฝีมือ (PVP)</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="pvp-root"></div></div>
+      <div class="panel-popup" id="panel-log"><div class="popup-header"><span>📖 บันทึกเหตุการณ์ (200 บรรทัด)</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="event-log"></div></div>
+      <div class="panel-popup" id="panel-rank"><div class="popup-header"><span>🏆 ทำเนียบจัดอันดับ</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="rank-tabs" class="rank-tabs">
+        <button class="rank-tab active" data-tab="lv"   onclick="xhrpg.rankTab('lv')"><span class="rt-ico">🏆</span><span class="rt-txt">ผู้เล่น</span></button>
+        <button class="rank-tab"        data-tab="mvp"  onclick="xhrpg.rankTab('mvp')"><span class="rt-ico">⭐</span><span class="rt-txt">MVP</span></button>
+        <button class="rank-tab"        data-tab="gold" onclick="xhrpg.rankTab('gold')"><span class="rt-ico">💰</span><span class="rt-txt">Gold</span></button>
+        <button class="rank-tab"        data-tab="colosseum" onclick="xhrpg.rankTab('colosseum')"><span class="rt-ico">🏛️</span><span class="rt-txt">ประลอง</span></button>
+        <button class="rank-tab"        data-tab="country" onclick="xhrpg.rankTab('country')"><span class="rt-ico">🌍</span><span class="rt-txt">ประเทศ</span></button>
+      </div><div id="rank-list"></div></div>
+      <div class="panel-popup" id="panel-premium"><div class="popup-header"><span>🅿️ ร้านค้า Premium</span><button class="popup-close" onclick="xhrpg.closePanel()">✕</button></div><div id="premium-list"></div></div>
+    </div><!-- #game-screen -->
+  </div><!-- .game-column -->
+  
+  <!-- ══ CỘT PHẢI: BATTLE PANEL ══ -->
+  <div class="battle-panel-column">
+    <!-- Header -->
+    <div class="panel-header">
+      <div class="panel-title">
+        <span>⚡ BATTLE RADAR</span>
+      </div>
+      <div class="panel-status">
+        <span class="status-dot"></span>
+        <span id="bot-status-text">Đang kết nối</span>
+      </div>
+    </div>
+
+    <!-- Tabs header -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('boss')">🎯 Săn Boss</button>
+      <button class="tab-btn" onclick="switchTab('pk')">⚔️ PK GvG/War</button>
+      <button class="tab-btn" onclick="switchTab('config')">⚙️ Cấu Hình</button>
+    </div>
+
+    <!-- Content Area -->
+    <div class="tab-content-container">
+      
+      <!-- Current target widget -->
+      <div class="current-target-card" id="active-target-widget" style="display:none">
+        <div class="target-card-header">
+          <span>🎯 Đang target mục tiêu</span>
+        </div>
+        <div class="target-card-body">
+          <div class="target-card-info">
+            <span class="target-card-emoji" id="target-emoji">👾</span>
+            <div>
+              <div class="target-card-name" id="target-name">Tên Boss</div>
+              <div class="target-card-dist" id="target-distance">Khoảng cách: --m</div>
+            </div>
+          </div>
+          <span class="badge badge-mvp" id="target-badge">Boss</span>
+        </div>
+        <button class="cancel-target-btn" onclick="cancelTarget()">✕ Hủy Target (Quay lại Tự Động)</button>
+      </div>
+
+      <!-- TAB 1: SĂN BOSS -->
+      <div class="tab-pane active" id="pane-boss">
+        <div class="battle-table-wrap">
+          <table class="battle-table">
+            <thead>
+              <tr>
+                <th>Boss</th>
+                <th>Cấp</th>
+                <th>HP (%)</th>
+                <th>Khoảng cách</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="boss-table-body">
+              <tr>
+                <td colspan="5" class="empty-msg">Chưa tìm thấy Boss nào trên bản đồ này.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: PK GVG/WAR -->
+      <div class="tab-pane" id="pane-pk">
+        <div class="battle-table-wrap">
+          <table class="battle-table">
+            <thead>
+              <tr>
+                <th>Người chơi / Guild</th>
+                <th>Cấp (Lv)</th>
+                <th>Phòng Thủ (DEF)</th>
+                <th>Trạng thái</th>
+                <th>Khoảng cách</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="pk-table-body">
+              <tr>
+                <td colspan="6" class="empty-msg">Chưa phát hiện người chơi khác nào.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: CẤU HÌNH -->
+      <div class="tab-pane" id="pane-config">
+        <div style="display:flex; flex-direction:column; gap:10px">
+          <div class="config-row">
+            <span class="config-label">Chế độ Săn Boss Tự Động</span>
+            <button class="target-btn" id="cfg-boss-toggle" onclick="xhrpg.toggleBot()">BẬT/TẮT AUTO</button>
+          </div>
+          <div class="config-row">
+            <span class="config-label">Bán kính quét (Explore Radius)</span>
+            <button class="target-btn" id="cfg-radius-toggle" onclick="xhrpg.cycleExploreRadius()">📍 300m</button>
+          </div>
+          <div class="config-row">
+            <span class="config-label">Khóa vị trí tấn công (Lock Atk)</span>
+            <button class="target-btn" id="cfg-lock-toggle" onclick="xhrpg.toggleLock()">🔓 LOCK ATK</button>
+          </div>
+          <div class="config-row">
+            <span class="config-label">Quay về Phi Thuyền</span>
+            <button class="target-btn" style="background:#4338ca" onclick="xhrpg.warpHome()">🏠 WARP HOME</button>
+          </div>
+          
+          <div class="config-row" style="margin-top: 10px; border-top: 1px dashed #334155; padding-top: 10px;">
+            <span class="config-label" title="Chủ động gửi request bơm máu khẩn cấp tại mỗi nhịp game">💊 Bơm Máu Khẩn Cấp</span>
+            <button class="target-btn" id="cfg-active-heal-toggle" onclick="toggleActiveHeal()" style="background:#ef4444">TẮT</button>
+          </div>
+          <div class="config-row">
+            <span class="config-label">Ngưỡng HP Bơm Máu</span>
+            <select id="cfg-active-heal-threshold" onchange="changeActiveHealThreshold()" style="background:#1e293b; border:1px solid #475569; color:#fff; padding:4px; border-radius:4px; font-family:inherit; outline:none; cursor:pointer;">
+              <option value="30">30% HP</option>
+              <option value="40">40% HP</option>
+              <option value="50">50% HP</option>
+              <option value="60">60% HP</option>
+              <option value="70">70% HP</option>
+              <option value="80">80% HP</option>
+              <option value="90">90% HP</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Battle Event mini-logs -->
+      <div style="font-size:11px; font-weight:700; color:#94a3b8; margin-top:5px">📋 Lịch sử hành động chiến đấu:</div>
+      <div class="battle-log-win" id="battle-logs">
+        [SYSTEM] Đang khởi động hệ thống phân tích chiến đấu...
+      </div>
+
+    </div>
+  </div><!-- .battle-panel-column -->
+
+</div><!-- .battle-layout-container -->
+
+<script src="/js/xhrpg_canvas.js?v=2"></script>
+<script src="/js/xhrpg_lang_vi.js?v=2"></script>
+<script>
+// ══ AJAX INTERCEPTOR & COMBAT CONTROL SYSTEM ══
+const BASE_URL = "/";
+const CF_REGION = "VN";
+const _L = true;
+
+document.getElementById('loading-msg').textContent = 'Đang đồng bộ hóa luồng phân tích trận đấu...';
+
+// Trạng thái Target thủ công
+window.customTarget = null;
+let currentTargetId = null;
+let currentTargetType = null; // 'boss' | 'player'
+
+// Override jQuery $.post để can thiệp dữ liệu
+const originalPost = $.post;
+$.post = function(url, data, success, dataType) {
+  if (url && url.includes('xhrpg_game.php')) {
+    
+    // 1. Ghi đè explore_cx/cy duy trì khoảng cách an toàn 15m-20m khi có target thủ công (PK/Boss) từ Radar Panel
+    if (window.customTarget) {
+      const px = (window.lastGameData && window.lastGameData.player) ? window.lastGameData.player.x : null;
+      const py = (window.lastGameData && window.lastGameData.player) ? window.lastGameData.player.y : null;
+      const tx = window.customTarget.x;
+      const ty = window.customTarget.y;
+
+      if (px !== null && py !== null && tx !== undefined && ty !== undefined) {
+        const dx = px - tx;
+        const dy = py - ty;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const isUsingDaoDai = window.lastGameData && window.lastGameData.player && (Number(window.lastGameData.player.active_gun) === 1);
+        const MIN_DIST = isUsingDaoDai ? 55 : 30;
+        const MAX_DIST = isUsingDaoDai ? 65 : 40;
+        const TARGET_KITE_DIST = isUsingDaoDai ? 60 : 35;
+
+        if (dist > MAX_DIST || dist < MIN_DIST) {
+          // Tính vector kiting/áp sát duy trì khoảng cách an toàn
+          const ux = dist > 0 ? dx / dist : 1;
+          const uy = dist > 0 ? dy / dist : 0;
+          data.explore_cx = Math.round((tx + ux * TARGET_KITE_DIST) * 100) / 100;
+          data.explore_cy = Math.round((ty + uy * TARGET_KITE_DIST) * 100) / 100;
+          data.traveling = 1;
+          data.lock_pos = 0;
+          data.explore_radius = 300;
+        } else {
+          // Đã ở vùng an toàn: Khóa vị trí xả skill/DPS
+          data.explore_cx = tx;
+          data.explore_cy = ty;
+          data.traveling = 0;
+          data.lock_pos = 1;
+          data.explore_radius = 100;
+        }
+      } else {
+        data.explore_cx = tx;
+        data.explore_cy = ty;
+        data.traveling = 1;
+      }
+
+      data.bot = 1; // Ép bật auto để tự chạy và đánh mục tiêu
+      
+      // Đồng thời cập nhật trạng thái phím Auto bên game screen (nếu có)
+      const btn = document.getElementById('bot-toggle-btn');
+      if (btn && btn.textContent.includes('OFF')) {
+        btn.textContent = '🤖 AUTO ON';
+        btn.style.background = '#16a34a';
+      }
+    }
+    
+    // 2. Chặn response để lấy dữ liệu thực thể vẽ UI Radar
+    return originalPost.call(this, url, data, function(res) {
+      const d = typeof res === 'string' ? JSON.parse(res) : res;
+      if (d && d.ok) {
+        window.handleGameData(d);
+
+        // Bơm máu chủ động khẩn cấp
+        const activeHealEnabled = localStorage.getItem('pk_activeHealEnabled') === 'true';
+        const activeHealThreshold = parseInt(localStorage.getItem('pk_activeHealThreshold')) || 50;
+
+        if (activeHealEnabled && d.player && !d.player.is_dead) {
+          const hpPct = Math.round((d.player.hp / d.player.hp_max) * 100);
+          if (hpPct < activeHealThreshold) {
+            addBattleLog(`💊 [Active Heal] HP dưới ${activeHealThreshold}% -> Tự động bơm máu khẩn cấp!`, 'WARNING');
+            if (typeof xhrpg !== 'undefined' && typeof xhrpg.usePotionManual === 'function') {
+              xhrpg.usePotionManual();
+            } else {
+              originalPost('/xhrpg_upgrade.php', {
+                line_uid: data.line_uid,
+                session_token: data.session_token,
+                action: 'use_potion_manual'
+              }, function(upgRes) {
+                const ud = typeof upgRes === 'string' ? JSON.parse(upgRes) : upgRes;
+                if (ud && ud.ok && ud.player) {
+                  if (window.lastGameData) {
+                    window.lastGameData.player = ud.player;
+                  }
+                  addBattleLog(`💊 Bơm máu thành công! HP hiện tại: ${ud.player.hp}/${ud.player.hp_max}`, 'SUCCESS');
+                }
+              });
+            }
+          }
+        }
+      }
+      if (success) success(res);
+    }, dataType);
+  }
+  
+  // Can thiệp phản hồi upgrade để cập nhật trạng thái UI khi bơm máu bằng xhrpg.usePotionManual()
+  if (url && url.includes('xhrpg_upgrade.php') && data && data.action === 'use_potion_manual') {
+    const jqXHR = originalPost.apply(this, arguments);
+    jqXHR.done(function(upgRes) {
+      const ud = typeof upgRes === 'string' ? JSON.parse(upgRes) : upgRes;
+      if (ud && ud.ok && ud.player) {
+        if (window.lastGameData) {
+          window.lastGameData.player = ud.player;
+        }
+        addBattleLog(`💊 Bơm máu thành công! HP hiện tại: ${ud.player.hp}/${ud.player.hp_max}`, 'SUCCESS');
+      }
+    });
+    return jqXHR;
+  }
+  
+  return originalPost.apply(this, arguments);
+};
+
+// Ghi log ra Panel
+function addBattleLog(msg, type = 'SYSTEM') {
+  const logBox = document.getElementById('battle-logs');
+  if (!logBox) return;
+  const time = new Date().toLocaleTimeString('vi-VN');
+  let color = '#38bdf8';
+  if (type === 'SUCCESS') color = '#22c55e';
+  if (type === 'WARNING') color = '#fb9e0b';
+  if (type === 'ERROR') color = '#ef4444';
+  
+  const div = document.createElement('div');
+  div.style.color = color;
+  div.innerHTML = `[${time}] ${msg}`;
+  logBox.appendChild(div);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+// Chuyển đổi Tab trên Panel
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  
+  event.currentTarget.classList.add('active');
+  document.getElementById('pane-' + tab).classList.add('active');
+}
+
+// Khởi tạo bộ nhớ đệm (Cache) chỉ số người chơi khác và dữ liệu game mới nhất
+window.playerDetailCache = {};
+window.lastGameData = null;
+
+// Bắt game data và cập nhật UI
+window.handleGameData = function(d) {
+  const hudStatus = document.getElementById('bot-status-text');
+  if (hudStatus) hudStatus.textContent = 'Sẵn sàng';
+  
+  if (!d.player) return;
+  const px = d.player.x;
+  const py = d.player.y;
+  
+  // Lưu trữ dữ liệu game mới nhất vào biến toàn cục để hàm vẽ cache đọc được
+  window.lastGameData = d;
+  
+  // Đồng bộ trạng thái config panel với game client
+  syncConfigPanel(d);
+  
+  // 1. Cập nhật Tab Boss
+  const bosses = d.bosses || [];
+  updateBossTable(bosses, px, py);
+  
+  // 2. Cập nhật Tab PK (Others)
+  const players = d.others || [];
+  updatePkTable(players, px, py);
+  
+  // 3. Cập nhật widget target hiện tại
+  updateTargetWidget(px, py, bosses, players);
+};
+
+// Đồng bộ các nút cấu hình nhanh
+function syncConfigPanel(d) {
+  // Đồng bộ explore radius text
+  const radiusBtn = document.getElementById('cfg-radius-toggle');
+  const gameRadiusBtn = document.getElementById('er-current');
+  if (radiusBtn && gameRadiusBtn) {
+    radiusBtn.textContent = gameRadiusBtn.textContent;
+  }
+  
+  // Đồng bộ status lock
+  const lockBtn = document.getElementById('cfg-lock-toggle');
+  const gameLockBtn = document.getElementById('lock-btn');
+  if (lockBtn && gameLockBtn) {
+    lockBtn.textContent = gameLockBtn.textContent;
+    lockBtn.style.background = gameLockBtn.style.background;
+  }
+}
+
+// Cập nhật bảng Boss
+function updateBossTable(bosses, px, py) {
+  const tbody = document.getElementById('boss-table-body');
+  if (!tbody) return;
+  
+  const aliveBosses = bosses.filter(b => (b.hp || 0) > 0);
+  if (aliveBosses.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Chưa tìm thấy Boss nào trên bản đồ này.</td></tr>`;
+    return;
+  }
+  
+  // Sắp xếp Boss theo khoảng cách gần nhất
+  aliveBosses.forEach(b => {
+    b.dist = Math.round(Math.sqrt((px - b.x) ** 2 + (py - b.y) ** 2));
+  });
+  aliveBosses.sort((a, b) => a.dist - b.dist);
+  
+  tbody.innerHTML = aliveBosses.map(b => {
+    const pct = Math.max(0, Math.min(100, Math.round((b.hp / Math.max(1, b.hp_max)) * 100)));
+    const col = pct > 50 ? 'hp-high' : pct > 25 ? 'hp-med' : 'hp-low';
+    const isTargeted = currentTargetType === 'boss' && currentTargetId === b.id;
+    
+    return `
+      <tr class="${isTargeted ? 'active-target' : ''}" onclick="setManualTarget(${b.id}, 'boss', ${b.x}, ${b.y}, '${b.name}', '${b.emoji}')">
+        <td>${b.emoji} ${b.name}</td>
+        <td>Lv.${b.lv}</td>
+        <td>
+          <span class="cell-hp-bar">
+            <span class="cell-hp-fill ${col}" style="width: ${pct}%"></span>
+          </span>
+          <span style="font-size: 10px">${pct}%</span>
+        </td>
+        <td>📍 ${b.dist}m</td>
+        <td>
+          <button class="target-btn ${isTargeted ? 'active' : ''}">
+            ${isTargeted ? '🎯 Đang Đuổi' : '🏹 Target'}
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function inspectPlayer(name, providedUid) {
+  event.stopPropagation(); // Ngăn target khi click inspect
+  
+  // Nếu đã có sẵn UID từ đối tượng người chơi
+  if (providedUid && providedUid !== name && providedUid !== 'undefined') {
+    if (typeof xhrpg !== 'undefined' && xhrpg.lbShow) {
+      addBattleLog(`🔍 Đang mở thông tin của [${name}]...`, 'SYSTEM');
+      xhrpg.lbShow(providedUid);
+    }
+    return;
+  }
+  
+  // Giải pháp dự phòng: Gửi request tìm kiếm UID theo Tên qua API Trade
+  const urlParams = new URLSearchParams(window.location.search);
+  const uid = urlParams.get('line_uid');
+  const token = urlParams.get('session_token');
+  
+  if (!uid || !token) {
+    addBattleLog('❌ Thiếu thông tin tài khoản để tìm kiếm người chơi.', 'ERROR');
+    return;
+  }
+  
+  addBattleLog(`🔍 Đang truy vấn UID của người chơi [${name}] từ máy chủ...`, 'SYSTEM');
+  
+  $.post('/xhrpg_trade.php', {
+    line_uid: uid,
+    session_token: token,
+    lang: 'vi',
+    action: 'search',
+    q: name
+  })
+  .done(res => {
+    const data = typeof res === 'string' ? JSON.parse(res) : res;
+    const found = data && data.players ? data.players.find(p => p.name === name) : null;
+    
+    if (found && found.uid) {
+      addBattleLog(`✅ Đã tìm thấy UID của [${name}]. Đang mở profile...`, 'SUCCESS');
+      if (typeof xhrpg !== 'undefined' && xhrpg.lbShow) {
+        xhrpg.lbShow(found.uid);
+      }
+    } else {
+      addBattleLog(`❌ Không tìm thấy thông tin của người chơi [${name}] trên hệ thống.`, 'ERROR');
+    }
+  })
+  .fail(() => {
+    addBattleLog(`❌ Lỗi kết nối khi truy vấn thông tin của [${name}].`, 'ERROR');
+  });
+}
+
+// Tự động tải ngầm chỉ số sức mạnh đối thủ lưu vào cache
+function fetchPlayerDetailBackground(name, providedUid) {
+  // Nếu đã có trong cache (hoặc đang tải), bỏ qua
+  if (window.playerDetailCache[name]) return;
+  
+  // Đánh dấu đang tải
+  window.playerDetailCache[name] = { loading: true };
+  
+  const proceedWithUid = (targetUid) => {
+    $.getJSON('xhrpg_leaderboard.php', { show: targetUid })
+      .done(d => {
+        if (d && d.ok) {
+          window.playerDetailCache[name] = {
+            uid: targetUid,
+            lv: d.lv || 1,
+            def: d.def || 0,
+            stat: d.stat || {},
+            eqCount: d.eq ? d.eq.length : 0,
+            loading: false
+          };
+          
+          // Render lại bảng PK để hiển thị thông tin vừa cập nhật từ cache
+          if (window.lastGameData) {
+            updatePkTable(window.lastGameData.others || [], window.lastGameData.player.x, window.lastGameData.player.y);
+          }
+        } else {
+          // Lỗi -> cho phép quét lại sau
+          delete window.playerDetailCache[name];
+        }
+      })
+      .fail(() => {
+        delete window.playerDetailCache[name];
+      });
+  };
+
+  // Tra cứu UID dự phòng
+  if (providedUid && providedUid !== name && providedUid !== 'undefined') {
+    proceedWithUid(providedUid);
+  } else {
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('line_uid');
+    const token = urlParams.get('session_token');
+    if (uid && token) {
+      $.post('/xhrpg_trade.php', {
+        line_uid: uid,
+        session_token: token,
+        lang: 'vi',
+        action: 'search',
+        q: name
+      }).done(res => {
+        const data = typeof res === 'string' ? JSON.parse(res) : res;
+        const found = data && data.players ? data.players.find(p => p.name === name) : null;
+        if (found && found.uid) {
+          proceedWithUid(found.uid);
+        } else {
+          delete window.playerDetailCache[name];
+        }
+      }).fail(() => {
+        delete window.playerDetailCache[name];
+      });
+    }
+  }
+}
+
+// Cập nhật bảng PK
+function updatePkTable(players, px, py) {
+  const tbody = document.getElementById('pk-table-body');
+  if (!tbody) return;
+  
+  if (players.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">Chưa phát hiện người chơi khác nào.</td></tr>`;
+    return;
+  }
+  
+  // Sắp xếp người chơi theo khoảng cách
+  players.forEach(p => {
+    p.dist = Math.round(Math.sqrt((px - p.x) ** 2 + (py - p.y) ** 2));
+  });
+  players.sort((a, b) => a.dist - b.dist);
+  
+  tbody.innerHTML = players.map(p => {
+    const targetUid = p.uid || p.line_uid || p.id || p.name;
+    const keyId = p.name || p.tid;
+    const isTargeted = currentTargetType === 'player' && currentTargetId === keyId;
+    const guildText = p.gd ? `🏰 ${p.gd}` : 'Không bang';
+    
+    // Đọc thông tin chỉ số từ Cache cục bộ
+    const cacheData = window.playerDetailCache[p.name];
+    let lvText = '--';
+    let defText = 'Đang quét...';
+    
+    if (cacheData && !cacheData.loading) {
+      lvText = `Lv.${cacheData.lv}`;
+      defText = `🛡️ ${cacheData.def.toLocaleString()}`;
+    } else {
+      // Nếu chưa có trong cache, kích hoạt tải ngầm
+      fetchPlayerDetailBackground(p.name, targetUid);
+    }
+    
+    // Vẽ thanh HP nếu có dữ liệu
+    let hpHtml = '';
+    if (p.hp !== undefined && p.hp_max !== undefined) {
+      const pct = Math.max(0, Math.min(100, Math.round((p.hp / Math.max(1, p.hp_max)) * 100)));
+      const col = pct > 50 ? 'hp-high' : pct > 25 ? 'hp-med' : 'hp-low';
+      hpHtml = `
+        <span class="cell-hp-bar" style="margin-top:2px; display:block;">
+          <span class="cell-hp-fill ${col}" style="width: ${pct}%"></span>
+        </span>
+      `;
+    }
+    
+    return `
+      <tr class="${isTargeted ? 'active-target' : ''}" onclick="setManualTarget('${keyId}', 'player', ${p.x}, ${p.y}, '${p.name}', '🧑')">
+        <td>
+          <div style="font-weight:700">🧑 ${p.name || 'Người chơi'}</div>
+          <div style="font-size:10px; color:#a855f7">${guildText}</div>
+          ${hpHtml}
+        </td>
+        <td><span style="color:#fbbf24; font-weight:800">${lvText}</span></td>
+        <td><span style="color:#38bdf8; font-weight:700">${defText}</span></td>
+        <td>
+          <span class="badge ${p.is_dead ? 'badge-dead' : 'badge-live'}">
+            ${p.is_dead ? 'HỒN GHOST' : 'ĐANG SỐNG'}
+          </span>
+        </td>
+        <td>📍 ${p.dist}m</td>
+        <td>
+          <div style="display:flex; gap:4px">
+            <button class="target-btn" onclick="inspectPlayer('${p.name}', '${cacheData ? cacheData.uid : targetUid}')" style="background:#4b5563" title="Xem trang bị & sức mạnh">🔍 Xem</button>
+            <button class="target-btn ${isTargeted ? 'active' : ''}">
+              ${isTargeted ? '🎯 Đang Đuổi' : '⚔️ PK'}
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Cập nhật widget target hiện tại
+function updateTargetWidget(px, py, bosses, players) {
+  const widget = document.getElementById('active-target-widget');
+  if (!widget) return;
+  
+  if (!window.customTarget) {
+    widget.style.display = 'none';
+    return;
+  }
+  
+  widget.style.display = 'block';
+  
+  // Tìm thực thể trong mảng để cập nhật thông tin thời gian thực
+  let aliveTarget = null;
+  if (currentTargetType === 'boss') {
+    aliveTarget = bosses.find(b => b.id === currentTargetId && (b.hp || 0) > 0);
+  } else {
+    aliveTarget = players.find(p => (p.name || p.tid) === currentTargetId);
+  }
+  
+  if (aliveTarget) {
+    // Cập nhật tọa độ di chuyển theo mục tiêu di động
+    window.customTarget.x = aliveTarget.x;
+    window.customTarget.y = aliveTarget.y;
+    
+    const dist = Math.round(Math.sqrt((px - aliveTarget.x) ** 2 + (py - aliveTarget.y) ** 2));
+    const distElem = document.getElementById('target-distance');
+    if (distElem) {
+      if (dist >= 15 && dist <= 20) {
+        distElem.textContent = `Khoảng cách: ${dist}m [Vùng 15-20m]`;
+        distElem.style.color = '#22c55e'; // Xanh lá - Vùng an toàn xả DPS
+      } else if (dist < 15) {
+        distElem.textContent = `Khoảng cách: ${dist}m [Lùi Kiting]`;
+        distElem.style.color = '#f59e0b'; // Cam - Kiting
+      } else {
+        distElem.textContent = `Khoảng cách: ${dist}m [Đang áp sát]`;
+        distElem.style.color = '#94a3b8'; // Xám - Tiến lại gần
+      }
+    }
+  } else {
+    // Mục tiêu đã chết hoặc biến mất
+    addBattleLog(`💀 Mục tiêu [${window.customTarget.name}] đã chết hoặc rời khỏi map. Hủy target.`, 'WARNING');
+    cancelTarget();
+  }
+}
+
+// Kích hoạt Target thủ công khi click vào dòng
+function setManualTarget(id, type, x, y, name, emoji) {
+  event.stopPropagation(); // Tránh kích hoạt click row lặp lại
+  
+  // Nếu click vào mục tiêu cũ -> hủy target
+  if (currentTargetId === id && currentTargetType === type) {
+    cancelTarget();
+    return;
+  }
+  
+  currentTargetId = id;
+  currentTargetType = type;
+  
+  window.customTarget = {
+    x: x,
+    y: y,
+    type: type,
+    name: name
+  };
+  
+  // Cập nhật widget UI
+  document.getElementById('target-emoji').textContent = emoji;
+  document.getElementById('target-name').textContent = name;
+  document.getElementById('target-badge').textContent = type === 'boss' ? 'Boss MVP' : 'PLAYER PK';
+  document.getElementById('target-badge').className = `badge ${type === 'boss' ? 'badge-mvp' : 'badge-live'}`;
+  
+  addBattleLog(`🏹 Khóa mục tiêu mới: [${name}] tại tọa độ (${x}, ${y}). Đang di chuyển lại gần...`, 'SUCCESS');
+  
+  // Đồng bộ target lên server proxy nếu là Boss để bot ngầm server hỗ trợ
+  if (type === 'boss') {
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('line_uid');
+    if (uid) {
+      $.post(`/api/accounts/${uid}/action`, {
+        action: 'set_boss_target',
+        extra: { bossId: id }
+      }).done(() => {
+        addBattleLog(`✅ Đã đồng bộ mục tiêu Boss lên Server Proxy.`, 'SUCCESS');
+      });
+    }
+  }
+}
+
+// Hủy target thủ công
+function cancelTarget() {
+  if (window.customTarget && currentTargetType === 'boss') {
+    // Hủy target boss trên server proxy
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('line_uid');
+    if (uid) {
+      $.post(`/api/accounts/${uid}/action`, {
+        action: 'set_boss_target',
+        extra: { bossId: null }
+      });
+    }
+  }
+  
+  window.customTarget = null;
+  currentTargetId = null;
+  currentTargetType = null;
+  
+  document.getElementById('active-target-widget').style.display = 'none';
+  addBattleLog('🎯 Đã hủy mục tiêu thủ công. Bot tự chọn mục tiêu gần nhất.', 'SYSTEM');
+}
+
+// Khởi chạy game client
+function startGame(player, token, offlineReward) {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display    = 'flex';
+  
+  // Khởi tạo game engine gốc
+  xhrpg.init(player, BASE_URL, token);
+  
+  addBattleLog('🎮 Kết nối game thành công! Radar trận đấu đã hoạt động.', 'SUCCESS');
+  
+  if (offlineReward && offlineReward.kills > 0) {
+    setTimeout(() => xhrpg.showOfflineReward(offlineReward), 800);
+  }
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const uid = urlParams.get('line_uid');
+const token = urlParams.get('session_token');
+
+if (uid && token) {
+  $.post('/xhrpg_game.php', {
+    line_uid: uid,
+    session_token: token,
+    act: 1,
+    full: 1,
+    bot: 1,
+    lang: 'vi',
+    have_static: 0
+  })
+  .done(res => {
+    const data = typeof res === 'string' ? JSON.parse(res) : res;
+    if (data.ok) {
+      startGame(data.player, token, data.offline_reward);
+    } else {
+      document.getElementById('loading-msg').textContent = 'Đăng nhập thất bại: ' + (data.error || 'Lỗi không xác định');
+      addBattleLog('❌ Đăng nhập thất bại: ' + (data.error || 'Lỗi'), 'ERROR');
+    }
+  })
+  .fail(() => {
+    document.getElementById('loading-msg').textContent = 'Không thể kết nối tới máy chủ Proxy';
+    addBattleLog('❌ Không thể kết nối tới máy chủ Proxy', 'ERROR');
+  });
+} else {
+  document.getElementById('loading-msg').textContent = 'Lỗi: Thiếu tham số line_uid hoặc session_token trên link';
+}
+
+// --- URGENT ACTIVE POTION HEALING SYSTEM ---
+function initActiveHeal() {
+  const activeHealEnabled = localStorage.getItem('pk_activeHealEnabled') === 'true';
+  const activeHealThreshold = localStorage.getItem('pk_activeHealThreshold') || '50';
+
+  const toggleBtn = document.getElementById('cfg-active-heal-toggle');
+  if (toggleBtn) {
+    if (activeHealEnabled) {
+      toggleBtn.textContent = 'BẬT';
+      toggleBtn.style.background = '#22c55e';
+    } else {
+      toggleBtn.textContent = 'TẮT';
+      toggleBtn.style.background = '#ef4444';
+    }
+  }
+
+  const selectEl = document.getElementById('cfg-active-heal-threshold');
+  if (selectEl) {
+    selectEl.value = activeHealThreshold;
+  }
+}
+
+function toggleActiveHeal() {
+  const current = localStorage.getItem('pk_activeHealEnabled') === 'true';
+  const next = !current;
+  localStorage.setItem('pk_activeHealEnabled', next ? 'true' : 'false');
+  initActiveHeal();
+  addBattleLog(`💊 Đã ${next ? 'BẬT' : 'TẮT'} Bơm Máu Khẩn Cấp Chủ Động`, 'SYSTEM');
+}
+
+function changeActiveHealThreshold() {
+  const selectEl = document.getElementById('cfg-active-heal-threshold');
+  if (selectEl) {
+    localStorage.setItem('pk_activeHealThreshold', selectEl.value);
+    addBattleLog(`💊 Đã đổi ngưỡng Bơm Máu Khẩn Cấp thành ${selectEl.value}% HP`, 'SYSTEM');
+  }
+}
+
+// --- MANUAL HEAL BUTTON ---
+function triggerManualHeal(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentUid = urlParams.get('line_uid');
+  const currentToken = urlParams.get('session_token');
+
+  if (!currentUid || !currentToken) {
+    alert("Lỗi: Thiếu thông tin tài khoản (line_uid / session_token)!");
+    return;
+  }
+  
+  const btn = document.getElementById('manual-heal-btn');
+  if (btn) {
+    btn.style.transform = 'translate(-50%, -50%) scale(0.9)';
+    setTimeout(() => {
+      btn.style.transform = 'translate(-50%, -50%) scale(1)';
+    }, 100);
+  }
+
+  if (typeof xhrpg !== 'undefined' && typeof xhrpg.usePotionManual === 'function') {
+    xhrpg.usePotionManual();
+  } else {
+    fetch('/xhrpg_upgrade.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: new URLSearchParams({
+        line_uid: currentUid,
+        session_token: currentToken,
+        action: 'use_potion_manual'
+      })
+    })
+    .then(res => res.json())
+    .then(ud => {
+      if (ud && ud.ok && ud.player) {
+        if (window.lastGameData) {
+          window.lastGameData.player = ud.player;
+        }
+        addBattleLog(`💊 [Thủ công] Bơm máu thành công! HP hiện tại: ${ud.player.hp}/${ud.player.hp_max}`, 'SUCCESS');
+      } else {
+        addBattleLog(`💊 [Thủ công] Bơm máu thất bại: ${ (ud && ud.error) || 'Lỗi không xác định' }`, 'WARNING');
+      }
+    })
+    .catch(err => {
+      addBattleLog(`💊 [Thủ công] Lỗi kết nối khi bơm máu: ${err.message}`, 'WARNING');
+    });
+  }
+}
+
+// Khởi chạy hệ thống chủ động bơm máu
+initActiveHeal();
+</script>
+</body>
+</html>

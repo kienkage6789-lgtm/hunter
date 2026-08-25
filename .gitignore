@@ -1,0 +1,8 @@
+﻿node_modules/
+*.db
+*.sqlite
+*.sqlite3
+data/accounts.json
+data/users.json
+.env
+logs/

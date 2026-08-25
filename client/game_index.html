@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ragnalok-Origin</title>
+<link rel="stylesheet" href="css/xhrpg_style.css?v=1784235898">
+<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-box">
+    <div class="loading-title">⚔ Ragnalok-Origin</div>
+    <div class="loading-sub" id="loading-msg">Loading...</div>
+  </div>
+</div>
+
+<div id="game-screen" style="display:none">
+
+  <!-- ══ TOP STATUS PANEL ══ -->
+  <div class="status-panel">
+    <div class="status-row1">
+      <span class="sp-name" id="hud-name">—</span>
+      <span class="sp-badge lv"   id="hud-lv">Lv.1</span>
+      <span class="sp-badge zone" id="hud-zone">Zone 0</span>
+      <span class="sp-badge gold" id="hud-gold">G 0</span>
+    </div>
+    <div class="status-row2">
+      <div class="sp-bar-wrap">
+        <div class="sp-bar-label" style="color:#4ade80">HP</div>
+        <div class="sp-bar hp-bar"><div class="sp-bar-fill hp-fill" id="hud-hp-fill"></div></div>
+        <div class="sp-bar-text" id="hud-hp">100/100</div>
+      </div>
+      <div class="sp-bar-wrap">
+        <div class="sp-bar-label" style="color:#818cf8">MP</div>
+        <div class="sp-bar" style="background:#1e1b4b"><div class="sp-bar-fill" id="hud-mp-fill" style="background:#818cf8"></div></div>
+        <div class="sp-bar-text" id="hud-mp">50/50</div>
+      </div>
+      <div class="sp-bar-wrap">
+        <div class="sp-bar-label" id="hud-armor-label" style="color:#fb923c">เกราะ</div>
+        <div class="sp-bar" style="background:#1c1917"><div class="sp-bar-fill" id="hud-armor-fill" style="background:#fb923c"></div></div>
+        <div class="sp-bar-text" id="hud-armor">100/100</div>
+      </div>
+      <div class="sp-bar-wrap">
+        <div class="sp-bar-label" style="color:#fbbf24">EXP</div>
+        <div class="sp-bar exp-bar"><div class="sp-bar-fill exp-fill" id="hud-exp-fill"></div></div>
+        <div class="sp-bar-text" id="hud-exp">0% (เหลือ 100)</div>
+      </div>
+    </div>
+    <div class="status-row3">
+      <span class="sp-ammo" id="hud-pistol">🔫 --/--</span>
+      <span class="sp-ammo" id="hud-sniper">🎯 --/--</span>
+      <span class="sp-ammo" id="hud-robot-ammo">🤖 --/--</span>
+      <span class="sp-ammo sp-rail" id="hud-rail-charge">
+        ⚡<span id="hud-rail-bar-wrap"><span id="hud-rail-bar"></span></span><span id="hud-rail-pct">0%</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ══ MAP ══ -->
+  <div class="map-wrap">
+    <canvas id="gameCanvas"></canvas>
+    <canvas id="minimapCanvas"></canvas>
+    <!-- 🌙 OFF ใต้ minimap (top 5 + 84 สูง + 4 ช่องว่าง) กว้างเท่า minimap 84px (2026-07-15 ย้ายจาก spot-row) -->
+    <button id="offline-btn" onclick="xhrpg.openOfflinePanel()" title="เลือกโซนฟาร์มตอนออฟไลน์ (8 ชม.)"
+       style="position:absolute;top:93px;right:5px;width:84px;height:24px;background:#4338ca;color:#fff;border:1px solid #6366f1;border-radius:7px;font-size:9.5px;font-weight:700;cursor:pointer;line-height:1;white-space:nowrap;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,.3)">🌙 OFFLINE</button>
+    <div class="zoom-btns">
+      <button class="zoom-btn" id="lang-toggle" onclick="xhrpg.toggleLang()" title="เปลี่ยนภาษา / Switch language" style="font-size:9.5px;background:#0ea5e9;color:#fff;border-color:#38bdf8">EN</button>
+      <button class="zoom-btn warp-btn" onclick="xhrpg.warpHome()" title="WARP กลางแผนที่">🏠</button>
+      <button class="zoom-btn" onclick="xhrpg.zoom(1)">＋</button>
+      <button class="zoom-btn" onclick="xhrpg.zoom(-1)">－</button>
+      <button class="zoom-btn sm" onclick="xhrpg.zoom(0)">⊙</button>
+    </div>
+    <div style="position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:5px;z-index:10;align-items:flex-start">
+     <div style="display:flex;flex-direction:row;gap:5px">
+      <a id="fb-link" href="https://www.facebook.com/profile.php?id=61566078004440" target="_blank"
+         style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#1877F2;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);text-decoration:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+      </a>
+      <a id="line-group-link" href="https://line.me/ti/g2/KWqxgaB3VgJTGz8duWRWGePPoQLFRnLO3piZGg" target="_blank"
+         style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#06C755;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);text-decoration:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+      </a>
+      <a id="line-add-link" href="https://line.me/ti/p/@ragnalok" target="_blank"
+         style="display:flex;align-items:center;justify-content:center;height:26px;padding:0 8px;background:#04a54a;border-radius:13px;box-shadow:0 2px 6px rgba(0,0,0,.3);text-decoration:none;color:#fff;font-size:11px;font-weight:700;white-space:nowrap">
+        ➕ Add @ragnalok
+      </a>
+      <div id="online-badge" style="display:flex;align-items:center;gap:5px;height:26px;background:rgba(0,0,0,0.5);border-radius:13px;padding:0 9px;font-size:11px;color:#f1f5f9;white-space:nowrap">
+        <span style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;flex-shrink:0"></span>
+        <span id="online-count-label">Online 0</span>
+      </div>
+     </div>
+     <!-- 📖 คู่มือ + 🔊 เสียง — ปุ่มกลมคู่ใต้ไอคอน FB (เสียงย้ายจากชุดปุ่มขวาล่าง เหลือ icon เดียว 2026-07-14) -->
+     <div style="display:flex;flex-direction:row;gap:5px">
+      <button onclick="xhrpg.togglePanel('guide')" title="คู่มือการเล่น"
+         style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7c3aed;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">📖</button>
+      <button id="sfx-toggle-btn" onclick="xhrpg.toggleSfx()" title="เปิด/ปิดเสียง"
+         style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#334155;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">🔇</button>
+     </div>
+    </div>
+    <div class="spot-select-wrap">
+      <div id="boss-btns" class="boss-btns"></div>
+      <div class="mlog-row">
+        <button id="mlog-toggle" class="mlog-toggle" onclick="xhrpg.toggleMiniLog()" title="เปิด/ปิด บันทึกลอย">📜 LOG</button>
+        <button id="open-log-btn" class="mlog-toggle" onclick="xhrpg.togglePanel('log')" title="เปิดบันทึกเหตุการณ์">📖 บันทึก</button>
+        <button id="open-map-btn" class="mlog-toggle" onclick="xhrpg.openMapSelect()" title="เปลี่ยนแผนที่">🗺️ แผนที่</button>
+        <button id="open-chat-btn" class="mlog-toggle" onclick="xhrpg.togglePanel('chat')" title="แชท" style="position:relative">💬 แชท<span id="chat-badge" style="display:none;position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;line-height:15px;padding:0 3px;border-radius:8px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;text-align:center;box-shadow:0 1px 3px #0004"></span></button>
+      </div>
+      <div class="spot-row">
+        <select id="spot-select" onchange="xhrpg.goToSpot(this.value)">
+          <!-- ค่า static โชว์เฉพาะก่อน login (นโยบาย: EN เสมอ) — หลัง login updateSpotSelect สร้างรายการจริงจาก server + T() ตามภาษา -->
+          <option value="">🗺️ Select destination</option>
+          <option value="0">🌿 Central Field Lv.1-3</option>
+          <option value="1">🌲 East Pine Forest Lv.4-6</option>
+        </select>
+        <!-- ⚔️🏟️🌙 เรียงข้าง dropdown (OFF ย้ายมาต่อท้าย BOSS ตามคำขอ 2026-07-15) -->
+        <button id="pvp-btn" onclick="xhrpg.openPvpPanel()" title="ท้าดวลผู้เล่นในแผนที่"
+           style="height:26px;background:#9f1239;color:#fff;border:1px solid #f43f5e;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;padding:0 7px;line-height:1;white-space:nowrap">⚔️ PVP</button>
+        <button id="arena-btn" onclick="xhrpg.openArenaPanel()" title="ดันท้าบอส 1-1"
+           style="height:26px;background:#b45309;color:#fff;border:1px solid #f59e0b;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;padding:0 7px;line-height:1;white-space:nowrap">🏟️ BOSS</button>
+      </div>
+    </div>
+    <div class="map-auto-wrap">
+      <button class="bot-toggle-btn" id="bot-toggle-btn" onclick="xhrpg.toggleBot()">🤖 AUTO ON</button>
+      <button class="bot-toggle-btn" id="lock-btn" onclick="xhrpg.toggleLock()" style="background:#475569">🔓 LOCK ATK</button>
+      <!-- 🔊 เสียงย้ายไปข้างปุ่ม 📖 คู่มือ (ซ้ายบน) · แผงปุ่มรัศมี 100-300 ตัดออก เหลือ 📍 ปุ่มเดียวกดวนค่า (2026-07-14) -->
+      <button class="bot-toggle-btn" id="er-current" onclick="xhrpg.cycleExploreRadius()" style="background:#0e7490" title="รัศมีสำรวจ (คลิกเปลี่ยน 100→150→200→300)">📍 300m</button>
+    </div>
+    <!-- D-PAD overlay บนแผนที่ — โชว์เฉพาะตอน AUTO OFF (JS toggle class 'show') -->
+    <div class="dpad-wrap dpad-overlay">
+      <div class="dpad-row">
+        <button class="dpad-btn" id="dpad-ul" onclick="xhrpg.setDir('ul')">↖</button>
+        <button class="dpad-btn" id="dpad-up" onclick="xhrpg.setDir('up')">▲</button>
+        <button class="dpad-btn" id="dpad-ur" onclick="xhrpg.setDir('ur')">↗</button>
+      </div>
+      <div class="dpad-row">
+        <button class="dpad-btn" id="dpad-left"  onclick="xhrpg.setDir('left')">◀</button>
+        <button class="dpad-btn center" onclick="xhrpg.setDir(null)">✕</button>
+        <button class="dpad-btn" id="dpad-right" onclick="xhrpg.setDir('right')">▶</button>
+      </div>
+      <div class="dpad-row">
+        <button class="dpad-btn" id="dpad-dl" onclick="xhrpg.setDir('dl')">↙</button>
+        <button class="dpad-btn" id="dpad-down" onclick="xhrpg.setDir('down')">▼</button>
+        <button class="dpad-btn" id="dpad-dr" onclick="xhrpg.setDir('dr')">↘</button>
+      </div>
+    </div>
+    <!-- MINI LOG — 3 บรรทัดล่าสุดลอยซ้ายล่างของแผนที่ (จางหายเอง) -->
+    <div id="mini-log"></div>
+  </div>
+
+  <!-- ลิงก์ social สำรอง (ซ่อนไว้ — ย้ายมาจาก log-wrap เดิม) -->
+  <div style="display:none">
+    <a href="https://line.me/ti/g2/KWqxgaB3VgJTGz8duWRWGePPoQLFRnLO3piZGg" target="_blank"
+       style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:#06C755;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);text-decoration:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+    </a>
+    <a href="https://www.facebook.com/profile.php?id=61566078004440" target="_blank"
+       style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:#1877F2;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);text-decoration:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+    </a>
+  </div>
+
+  <!-- ══ MENU BAR ══ -->
+  <div class="menu-bar">
+    <div class="menu-bar-row">
+      <button class="menu-icon-btn" id="mbtn-gun" onclick="xhrpg.togglePanel('gun')">
+        <span class="menu-icon-emoji">⚔</span>
+        <span class="menu-icon-label">อาวุธ</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-item" onclick="xhrpg.togglePanel('item')">
+        <span class="menu-icon-emoji">🎒</span>
+        <span class="menu-icon-label">ไอเทม</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-stat" onclick="xhrpg.togglePanel('stat')">
+        <span class="menu-icon-emoji" style="position:relative">📊⚡<span id="stat-pts-badge" class="pts-badge">+0</span></span>
+        <span class="menu-icon-label">STAT ทักษะ</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-robot" onclick="xhrpg.togglePanel('robot')">
+        <span class="menu-icon-emoji">🐱</span>
+        <span class="menu-icon-label">ผู้ติดตาม</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-house" onclick="xhrpg.togglePanel('house')">
+        <span class="menu-icon-emoji">🛸</span>
+        <span class="menu-icon-label">ยานบิน</span>
+      </button>
+    </div>
+    <div class="menu-bar-row">
+      <button class="menu-icon-btn" id="mbtn-card" onclick="xhrpg.togglePanel('card')">
+        <span class="menu-icon-emoji">🎴</span>
+        <span class="menu-icon-label">การ์ด</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-market" onclick="xhrpg.togglePanel('market')">
+        <span class="menu-icon-emoji">🏪</span>
+        <span class="menu-icon-label">ตลาด</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-pet" onclick="xhrpg.togglePanel('pet')">
+        <span class="menu-icon-emoji">🐾</span>
+        <span class="menu-icon-label">สัตว์เลี้ยง</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-rank" onclick="xhrpg.togglePanel('rank')">
+        <span class="menu-icon-emoji">🏆</span>
+        <span class="menu-icon-label">อันดับ</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-premium" onclick="xhrpg.togglePanel('premium')">
+        <span class="menu-icon-emoji">🅿️</span>
+        <span class="menu-icon-label">PREMIUM</span>
+      </button>
+    </div>
+    <button class="logout-btn" id="logout-btn" onclick="xhrpg.logout()">⬅ ออกจากเกม</button>
+  </div>
+
+  <!-- ══ LOGIN OVERLAY (demo mode) ══ -->
+  <div id="login-overlay" style="display:none">
+    <div class="login-label">Sign in with</div>
+    <div class="login-btn-row">
+      <button class="login-provider-btn google-btn" onclick="window.location='/human/auth_google_callback.php'">
+        <svg viewBox="0 0 48 48" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.1 0 5.8 1.1 8 2.8l6-6C34.3 3.2 29.4 1 24 1 14.8 1 7 6.7 3.7 14.6l7 5.4C12.4 14 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.3-4 6.8-9.9 6.8-17z"/><path fill="#FBBC05" d="M10.7 28.1A14.6 14.6 0 019.5 24c0-1.4.2-2.8.6-4.1l-7-5.4A23.9 23.9 0 001 24c0 3.9.9 7.5 2.7 10.7l7-5.6z"/><path fill="#34A853" d="M24 47c5.4 0 10-1.8 13.3-4.8l-7.5-5.8c-1.8 1.2-4.1 1.9-5.8 1.9-6.3 0-11.6-4.4-13.3-10.2l-7 5.6C7 41.3 14.8 47 24 47z"/><path fill="none" d="M1 1h46v46H1z"/></svg>
+        Google
+      </button>
+      <button class="login-provider-btn" onclick="doLogin()">
+        <svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><path fill="#06C755" d="M12 .3C5.4.3 0 4.9 0 10.6c0 3.6 2.3 6.8 5.8 8.7-.2.8-.8 3-.9 3.4 0 0 0 .2.1.3.1.1.3 0 .3 0 .4-.1 5-3.3 5.9-3.9.6.1 1.2.1 1.8.1 6.6 0 12-4.6 12-10.3S18.6.3 12 .3"/></svg>
+        LINE
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ POPUP OVERLAY ══ -->
+  <div class="panel-overlay" id="panel-overlay" onclick="xhrpg.closePanel()"></div>
+
+  <!-- ══ POPUP: สัตว์เลี้ยง (ฟักไข่มอนสเตอร์ · docs/pet-system-design.md) ══ -->
+  <div class="panel-popup" id="panel-pet">
+    <div class="popup-header">
+      <span>🐾 สัตว์เลี้ยง</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="pet-list"></div>
+  </div>
+
+  <!-- ══ POPUP: การ์ดสะสม (ทักษะย้ายไปรวมในเมนู STAT ทักษะ) ══ -->
+  <div class="panel-popup" id="panel-card">
+    <div class="popup-header">
+      <span>🎴 สมุดสะสมการ์ด</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="card-list"></div>
+  </div>
+
+  <!-- ══ POPUP: อาวุธ ══ -->
+  <div class="panel-popup" id="panel-gun">
+    <div class="popup-header">
+      <span>⚔ อาวุธ <button class="stat-help-btn" onclick="xhrpg.toggleGunHelp()">?</button></span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="gun-help-box" style="display:none"></div>
+    <div id="gun-list"></div>
+  </div>
+
+  <!-- ══ POPUP: ไอเทม ══ -->
+  <div class="panel-popup" id="panel-item">
+    <div class="popup-header">
+      <span>🎒 ไอเทม <button class="stat-help-btn" onclick="xhrpg.toggleItemHelp()">?</button></span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="item-help-box" style="display:none"></div>
+    <div id="item-list"></div>
+  </div>
+
+  <!-- ══ POPUP: หุ่นยนต์ ══ -->
+  <div class="panel-popup" id="panel-robot">
+    <div class="popup-header">
+      <span>🐱 ผู้ติดตาม <button class="stat-help-btn" onclick="xhrpg.toggleRobotHelp()">?</button></span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="robot-help-box" style="display:none"></div>
+    <div id="robot-list"></div>
+  </div>
+
+  <!-- ══ POPUP: ยานบิน ══ -->
+  <div class="panel-popup" id="panel-house">
+    <div class="popup-header">
+      <span>🛸 ยานบิน <button class="stat-help-btn" onclick="xhrpg.toggleHouseHelp()">?</button></span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="house-help-box" style="display:none"></div>
+    <div id="house-list"></div>
+  </div>
+
+  <!-- ══ POPUP: อันดับ ══ -->
+  <div class="panel-popup" id="panel-rank">
+    <div class="popup-header">
+      <span>🏆 อันดับผู้เล่น</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="rank-tabs" class="rank-tabs">
+      <!-- ปุ่มแท็บ 2 บรรทัด: icon บน + text ล่าง (.rt-txt คือจุดที่ i18n เขียนทับ — อย่าลบ span) -->
+      <button class="rank-tab active" data-tab="lv"   onclick="xhrpg.rankTab('lv')"><span class="rt-ico">🏆</span><span class="rt-txt">ผู้เล่น</span></button>
+      <button class="rank-tab"        data-tab="mvp"  onclick="xhrpg.rankTab('mvp')"><span class="rt-ico">⭐</span><span class="rt-txt">MVP</span></button>
+      <button class="rank-tab"        data-tab="gold" onclick="xhrpg.rankTab('gold')"><span class="rt-ico">💰</span><span class="rt-txt">Gold</span></button>
+      <button class="rank-tab"        data-tab="colosseum" onclick="xhrpg.rankTab('colosseum')"><span class="rt-ico">🏛️</span><span class="rt-txt">ประลอง</span></button>
+      <button class="rank-tab"        data-tab="country" onclick="xhrpg.rankTab('country')"><span class="rt-ico">🌍</span><span class="rt-txt">ประเทศ</span></button>
+    </div>
+    <div id="rank-list"></div>
+  </div>
+
+  <!-- ══ POPUP: PREMIUM ══ -->
+  <div class="panel-popup" id="panel-premium">
+    <div class="popup-header">
+      <span>🅿️ Premium Shop <button class="stat-help-btn" onclick="xhrpg.togglePremiumHelp()">?</button></span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="premium-help-box" style="display:none"></div>
+    <div id="premium-list"></div>
+  </div>
+
+  <!-- ══ POPUP: บันทึกเหตุการณ์ ══ -->
+  <div class="panel-popup" id="panel-log">
+    <div class="popup-header">
+      <span>📜 บันทึกเหตุการณ์</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="event-log"></div>
+  </div>
+
+  <!-- ══ POPUP: CHAT 💬 (แชทรวมทั้งเกม + ส่วนตัว · docs: sql/add_chat.sql) ══ -->
+  <div class="panel-popup" id="panel-chat">
+    <div class="popup-header">
+      <span id="chat-title">💬 แชท</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <!-- แท็บ: รวม | ส่วนตัว -->
+    <div id="chat-tabs" style="display:flex;gap:4px;padding:0 0 6px"></div>
+    <!-- รายชื่อคู่สนทนา DM (โชว์เฉพาะแท็บส่วนตัว ตอนยังไม่เลือกห้อง) -->
+    <div id="chat-dmlist" style="display:none;max-height:300px;overflow-y:auto"></div>
+    <!-- ห้องสนทนา -->
+    <div id="chat-room">
+      <div id="chat-msgs" style="height:290px;overflow-y:auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px"></div>
+      <div id="chat-emoji" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:5px;margin-top:5px;max-height:104px;overflow-y:auto"></div>
+      <div style="display:flex;gap:4px;margin-top:5px;align-items:center">
+        <button onclick="xhrpg.chatEmojiToggle()" style="flex:none;width:32px;height:32px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font-size:16px;cursor:pointer" title="อีโมจิ">😀</button>
+        <input id="chat-input" type="text" maxlength="200" autocomplete="off"
+               placeholder="พิมพ์ข้อความ..." onkeydown="if(event.key==='Enter'){event.preventDefault();xhrpg.chatSend();}"
+               style="flex:1;min-width:0;height:32px;padding:0 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-family:inherit">
+        <button id="chat-send-btn" onclick="xhrpg.chatSend()" class="no-click-guard" style="flex:none;height:32px;padding:0 12px;border:none;border-radius:8px;background:#16a34a;color:#fff;font-size:13px;font-weight:700;cursor:pointer">ส่ง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ POPUP: GUIDE ══ -->
+  <div class="panel-popup" id="panel-guide">
+    <div class="popup-header">
+      <span>📖 คู่มือการเล่น</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="guide-root"></div>
+  </div>
+
+  <!-- ══ POPUP: MARKET ══ -->
+  <div class="panel-popup" id="panel-market">
+    <div class="popup-header">
+      <span>🏪 ตลาด</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="market-root"></div>
+  </div>
+
+  <!-- ══ POPUP: STAT ══ -->
+  <div class="panel-popup" id="panel-stat">
+    <div class="popup-header">
+      <span>📊⚡ STAT ทักษะ <button class="stat-help-btn" onclick="xhrpg.toggleStatHelp()">?</button></span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="stat-help-box" style="display:none"></div>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+      <input id="rename-input" type="text" maxlength="16" placeholder="ชื่อในเกม (2–16 ตัว)"
+        style="flex:1;background:#f1f5f9;color:#111827;border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px;font-size:13px;outline:none"/>
+      <button onclick="xhrpg.changeDisplayName()"
+        style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">บันทึก</button>
+    </div>
+    <div id="stat-list"></div>
+  </div>
+
+</div><!-- #game-screen -->
+
+<script src="js/xhrpg_canvas.js?v=1784236680"></script>
+<script>
+const LIFF_ID  = "2010462969-3g2I07RU";
+const BASE_URL = "/human/";
+// 🌐 ประเทศจาก Cloudflare ตั้งแต่ตอน render หน้า — ทำให้รู้ภาษาก่อน login/poll (VPN/ต่างชาติเห็นภาษาถูกตั้งแต่เฟรมแรก)
+const CF_REGION = "VN";
+
+// ── ข้อความหน้าโหลด/ก่อน login: English เสมอ (นโยบาย — ภาษาจริงเริ่มหลัง login) ──
+const _L = false;
+document.getElementById('loading-msg').textContent = _L ? 'กำลังโหลด...' : 'Loading...';
+
+function doLogin() { liff.login({ redirectUri: window.location.href }); }
+
+function startGame(player, token, offlineReward) {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display    = 'flex';
+  xhrpg.init(player, BASE_URL, token);
+  if (offlineReward && offlineReward.kills > 0) {
+    setTimeout(() => xhrpg.showOfflineReward(offlineReward), 800);
+  }
+}
+
+// ── Google auth path: ?auth=google ────────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('auth') === 'google') {
+  document.getElementById('loading-msg').textContent = _L ? 'กำลังโหลดข้อมูลผู้เล่น...' : 'Loading player data...';
+  $.get(BASE_URL + 'xhrpg_google_auth.php')
+    .done(res => {
+      const data = typeof res === 'string' ? JSON.parse(res) : res;
+      if (data.ok) { startGame(data.player, data.session_token, data.offline_reward); }
+      else { document.getElementById('loading-msg').textContent = _L ? 'Session หมดอายุ กรุณา Login ใหม่' : 'Session expired — please log in again'; }
+    })
+    .fail(() => { document.getElementById('loading-msg').textContent = _L ? 'เกิดข้อผิดพลาด กรุณาลองใหม่' : 'Something went wrong — please try again'; });
+} else {
+  // ── LINE LIFF path ──────────────────────────────────────────────────────────
+  liff.init({ liffId: LIFF_ID })
+    .then(() => {
+      if (!liff.isLoggedIn()) {
+        // 🔑 ลองกู้ session Google ก่อนตกไป demo — เคสจริง: กลับจากหน้าจ่ายเงิน Stripe URL เปล่า (ไม่มี ?auth=google)
+        //    ทั้งที่ PHP session ยังอยู่ → เดิมเด้งหน้า login ทั้งที่ยัง login ค้าง (ครอบ bookmark/พิมพ์ URL ตรงด้วย)
+        $.get(BASE_URL + 'xhrpg_google_auth.php')
+          .done(res => {
+            const data = typeof res === 'string' ? JSON.parse(res) : res;
+            if (data.ok) { startGame(data.player, data.session_token, data.offline_reward); return; }
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display    = 'flex';
+            xhrpg.startDemo(BASE_URL);
+          })
+          .fail(() => {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display    = 'flex';
+            xhrpg.startDemo(BASE_URL);
+          });
+        return;
+      }
+      const token = liff.getAccessToken();
+      if (!token) { document.getElementById('loading-msg').textContent = _L ? 'ไม่พบ token กรุณาเปิดผ่าน LINE' : 'No token found — please open via LINE'; return; }
+      document.getElementById('loading-msg').textContent = _L ? 'กำลังโหลดข้อมูลผู้เล่น...' : 'Loading player data...';
+      return $.post(BASE_URL + 'xhrpg_login.php', { token });
+    })
+    .then(res => {
+      if (!res) return;
+      const data = typeof res === 'string' ? JSON.parse(res) : res;
+      if (data.error) { document.getElementById('loading-msg').textContent = 'Error: ' + data.error; return; }
+      startGame(data.player, data.session_token, data.offline_reward);
+    })
+    .catch(err => {
+      const msg = err instanceof Error ? err.message : (err.responseText || err.statusText || JSON.stringify(err));
+      document.getElementById('loading-msg').textContent = (_L ? 'เกิดข้อผิดพลาด: ' : 'Error: ') + msg;
+      console.error(err);
+    });
+}
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"ee2b9c4c7e374c8188b0638afa484f78","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c5866eca99aa81',t:'MTc4NDI1MjI4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "ragnalok-private-server",
+  "version": "0.1.0",
+  "description": "Private Server for Ragnalok Online (XHRPG) — fully independent from ragnalok.online",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "init-db": "node server/db/init.js"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

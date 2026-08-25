@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ragnalok Client (Anti-Idle Proxy)</title>
+<link rel="stylesheet" href="/css/xhrpg_style.css">
+<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<script src="/js/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="login-overlay" style="display:none"></div>
+
+<div id="loading-screen">
+  <div class="loading-box">
+    <div class="loading-title">⚔ Ragnalok-Origin</div>
+    <div class="loading-sub" id="loading-msg">Đang khởi tạo kết nối...</div>
+  </div>
+</div>
+
+<div id="game-screen" style="display:none">
+
+  <!-- ══ TOP STATUS PANEL ══ -->
+  <div class="status-panel">
+    <div class="status-row1">
+      <span class="sp-name" id="hud-name">—</span>
+      <span class="sp-badge lv"   id="hud-lv">Lv.1</span>
+      <span class="sp-badge zone" id="hud-zone">Zone 0</span>
+      <span class="sp-badge gold" id="hud-gold">G 0</span>
+    </div>
+    <div class="status-row2">
+      <div class="sp-bar-wrap">
+        <div class="sp-bar-label" style="color:#4ade80">HP</div>
+        <div class="sp-bar hp-bar"><div class="sp-bar-fill hp-fill" id="hud-hp-fill"></div></div>
+        <div class="sp-bar-text" id="hud-hp">100/100</div>
+      </div>
+      <div class="sp-bar-wrap">
+        <div class="sp-bar-label" style="color:#818cf8">MP</div>
+        <div class="sp-bar" style="background:#1e1b4b"><div class="sp-bar-fill" id="hud-mp-fill" style="background:#818cf8"></div></div>
+        <div class="sp-bar-text" id="hud-mp">50/50</div>
+      </div>
+      <div class="sp-bar-wrap">
+        <div class="sp-bar-label" id="hud-armor-label" style="color:#fb923c">giáp</div>
+        <div class="sp-bar" style="background:#1c1917"><div class="sp-bar-fill" id="hud-armor-fill" style="background:#fb923c"></div></div>
+        <div class="sp-bar-text" id="hud-armor">100/100</div>
+      </div>
+      <div class="sp-bar-wrap">
+        <div class="sp-bar-label" style="color:#fbbf24">EXP</div>
+        <div class="sp-bar exp-bar"><div class="sp-bar-fill exp-fill" id="hud-exp-fill"></div></div>
+        <div class="sp-bar-text" id="hud-exp">0% (เหลือ 100)</div>
+      </div>
+    </div>
+    <div class="status-row3">
+      <span class="sp-ammo" id="hud-pistol">🔫 --/--</span>
+      <span class="sp-ammo" id="hud-sniper">🎯 --/--</span>
+      <span class="sp-ammo" id="hud-robot-ammo">🤖 --/--</span>
+      <span class="sp-ammo sp-rail" id="hud-rail-charge">
+        ⚡<span id="hud-rail-bar-wrap"><span id="hud-rail-bar"></span></span><span id="hud-rail-pct">0%</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ══ MAP ══ -->
+  <div class="map-wrap">
+    <canvas id="gameCanvas"></canvas>
+    <canvas id="minimapCanvas"></canvas>
+    <!-- Nút bơm máu thủ công hiện mờ ở giữa màn hình -->
+    <button id="manual-heal-btn" onclick="triggerManualHeal(event)" 
+            style="position: absolute; left: 50%; top: 70%; transform: translate(-50%, -50%); 
+                   width: 60px; height: 60px; border-radius: 50%; 
+                   background: rgba(239, 68, 68, 0.35); border: 2px solid rgba(239, 68, 68, 0.6); 
+                   color: white; font-size: 26px; cursor: pointer; z-index: 9999; 
+                   display: flex; align-items: center; justify-content: center; 
+                   box-shadow: 0 4px 12px rgba(0,0,0,0.5); transition: all 0.2s ease-in-out;
+                   outline: none; user-select: none;"
+            onmouseover="this.style.background='rgba(239, 68, 68, 0.8)'; this.style.borderColor='rgba(239, 68, 68, 1)'; this.style.transform='translate(-50%, -50%) scale(1.1)';"
+            onmouseout="this.style.background='rgba(239, 68, 68, 0.35)'; this.style.borderColor='rgba(239, 68, 68, 0.6)'; this.style.transform='translate(-50%, -50%) scale(1)';"
+            title="Bơm Máu Khẩn Cấp (Manual Heal)">💊</button>
+    <button id="offline-btn" onclick="xhrpg.openOfflinePanel()" title="chọn zone farm khi offline (8h)"
+       style="position:absolute;top:93px;right:5px;width:84px;height:24px;background:#4338ca;color:#fff;border:1px solid #6366f1;border-radius:7px;font-size:9.5px;font-weight:700;cursor:pointer;line-height:1;white-space:nowrap;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,.3)">🌙 OFFLINE</button>
+    <div class="zoom-btns">
+      <button class="zoom-btn" id="lang-toggle" onclick="xhrpg.toggleLang()" title="Thay đổi ngôn ngữ" style="font-size:9.5px;background:#0ea5e9;color:#fff;border-color:#38bdf8">EN</button>
+      <button class="zoom-btn warp-btn" onclick="xhrpg.warpHome()" title="WARP về Phi Thuyền">🏠</button>
+      <button class="zoom-btn" onclick="xhrpg.zoom(1)">＋</button>
+      <button class="zoom-btn" onclick="xhrpg.zoom(-1)">－</button>
+      <button class="zoom-btn sm" onclick="xhrpg.zoom(0)">⊙</button>
+    </div>
+    <div style="position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:5px;z-index:10;align-items:flex-start">
+     <div style="display:flex;flex-direction:row;gap:5px">
+      <div id="online-badge" style="display:flex;align-items:center;gap:5px;height:26px;background:rgba(0,0,0,0.5);border-radius:13px;padding:0 9px;font-size:11px;color:#f1f5f9;white-space:nowrap">
+        <span style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;flex-shrink:0"></span>
+        <span id="online-count-label">Online 0</span>
+      </div>
+     </div>
+     <div style="display:flex;flex-direction:row;gap:5px">
+      <button onclick="xhrpg.togglePanel('guide')" title="Hướng dẫn chơi"
+         style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7c3aed;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">📖</button>
+      <button id="sfx-toggle-btn" onclick="xhrpg.toggleSfx()" title="Bật/Tắt âm thanh"
+         style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;background:#334155;border:none;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;font-size:14px;padding:0;line-height:1">🔇</button>
+     </div>
+    </div>
+    <div class="spot-select-wrap">
+      <div id="boss-btns" class="boss-btns"></div>
+      <div class="mlog-row">
+        <button id="mlog-toggle" class="mlog-toggle" onclick="xhrpg.toggleMiniLog()" title="Bật/Tắt log bay">📜 LOG</button>
+        <button id="open-log-btn" class="mlog-toggle" onclick="xhrpg.togglePanel('log')" title="Mở nhật ký sự kiện">📖 Nhật Ký</button>
+        <button id="open-map-btn" class="mlog-toggle" onclick="xhrpg.openMapSelect()" title="Thay đổi bản đồ">🗺️ Bản Đồ</button>
+        <button id="open-chat-btn" class="mlog-toggle" onclick="xhrpg.togglePanel('chat')" title="Trò chuyện" style="position:relative">💬 Chat<span id="chat-badge" style="display:none;position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;line-height:15px;padding:0 3px;border-radius:8px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;text-align:center;box-shadow:0 1px 3px #0004"></span></button>
+      </div>
+      <div class="spot-row">
+        <select id="spot-select" onchange="xhrpg.goToSpot(this.value)">
+          <option value="">🗺️ Chọn địa điểm</option>
+          <option value="0">🌿 Central Field Lv.1-3</option>
+          <option value="1">🌲 East Pine Forest Lv.4-6</option>
+        </select>
+        <button id="pvp-btn" onclick="xhrpg.openPvpPanel()" title="Thách đấu người chơi"
+           style="height:26px;background:#9f1239;color:#fff;border:1px solid #f43f5e;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;padding:0 7px;line-height:1;white-space:nowrap">⚔️ PVP</button>
+        <button id="arena-btn" onclick="xhrpg.openArenaPanel()" title="Thách đấu BOSS 1-1"
+           style="height:26px;background:#b45309;color:#fff;border:1px solid #f59e0b;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;padding:0 7px;line-height:1;white-space:nowrap">🏟️ BOSS</button>
+      </div>
+    </div>
+    <div class="map-auto-wrap">
+      <button class="bot-toggle-btn" id="bot-toggle-btn" onclick="xhrpg.toggleBot()">🤖 AUTO ON</button>
+      <button class="bot-toggle-btn" id="lock-btn" onclick="xhrpg.toggleLock()" style="background:#475569">🔓 LOCK ATK</button>
+      <button class="bot-toggle-btn" id="er-current" onclick="xhrpg.cycleExploreRadius()" style="background:#0e7490" title="Bán kính thăm dò">📍 300m</button>
+    </div>
+    <!-- D-PAD overlay -->
+    <div class="dpad-wrap dpad-overlay">
+      <div class="dpad-row">
+        <button class="dpad-btn" id="dpad-ul" onclick="xhrpg.setDir('ul')">↖</button>
+        <button class="dpad-btn" id="dpad-up" onclick="xhrpg.setDir('up')">▲</button>
+        <button class="dpad-btn" id="dpad-ur" onclick="xhrpg.setDir('ur')">↗</button>
+      </div>
+      <div class="dpad-row">
+        <button class="dpad-btn" id="dpad-left"  onclick="xhrpg.setDir('left')">◀</button>
+        <button class="dpad-btn center" onclick="xhrpg.setDir(null)">✕</button>
+        <button class="dpad-btn" id="dpad-right" onclick="xhrpg.setDir('right')">▶</button>
+      </div>
+      <div class="dpad-row">
+        <button class="dpad-btn" id="dpad-dl" onclick="xhrpg.setDir('dl')">↙</button>
+        <button class="dpad-btn" id="dpad-down" onclick="xhrpg.setDir('down')">▼</button>
+        <button class="dpad-btn" id="dpad-dr" onclick="xhrpg.setDir('dr')">↘</button>
+      </div>
+    </div>
+    <div id="mini-log"></div>
+  </div>
+
+  <!-- ══ MENU BAR ══ -->
+  <div class="menu-bar">
+    <div class="menu-bar-row">
+      <button class="menu-icon-btn" id="mbtn-gun" onclick="xhrpg.togglePanel('gun')">
+        <span class="menu-icon-emoji">⚔</span>
+        <span class="menu-icon-label">อาวุธ</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-item" onclick="xhrpg.togglePanel('item')">
+        <span class="menu-icon-emoji">🎒</span>
+        <span class="menu-icon-label">ไอเทม</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-stat" onclick="xhrpg.togglePanel('stat')">
+        <span class="menu-icon-emoji" style="position:relative">📊⚡<span id="stat-pts-badge" class="pts-badge">+0</span></span>
+        <span class="menu-icon-label">STAT ทักษะ</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-robot" onclick="xhrpg.togglePanel('robot')">
+        <span class="menu-icon-emoji">🐱</span>
+        <span class="menu-icon-label">ผู้ติดตาม</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-house" onclick="xhrpg.togglePanel('house')">
+        <span class="menu-icon-emoji">🛸</span>
+        <span class="menu-icon-label">ยานบิน</span>
+      </button>
+    </div>
+    <div class="menu-bar-row">
+      <button class="menu-icon-btn" id="mbtn-card" onclick="xhrpg.togglePanel('card')">
+        <span class="menu-icon-emoji">🎴</span>
+        <span class="menu-icon-label">การ์ด</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-market" onclick="xhrpg.togglePanel('market')">
+        <span class="menu-icon-emoji">🏪</span>
+        <span class="menu-icon-label">ตลาด</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-pet" onclick="xhrpg.togglePanel('pet')">
+        <span class="menu-icon-emoji">🐾</span>
+        <span class="menu-icon-label">สัตว์เลี้ยง</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-rank" onclick="xhrpg.togglePanel('rank')">
+        <span class="menu-icon-emoji">🏆</span>
+        <span class="menu-icon-label">อันดับ</span>
+      </button>
+      <button class="menu-icon-btn" id="mbtn-premium" onclick="xhrpg.togglePanel('premium')">
+        <span class="menu-icon-emoji">🅿️</span>
+        <span class="menu-icon-label">PREMIUM</span>
+      </button>
+    </div>
+    <button class="logout-btn" id="logout-btn" onclick="location.href='/'">⬅ Trở về Dashboard</button>
+  </div>
+
+  <div class="panel-overlay" id="panel-overlay" onclick="xhrpg.closePanel()"></div>
+
+  <!-- POPUP: Pet -->
+  <div class="panel-popup" id="panel-pet">
+    <div class="popup-header">
+      <span>🐾 สัตว์เลี้ยง</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="pet-list"></div>
+  </div>
+
+  <!-- POPUP: Card -->
+  <div class="panel-popup" id="panel-card">
+    <div class="popup-header">
+      <span>🎴 สมุดสะสมการ์ด</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="card-list"></div>
+  </div>
+
+  <!-- POPUP: Stat -->
+  <div class="panel-popup" id="panel-stat">
+    <div class="popup-header">
+      <span>📊⚡ STAT ทักษะ <button class="stat-help-btn" onclick="xhrpg.toggleStatHelp()">?</button></span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="stat-help-box" style="display:none"></div>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+      <input id="rename-input" type="text" maxlength="16" placeholder="Tên nhân vật..."
+        style="flex:1;background:#f1f5f9;color:#111827;border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px;font-size:13px;outline:none"/>
+      <button onclick="xhrpg.changeDisplayName()"
+        style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Lưu</button>
+    </div>
+    <div id="stat-list"></div>
+  </div>
+
+  <!-- POPUP: Guide -->
+  <div class="panel-popup" id="panel-guide">
+    <div class="popup-header">
+      <span>📖 คู่มือการเล่น</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="guide-root"></div>
+  </div>
+
+  <!-- POPUP: Market -->
+  <div class="panel-popup" id="panel-market">
+    <div class="popup-header">
+      <span>🏪 ตลาด</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="market-root"></div>
+  </div>
+
+  <!-- POPUP: Weapons -->
+  <div class="panel-popup" id="panel-gun">
+    <div class="popup-header">
+      <span>⚔ อาวุธ & ยา</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="gun-list"></div>
+  </div>
+
+  <!-- POPUP: Inventory -->
+  <div class="panel-popup" id="panel-item">
+    <div class="popup-header">
+      <span>🎒 ไอเทม</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="item-list"></div>
+  </div>
+
+  <!-- POPUP: Robot -->
+  <div class="panel-popup" id="panel-robot">
+    <div class="popup-header">
+      <span>🦾 ไททัน & ผู้ติดตาม</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="robot-list"></div>
+  </div>
+
+  <!-- POPUP: House -->
+  <div class="panel-popup" id="panel-house">
+    <div class="popup-header">
+      <span>🛸 ยานบิน Orion & เหมืองแร่</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="house-list"></div>
+  </div>
+
+  <!-- POPUP: Arena -->
+  <div class="panel-popup" id="panel-arena">
+    <div class="popup-header">
+      <span>🏟️ ดันท้าสู้บอส 1-1</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="arena-root"></div>
+  </div>
+
+  <!-- POPUP: PVP -->
+  <div class="panel-popup" id="panel-pvp">
+    <div class="popup-header">
+      <span>⚔️ ประลองฝีมือ (PVP)</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="pvp-root"></div>
+  </div>
+
+  <!-- POPUP: Log -->
+  <div class="panel-popup" id="panel-log">
+    <div class="popup-header">
+      <span id="log-title">📖 Nhật Ký</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="log-tabs" style="display:flex;gap:4px;padding:0 0 6px"></div>
+    <div id="drop-log" style="max-height:300px;overflow-y:auto"></div>
+    <div id="event-log" style="display:none;max-height:300px;overflow-y:auto"></div>
+  </div>
+
+  <!-- POPUP: Chat -->
+  <div class="panel-popup" id="panel-chat">
+    <div class="popup-header">
+      <span id="chat-title">💬 Trò chuyện</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="chat-tabs" style="display:flex;gap:4px;padding:0 0 6px"></div>
+    <div id="chat-dmlist" style="display:none;max-height:300px;overflow-y:auto"></div>
+    <div id="chat-room">
+      <div id="chat-msgs" style="height:290px;overflow-y:auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px"></div>
+      <div id="chat-emoji" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:5px;margin-top:5px;max-height:104px;overflow-y:auto"></div>
+      <div style="display:flex;gap:4px;margin-top:5px;align-items:center">
+        <button onclick="xhrpg.chatEmojiToggle()" style="flex:none;width:32px;height:32px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font-size:16px;cursor:pointer" title="Emoji">😀</button>
+        <input id="chat-input" type="text" maxlength="200" autocomplete="off"
+               placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter'){event.preventDefault();xhrpg.chatSend();}"
+               style="flex:1;min-width:0;height:32px;padding:0 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-family:inherit">
+        <button id="chat-send-btn" onclick="xhrpg.chatSend()" class="no-click-guard" style="flex:none;height:32px;padding:0 12px;border:none;border-radius:8px;background:#16a34a;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Gửi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP: Rank -->
+  <div class="panel-popup" id="panel-rank">
+    <div class="popup-header">
+      <span>🏆 ทำเนียบจัดอันดับ</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="rank-tabs" class="rank-tabs">
+      <button class="rank-tab active" data-tab="lv"   onclick="xhrpg.rankTab('lv')"><span class="rt-ico">🏆</span><span class="rt-txt">ผู้เล่น</span></button>
+      <button class="rank-tab"        data-tab="mvp"  onclick="xhrpg.rankTab('mvp')"><span class="rt-ico">⭐</span><span class="rt-txt">MVP</span></button>
+      <button class="rank-tab"        data-tab="gold" onclick="xhrpg.rankTab('gold')"><span class="rt-ico">💰</span><span class="rt-txt">Gold</span></button>
+      <button class="rank-tab"        data-tab="colosseum" onclick="xhrpg.rankTab('colosseum')"><span class="rt-ico">🏛️</span><span class="rt-txt">ประลอง</span></button>
+      <button class="rank-tab"        data-tab="country" onclick="xhrpg.rankTab('country')"><span class="rt-ico">🌍</span><span class="rt-txt">ประเทศ</span></button>
+    </div>
+    <div id="rank-list"></div>
+  </div>
+
+  <!-- POPUP: Premium -->
+  <div class="panel-popup" id="panel-premium">
+    <div class="popup-header">
+      <span>🅿️ ร้านค้า Premium</span>
+      <button class="popup-close" onclick="xhrpg.closePanel()">✕</button>
+    </div>
+    <div id="premium-list"></div>
+  </div>
+
+</div><!-- #game-screen -->
+
+<script src="/js/xhrpg_canvas.js?v=2"></script>
+<script src="/js/xhrpg_lang_vi.js?v=2"></script>
+<script>
+const BASE_URL = "/";
+const CF_REGION = "VN";
+const _L = true;
+document.getElementById('loading-msg').textContent = 'Đang kết nối qua proxy chống ngắt kết nối...';
+
+function startGame(player, token, offlineReward) {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display    = 'flex';
+  xhrpg.init(player, BASE_URL, token);
+  if (offlineReward && offlineReward.kills > 0) {
+    setTimeout(() => xhrpg.showOfflineReward(offlineReward), 800);
+  }
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const uid = urlParams.get('line_uid');
+const token = urlParams.get('session_token');
+
+if (uid && token) {
+  $.post('/xhrpg_game.php', {
+    line_uid: uid,
+    session_token: token,
+    act: 1,
+    full: 1,
+    bot: 1,
+    lang: 'vi',
+    have_static: 0
+  })
+  .done(res => {
+    const data = typeof res === 'string' ? JSON.parse(res) : res;
+    if (data.ok) {
+      startGame(data.player, token, data.offline_reward);
+    } else {
+      document.getElementById('loading-msg').innerHTML = `
+        <div style="color:#ef4444; margin-bottom:15px;">Đăng nhập thất bại: ${data.error || 'Lỗi không xác định'}</div>
+        <button onclick="window.location.href = window.location.pathname" style="background:#2563eb; color:#fff; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">Đăng nhập lại</button>
+      `;
+    }
+  })
+  .fail(() => {
+    document.getElementById('loading-msg').innerHTML = `
+      <div style="color:#ef4444; margin-bottom:15px;">Không thể kết nối tới máy chủ Proxy</div>
+      <button onclick="window.location.href = window.location.pathname" style="background:#2563eb; color:#fff; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">Thử lại</button>
+    `;
+  });
+} else {
+  // Hiển thị form đăng nhập cục bộ
+  document.getElementById('loading-screen').innerHTML = `
+    <div class="loading-box" style="background:#1e293b; padding:20px; border-radius:10px; width:300px; text-align:center;">
+      <div class="loading-title" style="margin-bottom:15px; color:#38bdf8;">Ragnalok Private</div>
+      <input type="text" id="login-user" placeholder="Tên đăng nhập" style="width:90%; margin-bottom:10px; padding:8px; border-radius:5px; border:none;" />
+      <input type="password" id="login-pass" placeholder="Mật khẩu" style="width:90%; margin-bottom:15px; padding:8px; border-radius:5px; border:none;" />
+      <div>
+        <button onclick="doLogin()" style="background:#2563eb; color:#fff; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold; margin-right:5px;">Đăng nhập</button>
+        <button onclick="doRegister()" style="background:#10b981; color:#fff; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">Đăng ký</button>
+      </div>
+      <div id="login-error" style="color:#ef4444; margin-top:10px; font-size:13px;"></div>
+    </div>
+  `;
+
+  window.doLogin = function() {
+    let u = $('#login-user').val();
+    let p = $('#login-pass').val();
+    if(!u || !p) return $('#login-error').text("Vui lòng nhập đầy đủ");
+    $.post('/api/login', { username: u, password: p })
+      .done(res => {
+        if(res.ok) window.location.href = '?line_uid=' + res.line_uid + '&session_token=' + res.session_token;
+        else $('#login-error').text(res.error || "Lỗi đăng nhập");
+      }).fail(() => $('#login-error').text("Lỗi kết nối"));
+  };
+
+  window.doRegister = function() {
+    let u = $('#login-user').val();
+    let p = $('#login-pass').val();
+    if(!u || !p) return $('#login-error').text("Vui lòng nhập đầy đủ");
+    $.post('/api/register', { username: u, password: p })
+      .done(res => {
+        if(res.ok) window.location.href = '?line_uid=' + res.line_uid + '&session_token=' + res.session_token;
+        else $('#login-error').text(res.error || "Lỗi đăng ký");
+      }).fail(() => $('#login-error').text("Lỗi kết nối"));
+  };
+}
+
+// --- MANUAL HEAL BUTTON ---
+function triggerManualHeal(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentUid = urlParams.get('line_uid');
+  const currentToken = urlParams.get('session_token');
+
+  if (!currentUid || !currentToken) {
+    alert("Lỗi: Thiếu thông tin tài khoản!");
+    return;
+  }
+  
+  const btn = document.getElementById('manual-heal-btn');
+  if (btn) {
+    btn.style.transform = 'translate(-50%, -50%) scale(0.9)';
+    setTimeout(() => {
+      btn.style.transform = 'translate(-50%, -50%) scale(1)';
+    }, 100);
+  }
+
+  if (typeof xhrpg !== 'undefined' && typeof xhrpg.usePotionManual === 'function') {
+    xhrpg.usePotionManual();
+  } else {
+    fetch('/xhrpg_upgrade.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: new URLSearchParams({
+        line_uid: currentUid,
+        session_token: currentToken,
+        action: 'use_potion_manual'
+      })
+    })
+    .then(res => res.json())
+    .then(ud => {
+      if (ud && ud.ok && ud.player) {
+        console.log(`💊 [Thủ công] Bơm máu thành công! HP hiện tại: ${ud.player.hp}/${ud.player.hp_max}`);
+      } else {
+        console.warn(`💊 [Thủ công] Bơm máu thất bại: ${ (ud && ud.error) || 'Lỗi không xác định' }`);
+      }
+    })
+    .catch(err => {
+      console.error(`💊 [Thủ công] Lỗi kết nối khi bơm máu: ${err.message}`);
+    });
+  }
+}
+</script>
+</body>
+</html>
