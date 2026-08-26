@@ -45,7 +45,8 @@ function getDropMultiplier(player) {
   
   // LUK bonus (every 10 LUK = +1% drop rate)
   const luk = player.luk_eff || player.luk || 5;
-  const lukBonus = Math.floor(luk / 10) * 0.01;
+  // const lukBonus = Math.floor(luk / 10) * 0.01;
+  const lukBonus = Math.floor(luk * 10); 
   
   // Lucky Drop skill bonus (+2% per level)
   let skills = {};

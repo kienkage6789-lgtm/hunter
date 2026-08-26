@@ -19,127 +19,140 @@ const MAP_DEFS = {
   13: { name: '⭐ Cánh đồng trung tâm', req: 70, ragReq: 40 }
 };
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { line_uid, target_map, home_exit } = req.body;
   if (!line_uid) {
     return res.json({ ok: false, error: 'Missing line_uid' });
   }
 
-  const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
-  if (!pRow) {
-    return res.json({ ok: false, error: 'Player not found' });
-  }
+  const { acquireLock } = require('../utils/lock');
+  const release = await acquireLock(line_uid);
 
-  let playerObj;
   try {
-    playerObj = JSON.parse(pRow.raw_data);
-  } catch (e) {
-    playerObj = {};
-  }
-
-  // Khởi tạo các giá trị tọa độ nếu chưa có
-  if (playerObj.x === undefined) playerObj.x = 1125;
-  if (playerObj.y === undefined) playerObj.y = 1125;
-  if (playerObj.map === undefined) playerObj.map = pRow.map || 1;
-
-  // 1. Thoát khỏi nhà (Map 5)
-  if (home_exit == '1' || home_exit == 1) {
-    const hr = playerObj.home_return || { map: 1, x: 1125, y: 1125 };
-    playerObj.map = hr.map;
-    playerObj.x = hr.x;
-    playerObj.y = hr.y;
-    playerObj.explore_cx = hr.x;
-    playerObj.explore_cy = hr.y;
-    delete playerObj.home_return;
-
-    // Cập nhật DB
-    db.prepare('UPDATE players SET map = ?, x = ?, y = ?, raw_data = ? WHERE line_uid = ?').run(
-      playerObj.map, playerObj.x, playerObj.y, JSON.stringify(playerObj), line_uid
-    );
-
-    return res.json({
-      ok: true,
-      map: playerObj.map,
-      x: playerObj.x,
-      y: playerObj.y
-    });
-  }
-
-  // 2. Dịch chuyển tới Map cụ thể
-  if (target_map !== undefined) {
-    const mapId = parseInt(target_map);
-    const mapDef = MAP_DEFS[mapId];
-    if (!mapDef) {
-      return res.json({ ok: false, error: 'Bản đồ không tồn tại' });
+    const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
+    if (!pRow) {
+      return res.json({ ok: false, error: 'Player not found' });
     }
 
-    const playerLv = playerObj.lv || 1;
-
-    // Kiểm tra giới hạn Level tối thiểu
-    if (playerLv < mapDef.req) {
-      return res.json({ ok: false, error: 'level_locked', need: mapDef.req });
+    let playerObj;
+    try {
+      playerObj = JSON.parse(pRow.raw_data);
+    } catch (e) {
+      playerObj = {};
     }
 
-    // Kiểm tra giới hạn Level tối đa (cho map newbie)
-    if (mapDef.cap && playerLv > mapDef.cap) {
-      return res.json({ ok: false, error: 'level_too_high', cap: mapDef.cap });
-    }
+    // Khởi tạo các giá trị tọa độ nếu chưa có
+    if (playerObj.x === undefined) playerObj.x = 1125;
+    if (playerObj.y === undefined) playerObj.y = 1125;
+    if (playerObj.map === undefined) playerObj.map = pRow.map || 1;
 
-    // Kiểm tra yêu cầu Rag Level (cho map sao ⭐)
-    const playerRagLv = playerObj.rag_lv || 1;
-    if (mapDef.ragReq && playerRagLv < mapDef.ragReq) {
-      return res.json({ ok: false, error: 'level_locked', need: mapDef.ragReq });
-    }
+    // 1. Thoát khỏi nhà (Map 5)
+    if (home_exit == '1' || home_exit == 1) {
+      const hr = playerObj.home_return || { map: 1, x: 1125, y: 1125 };
+      playerObj.map = hr.map;
+      playerObj.x = hr.x;
+      playerObj.y = hr.y;
+      playerObj.explore_cx = hr.x;
+      playerObj.explore_cy = hr.y;
+      delete playerObj.home_return;
 
-    // Nếu vào nhà (Map 5)
-    if (mapId === 5) {
-      playerObj.home_return = {
+      // Cập nhật DB
+      db.prepare(`
+        UPDATE players SET 
+          x = ?, y = ?, exp = ?, gold = ?, lv = ?, raw_data = ?
+        WHERE line_uid = ?
+      `).run(playerObj.x, playerObj.y, playerObj.exp || pRow.exp, playerObj.gold || pRow.gold, playerObj.lv || pRow.lv, JSON.stringify(playerObj), line_uid);
+
+      return res.json({
+        ok: true,
         map: playerObj.map,
         x: playerObj.x,
         y: playerObj.y
-      };
-      playerObj.map = 5;
-      playerObj.x = 928; // Tọa độ nhà mặc định
-      playerObj.y = 780;
-      playerObj.explore_cx = 928;
-      playerObj.explore_cy = 780;
-    } else {
-      playerObj.map = mapId;
-      playerObj.x = 1125; // Tọa độ tâm bản đồ mới
-      playerObj.y = 1125;
-      playerObj.explore_cx = 1125;
-      playerObj.explore_cy = 1125;
+      });
     }
 
-    // Cập nhật DB
-    db.prepare('UPDATE players SET map = ?, x = ?, y = ?, raw_data = ? WHERE line_uid = ?').run(
-      playerObj.map, playerObj.x, playerObj.y, JSON.stringify(playerObj), line_uid
-    );
+    // 2. Dịch chuyển tới Map cụ thể
+    if (target_map !== undefined) {
+      const mapId = parseInt(target_map);
+      const mapDef = MAP_DEFS[mapId];
+      if (!mapDef) {
+        return res.json({ ok: false, error: 'Bản đồ không tồn tại' });
+      }
 
-    return res.json({
+      const playerLv = playerObj.lv || 1;
+
+      // Kiểm tra giới hạn Level tối thiểu
+      if (playerLv < mapDef.req) {
+        return res.json({ ok: false, error: 'level_locked', need: mapDef.req });
+      }
+
+      // Kiểm tra giới hạn Level tối đa (cho map newbie)
+      if (mapDef.cap && playerLv > mapDef.cap) {
+        return res.json({ ok: false, error: 'level_too_high', cap: mapDef.cap });
+      }
+
+      // Kiểm tra yêu cầu Rag Level (cho map sao ⭐)
+      const playerRagLv = playerObj.rag_lv || 1;
+      if (mapDef.ragReq && playerRagLv < mapDef.ragReq) {
+        return res.json({ ok: false, error: 'level_locked', need: mapDef.ragReq });
+      }
+
+      // Nếu vào nhà (Map 5)
+      if (mapId === 5) {
+        playerObj.home_return = {
+          map: playerObj.map,
+          x: playerObj.x,
+          y: playerObj.y
+        };
+        playerObj.map = 5;
+        playerObj.x = 928; // Tọa độ nhà mặc định
+        playerObj.y = 780;
+        playerObj.explore_cx = 928;
+        playerObj.explore_cy = 780;
+      } else {
+        playerObj.map = mapId;
+        playerObj.x = 1125; // Tọa độ tâm bản đồ mới
+        playerObj.y = 1125;
+        playerObj.explore_cx = 1125;
+        playerObj.explore_cy = 1125;
+      }
+
+      // Cập nhật DB
+      db.prepare(`
+        UPDATE players SET 
+          x = ?, y = ?, exp = ?, gold = ?, lv = ?, raw_data = ?
+        WHERE line_uid = ?
+      `).run(playerObj.x, playerObj.y, playerObj.exp || pRow.exp, playerObj.gold || pRow.gold, playerObj.lv || pRow.lv, JSON.stringify(playerObj), line_uid);
+
+      return res.json({
+        ok: true,
+        map: playerObj.map,
+        x: playerObj.x,
+        y: playerObj.y
+      });
+    }
+
+    // 3. Dịch chuyển về tâm bản đồ hiện tại (warpCenter)
+    playerObj.x = 1125;
+    playerObj.y = 1125;
+    playerObj.explore_cx = 1125;
+    playerObj.explore_cy = 1125;
+
+    db.prepare(`
+      UPDATE players SET 
+        x = ?, y = ?, exp = ?, gold = ?, lv = ?, raw_data = ?
+      WHERE line_uid = ?
+    `).run(playerObj.x, playerObj.y, playerObj.exp || pRow.exp, playerObj.gold || pRow.gold, playerObj.lv || pRow.lv, JSON.stringify(playerObj), line_uid);
+
+    res.json({
       ok: true,
       map: playerObj.map,
       x: playerObj.x,
       y: playerObj.y
     });
+  } finally {
+    release();
   }
-
-  // 3. Dịch chuyển về tâm bản đồ hiện tại (warpCenter)
-  playerObj.x = 1125;
-  playerObj.y = 1125;
-  playerObj.explore_cx = 1125;
-  playerObj.explore_cy = 1125;
-
-  db.prepare('UPDATE players SET x = ?, y = ?, raw_data = ? WHERE line_uid = ?').run(
-    playerObj.x, playerObj.y, JSON.stringify(playerObj), line_uid
-  );
-
-  res.json({
-    ok: true,
-    map: playerObj.map,
-    x: playerObj.x,
-    y: playerObj.y
-  });
 });
 
 module.exports = router;
