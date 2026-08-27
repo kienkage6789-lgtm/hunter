@@ -902,39 +902,42 @@ router.post('/', async (req, res) => {
 
   // --- HỆ THỐNG ĐẶT/CẬP NHẬT THÁP CANH (TURRETS) ---
   {
-  const lastDeploy = (playerObj.skill_cds && playerObj.skill_cds.deploy_turret) || 0;
   const currentTick = playerObj.tick || 0;
   const turretSkLv = skills.deploy_turret || 0;
   
-  if (playerObj.gun_use_turret === 1 && turretSkLv > 0) {
-    const cost = skills.twin_turret > 0 ? 40 : 20;
-    if (currentTick - lastDeploy >= 10 && (playerObj.mp || 0) >= cost) {
-      playerObj.mp = (playerObj.mp || 0) - cost;
+  if (playerObj.gun_use_turret === 1) {
+    // 1. Tải lại đạn/kiểm tra hết hạn của Cannon Turret (Ưu tiên MP trước)
+    const lastCannon = (playerObj.skill_cds && playerObj.skill_cds.turret_cannon) || 0;
+    if (skills.turret_cannon > 0 && currentTick - lastCannon >= 60 && (playerObj.mp || 0) >= 100) {
+      playerObj.mp = (playerObj.mp || 0) - 100;
       playerObj.skill_cds = playerObj.skill_cds || {};
-      playerObj.skill_cds.deploy_turret = currentTick;
-      
-      const turretLife = 15 + (skills.turret_rapid || 0);
-      const hasShock = skills.turret_shock > 0 ? 1 : 0;
-      playerObj.turrets = playerObj.turrets || [];
-      
-      if (skills.twin_turret > 0) {
-        playerObj.turrets.push({ x: playerObj.x - 15, y: playerObj.y, lv: turretSkLv, expires: currentTick + turretLife, sh: hasShock });
-        playerObj.turrets.push({ x: playerObj.x + 15, y: playerObj.y, lv: turretSkLv, expires: currentTick + turretLife, sh: hasShock });
-      } else {
-        playerObj.turrets.push({ x: playerObj.x, y: playerObj.y, lv: turretSkLv, expires: currentTick + turretLife, sh: hasShock });
-      }
-      events.push({ type: "explore", msg: `🗼 Đã triển khai Tháp canh!` });
+      playerObj.skill_cds.turret_cannon = currentTick;
+      playerObj.cannon_turret = { x: playerObj.x, y: playerObj.y, lv: skills.turret_cannon, expires: currentTick + 40 };
+      events.push({ type: "explore", msg: `💣 Đã đặt Pháo cối hạng nặng!` });
     }
-  }
 
-  // Tải lại đạn/kiểm tra hết hạn của Cannon Turret
-  const lastCannon = (playerObj.skill_cds && playerObj.skill_cds.turret_cannon) || 0;
-  if (skills.turret_cannon > 0 && currentTick - lastCannon >= 60 && (playerObj.mp || 0) >= 100) {
-    playerObj.mp = (playerObj.mp || 0) - 100;
-    playerObj.skill_cds = playerObj.skill_cds || {};
-    playerObj.skill_cds.turret_cannon = currentTick;
-    playerObj.cannon_turret = { x: playerObj.x, y: playerObj.y, lv: skills.turret_cannon, expires: currentTick + 40 };
-    events.push({ type: "explore", msg: `💣 Đã đặt Pháo cối hạng nặng!` });
+    // 2. Triển khai Tháp canh thường (nếu còn đủ MP)
+    const lastDeploy = (playerObj.skill_cds && playerObj.skill_cds.deploy_turret) || 0;
+    if (turretSkLv > 0) {
+      const cost = skills.twin_turret > 0 ? 40 : 20;
+      if (currentTick - lastDeploy >= 10 && (playerObj.mp || 0) >= cost) {
+        playerObj.mp = (playerObj.mp || 0) - cost;
+        playerObj.skill_cds = playerObj.skill_cds || {};
+        playerObj.skill_cds.deploy_turret = currentTick;
+        
+        const turretLife = 15 + (skills.turret_rapid || 0);
+        const hasShock = skills.turret_shock > 0 ? 1 : 0;
+        playerObj.turrets = playerObj.turrets || [];
+        
+        if (skills.twin_turret > 0) {
+          playerObj.turrets.push({ x: playerObj.x - 15, y: playerObj.y, lv: turretSkLv, expires: currentTick + turretLife, sh: hasShock });
+          playerObj.turrets.push({ x: playerObj.x + 15, y: playerObj.y, lv: turretSkLv, expires: currentTick + turretLife, sh: hasShock });
+        } else {
+          playerObj.turrets.push({ x: playerObj.x, y: playerObj.y, lv: turretSkLv, expires: currentTick + turretLife, sh: hasShock });
+        }
+        events.push({ type: "explore", msg: `🗼 Đã triển khai Tháp canh!` });
+      }
+    }
   }
 
   if (playerObj.cannon_turret && playerObj.cannon_turret.expires <= currentTick) {
@@ -1025,6 +1028,20 @@ router.post('/', async (req, res) => {
       // Explodes AoE around the target
       const targetX = closestMon.x;
       const targetY = closestMon.y;
+      
+      // Đẩy event hoạt ảnh bắn súng và nổ
+      events.push({
+        type: "beam",
+        path: [[tu.x, tu.y], [targetX, targetY]],
+        color: "#f97316"
+      });
+      events.push({
+        type: "explosion",
+        x: targetX,
+        y: targetY,
+        r: 50,
+        color: "#f97316"
+      });
       
       localMonsters.forEach(m => {
         if (m.hp > 0 && Math.hypot(m.x - targetX, m.y - targetY) <= 50) {
@@ -1248,6 +1265,14 @@ router.post('/', async (req, res) => {
         } else if (isTriple) {
           // Ba phi đao: Đánh 3 hit riêng biệt, chia đều dmg
           const partDmg = Math.max(1, Math.round(finalDmg / 3));
+          events.push({
+            type: "tri_knife",
+            mid: targetM.id,
+            x: playerObj.x,
+            y: playerObj.y,
+            hits: [partDmg, partDmg, partDmg],
+            crit: isCrit
+          });
           for (let i = 0; i < 3; i++) {
             const res = worldManager.damageMonster(mapId, targetM.id, partDmg);
             if (res) {
@@ -1257,7 +1282,6 @@ router.post('/', async (req, res) => {
                 msg: `${skIcon} Đánh trúng -${partDmg} HP (còn ${res.hp || 0})`,
                 mid: targetM.id,
                 icon: skIcon,
-                dmg: partDmg,
                 crit: isCrit
               });
               if (res.killed) {
@@ -1268,6 +1292,7 @@ router.post('/', async (req, res) => {
           }
         } else if (isChain) {
           // Chain: Xích lôi đánh target chính và 2 mục tiêu lân cận
+          const chainFx = [{ x: targetM.x, y: targetM.y }];
           const res = worldManager.damageMonster(mapId, targetM.id, finalDmg);
           if (res) {
             attackRes = res;
@@ -1289,6 +1314,7 @@ router.post('/', async (req, res) => {
               const chainDmg = Math.round(finalDmg * chainDmgMults[chainCount + 1]);
               const chainRes = worldManager.damageMonster(mapId, m.id, chainDmg);
               if (chainRes) {
+                chainFx.push({ x: m.x, y: m.y });
                 events.push({
                   type: "hit",
                   msg: `${skIcon} Sấm sét lan -${chainDmg} HP (còn ${chainRes.hp || 0})`,
@@ -1302,8 +1328,20 @@ router.post('/', async (req, res) => {
               chainCount++;
             }
           }
+          events.push({
+            type: "dv_chain",
+            sx: playerObj.x,
+            sy: playerObj.y,
+            fx: chainFx
+          });
         } else if (isAoE) {
           // AoE chém xoay: Tấn công target chính và tối đa 5 quái xung quanh
+          events.push({
+            type: "spin_aoe",
+            x: playerObj.x,
+            y: playerObj.y,
+            r: 150
+          });
           const res = worldManager.damageMonster(mapId, targetM.id, finalDmg);
           if (res) {
             attackRes = res;
@@ -1338,25 +1376,75 @@ router.post('/', async (req, res) => {
           }
         } else if (isExplosive) {
           // Explode: Gây sát thương AoE nổ xung quanh
+          const explosionHits = [];
           localMonsters.forEach(m => {
             if (m.hp > 0 && Math.hypot(m.x - targetM.x, m.y - targetM.y) <= 100) {
               const res = worldManager.damageMonster(mapId, m.id, finalDmg);
               if (res) {
                 if (m.id === targetM.id) attackRes = res;
+                explosionHits.push([m.id, finalDmg]);
                 events.push({
                   type: "hit",
                   msg: `${skIcon} Nổ trúng -${finalDmg} HP (còn ${res.hp || 0})`,
                   mid: m.id,
                   icon: skIcon,
-                  dmg: finalDmg,
                   crit: isCrit
                 });
                 if (res.killed) handleMonsterKill(m, skIcon, res);
               }
             }
           });
+          // Bắn mũi tên bay tới
+          events.push({
+            type: "arrow",
+            mid: targetM.id,
+            x: targetM.x,
+            y: targetM.y,
+            hits: [finalDmg],
+            exp: 1
+          });
+          // Tạo vụ nổ nổ chậm đồng bộ khi mũi tên chạm đích
+          events.push({
+            type: "explosion",
+            x: targetM.x,
+            y: targetM.y,
+            r: 100,
+            color: "#f97316",
+            sic: "🏹💥",
+            hits: explosionHits,
+            crit: isCrit
+          });
         } else {
           // Đánh đơn mục tiêu bình thường (hoặc Lock-on, Sword Cross, Sword X)
+          if (activeSkillTriggered === 'sword_cross') {
+            events.push({
+              type: 'sword_skill',
+              mid: targetM.id,
+              x: targetM.x,
+              y: targetM.y,
+              kind: 'cross'
+            });
+          } else if (activeSkillTriggered === 'sword_x') {
+            events.push({
+              type: 'sword_skill',
+              mid: targetM.id,
+              x: targetM.x,
+              y: targetM.y,
+              kind: 'x'
+            });
+          } else if (activeSkillTriggered === 'kill_shot') {
+            events.push({
+              type: 'beam',
+              path: [[playerObj.x, playerObj.y], [targetM.x, targetM.y]],
+              color: '#a855f7'
+            });
+          } else if (activeSkillTriggered === 'lock_on') {
+            events.push({
+              type: 'lockon',
+              mid: targetM.id
+            });
+          }
+
           const res = worldManager.damageMonster(mapId, targetM.id, finalDmg);
           if (res) {
             attackRes = res;
