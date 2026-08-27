@@ -97,7 +97,9 @@ class DropSystem {
 
     // --- 1. RỚT NGUYÊN LIỆU THƯỜNG ---
     const luk = player.luk || 5;
-    const resChance = Math.min(0.48, 0.20 + (luk - 5) * 0.01);
+    //const resChance = Math.min(0.48, 0.20 + (luk - 5) * 0.01); đây là chính thức
+    // test x10
+    const resChance = Math.min(0.48, 0.20 + (luk - 5) * 0.1);
     
     if (Math.random() < resChance) {
       const allowedRes = getResourcesForMap(mapId);

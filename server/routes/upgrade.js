@@ -989,8 +989,11 @@ router.post('/', async (req, res) => {
 
   // 26. Tự động đốt gỗ tạo năng lượng (toggle_burn_wood)
   else if (action === 'toggle_burn_wood') {
-    playerObj.burn_wood = (playerObj.burn_wood === undefined || playerObj.burn_wood === 1) ? 0 : 1;
-    msg = `Đã ${playerObj.burn_wood === 1 ? 'bật' : 'tắt'} tự động đốt gỗ tạo năng lượng`;
+    const cur = (playerObj.house_burn_wood !== undefined ? playerObj.house_burn_wood : (playerObj.burn_wood !== undefined ? playerObj.burn_wood : 1));
+    const nextVal = cur === 1 ? 0 : 1;
+    playerObj.house_burn_wood = nextVal;
+    playerObj.burn_wood = nextVal;
+    msg = `Đã ${nextVal === 1 ? 'bật' : 'tắt'} tự động đốt gỗ tạo năng lượng`;
   }
 
   // 27. Thiết lập bitmask sản xuất theo tier (toggle_house_prod_tier)
@@ -1223,37 +1226,65 @@ router.post('/', async (req, res) => {
   // --- SYSTEM: KHAI THÁC MỎ (AIRSHIP & MINING SYSTEM) ---
   else if (action === 'mine_build') {
     const slot = parseInt(req.body.slot);
-    const { ore } = req.body;
+    const ore = req.body.ore || 'wood';
 
     let mineLv = playerObj.mine_lv ? (typeof playerObj.mine_lv === 'string' ? JSON.parse(playerObj.mine_lv) : playerObj.mine_lv) : [0,0,0,0,0,0];
     let mineOre = playerObj.mine_ore ? (typeof playerObj.mine_ore === 'string' ? JSON.parse(playerObj.mine_ore) : playerObj.mine_ore) : ["","","","","",""];
     let mineOn = playerObj.mine_on ? (typeof playerObj.mine_on === 'string' ? JSON.parse(playerObj.mine_on) : playerObj.mine_on) : [0,0,0,0,0,0];
 
-    if (slot < 0 || slot > 5) {
+    const MINE_UNLOCK = [20, 40, 60, 999, 999, 999];
+    const houseLv = playerObj.house_lv || 1;
+    const isPrem = (slot === 3);
+    const premMiner = (parseInt(playerObj.premium_miner_expires) || 0) > Math.floor(Date.now() / 1000);
+    const unlockLv = (isPrem && premMiner) ? 20 : (MINE_UNLOCK[slot] || 999);
+
+    if (isNaN(slot) || slot < 0 || slot > 5) {
       success = false;
       msg = 'Vị trí mỏ không hợp lệ!';
-    } else if (mineLv[slot] > 0) {
+    } else if ((mineLv[slot] | 0) > 0) {
       success = false;
       msg = 'Mỏ ở vị trí này đã được xây dựng!';
-    } else if (!['gold', 'wood', 'stone', 'iron', 'copper', 'herb'].includes(ore)) {
+    } else if (unlockLv >= 999 || houseLv < unlockLv) {
+      success = false;
+      if (isPrem && !premMiner) {
+        msg = 'Mỏ 4 yêu cầu phải kích hoạt Premium Miner!';
+      } else {
+        msg = unlockLv >= 999 ? 'Mỏ này chưa mở khóa (Sắp ra mắt)!' : `Yêu cầu Phi thuyền đạt cấp Lv.${unlockLv} (Hiện tại Lv.${houseLv})!`;
+      }
+    } else if (!['wood', 'stone', 'iron', 'copper', 'herb'].includes(ore)) {
       success = false;
       msg = 'Loại tài nguyên khai thác không hợp lệ!';
-    } else if ((playerObj.gold || 0) < 1000 || (playerObj.wood || 0) < 100 || (playerObj.stone || 0) < 100) {
-      success = false;
-      msg = 'Không đủ tài nguyên xây dựng mỏ! Cần 1000 Gold, 100 Gỗ, 100 Đá.';
     } else {
-      playerObj.gold = (playerObj.gold || 0) - 1000;
-      playerObj.wood = (playerObj.wood || 0) - 100;
-      playerObj.stone = (playerObj.stone || 0) - 100;
-      
-      mineLv[slot] = 1;
-      mineOre[slot] = ore;
-      mineOn[slot] = 1;
+      const targetLv = 1;
+      const m = upgCostMult(targetLv);
+      const r = Math.ceil(tierRes(targetLv) * m);
+      const costGold = Math.ceil(tierGold(targetLv) * m);
 
-      playerObj.mine_lv = JSON.stringify(mineLv);
-      playerObj.mine_ore = JSON.stringify(mineOre);
-      playerObj.mine_on = JSON.stringify(mineOn);
-      msg = `Xây dựng mỏ khai thác ${ore.toUpperCase()} thành công!`;
+      const goldHave = playerObj.gold || 0;
+      const woodHave = playerObj.wood || 0;
+      const stoneHave = playerObj.stone || 0;
+      const ironHave = playerObj.iron || 0;
+      const copperHave = playerObj.copper || 0;
+
+      if (goldHave < costGold || woodHave < r || stoneHave < r || ironHave < r || copperHave < r) {
+        success = false;
+        msg = `Không đủ tài nguyên xây dựng mỏ! Cần 💰${costGold.toLocaleString()} 🪵${r} 🪨${r} ⚙️${r} 🟫${r}`;
+      } else {
+        playerObj.gold = goldHave - costGold;
+        playerObj.wood = woodHave - r;
+        playerObj.stone = stoneHave - r;
+        playerObj.iron = ironHave - r;
+        playerObj.copper = copperHave - r;
+
+        mineLv[slot] = 1;
+        mineOre[slot] = ore;
+        mineOn[slot] = 1;
+
+        playerObj.mine_lv = JSON.stringify(mineLv);
+        playerObj.mine_ore = JSON.stringify(mineOre);
+        playerObj.mine_on = JSON.stringify(mineOn);
+        msg = `Xây dựng mỏ khai thác ${ore.toUpperCase()} thành công!`;
+      }
     }
   }
 
@@ -1262,33 +1293,44 @@ router.post('/', async (req, res) => {
     let mineLv = playerObj.mine_lv ? (typeof playerObj.mine_lv === 'string' ? JSON.parse(playerObj.mine_lv) : playerObj.mine_lv) : [0,0,0,0,0,0];
     let mineOre = playerObj.mine_ore ? (typeof playerObj.mine_ore === 'string' ? JSON.parse(playerObj.mine_ore) : playerObj.mine_ore) : ["","","","","",""];
 
-    if (slot < 0 || slot > 5 || mineLv[slot] === 0) {
+    if (isNaN(slot) || slot < 0 || slot > 5 || (mineLv[slot] | 0) < 1) {
       success = false;
       msg = 'Vị trí mỏ chưa xây dựng hoặc không hợp lệ!';
     } else {
-      const targetLv = mineLv[slot] + 1;
-      const maxLv = (playerObj.house_lv || 1) * 10;
-      if (mineLv[slot] >= 100) {
+      const currentLv = mineLv[slot] | 0;
+      const targetLv = currentLv + 1;
+      const houseLv = playerObj.house_lv || 1;
+
+      if (currentLv >= 100) {
         success = false;
         msg = 'Mỏ đã đạt cấp tối đa Lv.100!';
-      } else if (mineLv[slot] >= maxLv) {
+      } else if (currentLv >= houseLv) {
         success = false;
-        msg = `Cấp mỏ không thể vượt quá house_lv * 10 (Lv.${maxLv})!`;
+        msg = `Cấp mỏ không thể vượt quá cấp Phi thuyền hiện tại (Lv.${houseLv})! Vui lòng nâng cấp Phi thuyền trước.`;
       } else {
         const m = upgCostMult(targetLv);
         const r = Math.ceil(tierRes(targetLv) * m);
         const costGold = Math.ceil(tierGold(targetLv) * m);
 
-        if ((playerObj.gold || 0) < costGold || (playerObj.wood || 0) < r || (playerObj.stone || 0) < r) {
+        const goldHave = playerObj.gold || 0;
+        const woodHave = playerObj.wood || 0;
+        const stoneHave = playerObj.stone || 0;
+        const ironHave = playerObj.iron || 0;
+        const copperHave = playerObj.copper || 0;
+
+        if (goldHave < costGold || woodHave < r || stoneHave < r || ironHave < r || copperHave < r) {
           success = false;
-          msg = `Thiếu tài nguyên nâng cấp! Cần ${costGold} Gold, ${r} Gỗ, ${r} Đá`;
+          msg = `Thiếu tài nguyên nâng cấp! Cần 💰${costGold.toLocaleString()} 🪵${r} 🪨${r} ⚙️${r} 🟫${r}`;
         } else {
-          playerObj.gold = (playerObj.gold || 0) - costGold;
-          playerObj.wood = (playerObj.wood || 0) - r;
-          playerObj.stone = (playerObj.stone || 0) - r;
+          playerObj.gold = goldHave - costGold;
+          playerObj.wood = woodHave - r;
+          playerObj.stone = stoneHave - r;
+          playerObj.iron = ironHave - r;
+          playerObj.copper = copperHave - r;
+
           mineLv[slot] = targetLv;
           playerObj.mine_lv = JSON.stringify(mineLv);
-          msg = `Nâng cấp mỏ slot ${slot} lên Lv.${targetLv} thành công!`;
+          msg = `Nâng cấp mỏ slot ${slot + 1} lên Lv.${targetLv} thành công!`;
         }
       }
     }
@@ -1300,16 +1342,16 @@ router.post('/', async (req, res) => {
     let mineLv = playerObj.mine_lv ? (typeof playerObj.mine_lv === 'string' ? JSON.parse(playerObj.mine_lv) : playerObj.mine_lv) : [0,0,0,0,0,0];
     let mineOre = playerObj.mine_ore ? (typeof playerObj.mine_ore === 'string' ? JSON.parse(playerObj.mine_ore) : playerObj.mine_ore) : ["","","","","",""];
 
-    if (slot < 0 || slot > 5 || mineLv[slot] === 0) {
+    if (isNaN(slot) || slot < 0 || slot > 5 || (mineLv[slot] | 0) < 1) {
       success = false;
       msg = 'Vị trí mỏ không hợp lệ hoặc chưa xây dựng!';
-    } else if (!['gold', 'wood', 'stone', 'iron', 'copper', 'herb'].includes(ore)) {
+    } else if (!['wood', 'stone', 'iron', 'copper', 'herb'].includes(ore)) {
       success = false;
       msg = 'Loại tài nguyên chọn khai thác không hợp lệ!';
     } else {
       mineOre[slot] = ore;
       playerObj.mine_ore = JSON.stringify(mineOre);
-      msg = `Thay đổi khai thác sang quặng ${ore.toUpperCase()} thành công!`;
+      msg = `Đã chuyển mỏ slot ${slot + 1} sang khai thác quặng ${ore.toUpperCase()}!`;
     }
   }
 
@@ -1318,13 +1360,13 @@ router.post('/', async (req, res) => {
     let mineLv = playerObj.mine_lv ? (typeof playerObj.mine_lv === 'string' ? JSON.parse(playerObj.mine_lv) : playerObj.mine_lv) : [0,0,0,0,0,0];
     let mineOn = playerObj.mine_on ? (typeof playerObj.mine_on === 'string' ? JSON.parse(playerObj.mine_on) : playerObj.mine_on) : [0,0,0,0,0,0];
 
-    if (slot < 0 || slot > 5 || mineLv[slot] === 0) {
+    if (isNaN(slot) || slot < 0 || slot > 5 || (mineLv[slot] | 0) < 1) {
       success = false;
       msg = 'Vị trí mỏ không hợp lệ hoặc chưa xây dựng!';
     } else {
-      mineOn[slot] = mineOn[slot] === 1 ? 0 : 1;
+      mineOn[slot] = (mineOn[slot] ?? 1) === 1 ? 0 : 1;
       playerObj.mine_on = JSON.stringify(mineOn);
-      msg = `Đã ${mineOn[slot] === 1 ? 'bật' : 'tắt'} mỏ khai thác slot ${slot}`;
+      msg = `Đã ${mineOn[slot] === 1 ? 'bật' : 'tạm dừng'} mỏ khai thác slot ${slot + 1}`;
     }
   }
 

@@ -435,15 +435,105 @@ router.post('/', async (req, res) => {
       getAmmoMaxCap(5, playerObj, 'robot')
     ];
 
-    playerObj.robot_energy = getRobotEnergyMax(playerObj);
-    playerObj.house_energy = getHouseEnergyMax(playerObj);
+    function processHouseProduction(player, nowTimestamp) {
+      const houseLv = player.house_lv || 0;
+      if (houseLv < 1) return;
+
+      const nowSec = Math.floor(nowTimestamp / 1000);
+      if (!player.house_last_prod) {
+        player.house_last_prod = nowSec;
+      }
+
+      // Khoảng thời gian đã trôi qua (giới hạn tối đa 3600s = 1 giờ cho online tick)
+      const elapsedSec = Math.max(0, Math.min(3600, nowSec - player.house_last_prod));
+      if (elapsedSec <= 0) return;
+
+      const houseEnergyMax = getHouseEnergyMax(player);
+      let currentEnergy = player.house_energy !== undefined ? Number(player.house_energy) : houseEnergyMax;
+
+      // 1. Phục hồi năng lượng phi thuyền (Energy Generation)
+      // Base passive: house_lv * 20 / phút
+      // Solar Cell: solar_cell_lv * 27 / phút
+      const solarLv = player.solar_cell_lv || 0;
+      const energyPerSec = (houseLv * 20 + solarLv * 27) / 60;
+      currentEnergy += energyPerSec * elapsedSec;
+
+      // 2. Tự động đốt gỗ tạo năng lượng (nếu bật house_burn_wood và năng lượng chưa đầy)
+      const burnOn = (player.house_burn_wood !== undefined ? player.house_burn_wood : (player.burn_wood !== undefined ? player.burn_wood : 1)) === 1;
+      if (burnOn && currentEnergy < houseEnergyMax) {
+        const woodPerBurn = Math.floor(houseLv / 5) + 1;
+        const energyPerBurn = (woodPerBurn * 20 + houseLv * 2) * 4;
+        const energyNeeded = houseEnergyMax - currentEnergy;
+        const maxBurnsTime = Math.max(1, Math.floor(elapsedSec / 60) + 1);
+        const burnsNeeded = Math.min(maxBurnsTime, Math.ceil(energyNeeded / energyPerBurn));
+        const woodHave = player.wood || 0;
+        
+        if (woodHave >= woodPerBurn && burnsNeeded > 0) {
+          const actualBurns = Math.min(burnsNeeded, Math.floor(woodHave / woodPerBurn));
+          if (actualBurns > 0) {
+            player.wood -= actualBurns * woodPerBurn;
+            currentEnergy += actualBurns * energyPerBurn;
+          }
+        }
+      }
+
+      currentEnergy = Math.min(houseEnergyMax, currentEnergy);
+
+      // 3. Khai thác quặng từ các mỏ (Mining Ore Production)
+      let mineLv = player.mine_lv ? (typeof player.mine_lv === 'string' ? JSON.parse(player.mine_lv) : player.mine_lv) : [0,0,0,0,0,0];
+      let mineOre = player.mine_ore ? (typeof player.mine_ore === 'string' ? JSON.parse(player.mine_ore) : player.mine_ore) : ["","","","","",""];
+      let mineOn = player.mine_on ? (typeof player.mine_on === 'string' ? JSON.parse(player.mine_on) : player.mine_on) : [0,0,0,0,0,0];
+
+      const premMiner = (parseInt(player.premium_miner_expires) || 0) > nowSec;
+
+      if (!player._mine_frac || !Array.isArray(player._mine_frac)) {
+        player._mine_frac = [0, 0, 0, 0, 0, 0];
+      }
+
+      for (let s = 0; s < 6; s++) {
+        const mLv = mineLv[s] | 0;
+        const mOn = (mineOn[s] ?? 1) === 1;
+        const isPrem = (s === 3);
+
+        if (s >= 4 || mLv < 1 || !mOn) continue;
+        if (isPrem && !premMiner) continue;
+
+        let ore = mineOre[s] || 'wood';
+        if (!['wood', 'stone', 'iron', 'copper', 'herb'].includes(ore)) ore = 'wood';
+
+        // Tốc độ khai thác: mLv * 8 quặng / phút
+        const rawYield = (mLv * 8 / 60) * elapsedSec + (player._mine_frac[s] || 0);
+        const targetUnits = Math.floor(rawYield);
+        player._mine_frac[s] = rawYield - targetUnits;
+
+        if (targetUnits > 0) {
+          // Tiêu hao: 1 Gold + 1 House Energy cho mỗi 1 quặng
+          const goldHave = player.gold || 0;
+          const energyAvailable = Math.floor(currentEnergy);
+          const producible = Math.min(targetUnits, goldHave, energyAvailable);
+
+          if (producible > 0) {
+            player.gold -= producible;
+            currentEnergy -= producible;
+            player[ore] = (player[ore] || 0) + producible;
+          }
+        }
+      }
+
+      player.house_energy = Math.max(0, Math.floor(currentEnergy));
+      player.house_last_prod = nowSec;
+    }
+
+    if (playerObj.house_energy === undefined) {
+      playerObj.house_energy = getHouseEnergyMax(playerObj);
+    }
 
   const mapId = playerObj.map || pRow.map || 1;
 
   // --- ANTI-CHEAT: RATE LIMIT CHECK (COOLDOWN 900MS) ---
   const now = Date.now();
   if (playerObj.last_tick_at && (now - playerObj.last_tick_at) < 800) {
-    const bossesList = [];
+    const bossesList = worldManager.getBossesForMap(mapId);
     const otherPlayers = worldManager.getOthersOnMap(mapId, line_uid);
     const finalMonsters = worldManager.getMonstersInRadius(mapId, playerObj.x, playerObj.y, 300);
 
@@ -500,6 +590,7 @@ router.post('/', async (req, res) => {
     return res.json(responseData);
   }
   playerObj.last_tick_at = now;
+  processHouseProduction(playerObj, now);
 
   // Lấy tọa độ mục tiêu (explore_cx/cy)
   let targetCx = parseFloat(explore_cx) || 1125;
@@ -549,7 +640,6 @@ router.post('/', async (req, res) => {
   const toughBodyLv = skills.tough_body || 0;
   if (toughBodyLv > 0) {
     calculatedHpMax += toughBodyLv * 30;
-    calculatedHpMax = Math.floor(calculatedHpMax * (1 + toughBodyLv * 0.01));
   }
   playerObj.hp_max = calculatedHpMax;
 
@@ -634,7 +724,7 @@ router.post('/', async (req, res) => {
   const armorUpMul = 1 + 0.01 * armorUpLv + arpOption / 10000;
   
   const armorMax = Math.floor((100 + Math.floor((vit - 5) / 5) + Math.floor((str - 5) / 2) + armLv * 10 + aModMax + armorUpLv * 5 + priestAmB) * ragArmorMult * armorUpMul);
-  const armorRegen = 5 + aModRegen + armorUpLv + armLv;
+  const armorRegen = 5 + Math.floor(vit / 5) + aModRegen + armorUpLv + armLv;
 
   playerObj.armor = Math.min(armorMax, (playerObj.armor !== undefined ? playerObj.armor : armorMax) + armorRegen);
 
@@ -1169,12 +1259,21 @@ router.post('/', async (req, res) => {
       } else if (activeSkillTriggered === 'pull_monster') {
         isPull = true;
         let pullCount = 0;
+        const pullRadius = 3 * (75 + skLv * 5);
         localMonsters.forEach(m => {
-          if (m.hp > 0 && !m.is_mvp && pullCount < 6) {
+          if (m.hp > 0 && pullCount < 6) {
             const distToPl = Math.hypot(m.x - playerObj.x, m.y - playerObj.y);
-            if (distToPl > 30) {
-              m.x = playerObj.x + Math.round(Math.random() * 30 - 15);
-              m.y = playerObj.y + Math.round(Math.random() * 30 - 15);
+            if (distToPl <= pullRadius && distToPl > 30) {
+              const oldX = m.x, oldY = m.y;
+              m.x = Math.round((m.x + playerObj.x) / 2);
+              m.y = Math.round((m.y + playerObj.y) / 2);
+              events.push({
+                type: 'beam',
+                color: '#22c55e',
+                thin: true,
+                mid: m.id,
+                path: [[playerObj.x, playerObj.y], [oldX, oldY]]
+              });
               pullCount++;
             }
           }
@@ -1189,16 +1288,29 @@ router.post('/', async (req, res) => {
       if (isMeleeCharge) {
         // Húc/Nổ xung quanh, gây choáng
         let hitCount = 0;
-        const baseDmgResult = combatEngine.calculateDamage(playerObj, targetM, activeWeapon, { str: playerObj.str_eff, dex: playerObj.dex_eff, agi: playerObj.agi_eff }, (key) => getEq2FxSum(playerObj, key));
+        const baseDmgResult = combatEngine.calculateDamage(playerObj, targetM, activeWeapon, { str: playerObj.str_eff, dex: playerObj.dex_eff, agi: playerObj.agi_eff, luk: playerObj.luk_eff }, (key) => getEq2FxSum(playerObj, key));
         const baseDmg = typeof baseDmgResult === 'object' ? baseDmgResult.dmg : baseDmgResult;
         let isCrit = typeof baseDmgResult === 'object' ? baseDmgResult.crit : 0;
         
-        const chargeDmg = Math.round(baseDmg * (1.0 + 0.1 * (skLv - 1)) + (playerObj.vit || 5) * (5 + (skLv - 1)));
+        const vitEffCharge = playerObj.vit_eff ?? playerObj.vit ?? 5;
+        const chargeDmg = Math.round(baseDmg * (1.0 + 0.1 * (skLv - 1)) + vitEffCharge * (5 + (skLv - 1)));
+        const chargeRadius = Math.round(3 * (15 + 0.1 * (skLv - 1)));
         
+        events.push({
+          type: 'explosion',
+          color: '#ef4444',
+          ring: true,
+          x: playerObj.x,
+          y: playerObj.y,
+          r: chargeRadius
+        });
+
         localMonsters.forEach(m => {
-          if (m.hp > 0 && !m.is_mvp && hitCount < 6 && Math.hypot(m.x - playerObj.x, m.y - playerObj.y) <= 80) {
-            m.stunned = 1;
-            m.stun_until = Date.now() + skLv * 1000; // 0.1s per level
+          if (m.hp > 0 && hitCount < 6 && Math.hypot(m.x - playerObj.x, m.y - playerObj.y) <= chargeRadius) {
+            if (!m.is_mvp) {
+              m.stunned = 1;
+              m.stun_until = Date.now() + skLv * 100; // 0.1s per level
+            }
             const res = worldManager.damageMonster(mapId, m.id, chargeDmg);
             if (res) {
               events.push({
@@ -1340,7 +1452,7 @@ router.post('/', async (req, res) => {
             type: "spin_aoe",
             x: playerObj.x,
             y: playerObj.y,
-            r: 150
+            r: 45
           });
           const res = worldManager.damageMonster(mapId, targetM.id, finalDmg);
           if (res) {
@@ -1358,7 +1470,7 @@ router.post('/', async (req, res) => {
           
           let aoeCount = 0;
           for (const m of localMonsters) {
-            if (m.id !== targetM.id && m.hp > 0 && aoeCount < 5 && Math.hypot(m.x - playerObj.x, m.y - playerObj.y) <= 150) {
+            if (m.id !== targetM.id && m.hp > 0 && aoeCount < 5 && Math.hypot(m.x - playerObj.x, m.y - playerObj.y) <= 45) {
               const aoeRes = worldManager.damageMonster(mapId, m.id, finalDmg);
               if (aoeRes) {
                 events.push({
@@ -1377,8 +1489,10 @@ router.post('/', async (req, res) => {
         } else if (isExplosive) {
           // Explode: Gây sát thương AoE nổ xung quanh
           const explosionHits = [];
+          // Bán kính động tính bằng pixel: 3 * (15 + skLv - 1)
+          const radiusPx = 3 * (15 + (skLv || 1) - 1);
           localMonsters.forEach(m => {
-            if (m.hp > 0 && Math.hypot(m.x - targetM.x, m.y - targetM.y) <= 100) {
+            if (m.hp > 0 && Math.hypot(m.x - targetM.x, m.y - targetM.y) <= radiusPx) {
               const res = worldManager.damageMonster(mapId, m.id, finalDmg);
               if (res) {
                 if (m.id === targetM.id) attackRes = res;
@@ -1408,12 +1522,33 @@ router.post('/', async (req, res) => {
             type: "explosion",
             x: targetM.x,
             y: targetM.y,
-            r: 100,
+            r: radiusPx,
             color: "#f97316",
             sic: "🏹💥",
             hits: explosionHits,
             crit: isCrit
           });
+        } else if (activeWeapon === 'pistol' && !activeSkillTriggered) {
+          // Dao ngắn phóng thường: Phóng 3 dao riêng biệt, chia đều sát thương
+          const partDmg = Math.max(1, Math.round(finalDmg / 3));
+          for (let i = 0; i < 3; i++) {
+            const res = worldManager.damageMonster(mapId, targetM.id, partDmg);
+            if (res) {
+              attackRes = res;
+              events.push({
+                type: "hit",
+                msg: `${skIcon} Đánh trúng -${partDmg} HP (còn ${res.hp || 0})`,
+                mid: targetM.id,
+                icon: skIcon,
+                dmg: partDmg,
+                crit: isCrit
+              });
+              if (res.killed) {
+                handleMonsterKill(targetM, skIcon, res);
+                break;
+              }
+            }
+          }
         } else {
           // Đánh đơn mục tiêu bình thường (hoặc Lock-on, Sword Cross, Sword X)
           if (activeSkillTriggered === 'sword_cross') {
@@ -1467,8 +1602,10 @@ router.post('/', async (req, res) => {
           }
         }
       } else {
-        // Pull monster
-        attackRes = { killed: false, hp: targetM.hp };
+        // Pull monster / Melee charge fallback
+        if (!attackRes) {
+          attackRes = { killed: false, hp: targetM.hp };
+        }
       }
       
       // 3. Quái vật phản đòn (bỏ qua nếu quái đã chết hoặc bị choáng)
@@ -1962,8 +2099,8 @@ router.post('/', async (req, res) => {
   // Lấy danh sách quái vật mới trong tầm (sau khi đã xử lý chết/spawn) để gửi về client
   const finalMonsters = worldManager.getMonstersInRadius(mapId, cx, cy, radius);
 
-  // Phân loại quái thường và BOSS MVP
-  const bossesList = finalMonsters.filter(m => m.is_mvp);
+  // Lấy toàn bộ BOSS MVP còn sống trên toàn bản đồ (không lọc theo bán kính tầm nhìn)
+  const bossesList = worldManager.getBossesForMap(mapId);
 
   // Lấy danh sách người chơi khác cùng map
   const otherPlayers = worldManager.getOthersOnMap(mapId, line_uid);

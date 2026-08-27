@@ -198,6 +198,8 @@ class WorldManager {
       y: Math.round(y),
       name: name,
       is_mvp: true, // Mark as MVP boss
+      mvp: 1,
+      emoji: emoji,
       sprite_emoji: emoji,
       spot_cx: spot.cx,
       spot_cy: spot.cy,
@@ -213,12 +215,55 @@ class WorldManager {
       this.maps[mapId].monsters = this.maps[mapId].monsters.filter(m => !m.is_mvp);
     }
     
-    // Spawn rare monsters on Map 3
+    // Map 1 & Map 7 (Cánh đồng / Newbie Central - Lv.1-20)
+    this.spawnMvpMonster(1, "Vua cây bóng tối", 20, 27, "🥀");
+    this.spawnMvpMonster(1, "Vua bò tót", 15, 18, "🐂");
+    this.spawnMvpMonster(7, "Vua cây bóng tối", 20, 27, "🥀");
+    this.spawnMvpMonster(7, "Vua bò tót", 15, 18, "🐂");
+
+    // Map 2 & Map 8 (Sa mạc / Newbie Desert - Lv.21-38)
+    this.spawnMvpMonster(2, "Vua sói", 35, 42, "🐺");
+    this.spawnMvpMonster(2, "Vua Slime", 38, 45, "🫧");
+    this.spawnMvpMonster(8, "Vua sói", 35, 42, "🐺");
+    this.spawnMvpMonster(8, "Vua Slime", 38, 45, "🫧");
+
+    // Map 3 & Map 9 (Thung lũng Băng / Newbie Ice - Lv.40-54)
     this.spawnMvpMonster(3, "Chúa tể ma cà rồng", 42, 48, "🧛");
+    this.spawnMvpMonster(3, "Tướng quân xương", 47, 51, "💀");
     this.spawnMvpMonster(3, "Chúa tể ác quỷ", 52, 54, "😈");
-    
-    // Spawn Valkyrie on Map 10
+    this.spawnMvpMonster(9, "Chúa tể ma cà rồng", 42, 48, "🧛");
+    this.spawnMvpMonster(9, "Tướng quân xương", 47, 51, "💀");
+
+    // Map 6 (Biển sâu / Rạn san hô - Lv.55-69)
+    this.spawnMvpMonster(6, "Vua sứa", 58, 65, "🪼");
+    this.spawnMvpMonster(6, "Thủy quái vực sâu", 69, 74, "🐉");
+
+    // Map 10 (Lăng Mộ Rồng & Hỏa Ngục - Lv.70-85)
     this.spawnMvpMonster(10, "Nữ Thần Valkyrie", 80, 208, "👼");
+    this.spawnMvpMonster(10, "Kỵ sĩ hỏa ngục", 81, 86, "🔥");
+
+    // Map 13 (Tinh Vân Trung Tâm - Lv.86-99)
+    this.spawnMvpMonster(13, "Hỏa long cổ đại", 90, 75, "🐉");
+  }
+
+  getBossesForMap(mapId) {
+    const map = this.maps[mapId];
+    if (!map) return [];
+    return map.monsters.filter(m => m.is_mvp && m.hp > 0).map(m => ({
+      id: m.id,
+      mid: m.mid,
+      name: m.name,
+      emoji: m.emoji || m.sprite_emoji || '💀',
+      sprite_emoji: m.sprite_emoji || m.emoji || '💀',
+      lv: m.lv,
+      x: m.x,
+      y: m.y,
+      hp: m.hp,
+      hp_max: m.hp_max,
+      is_mvp: 1,
+      mvp: 1,
+      zone: 1
+    }));
   }
 
   updatePlayerPosition(line_uid, name, x, y, lv, mapId) {

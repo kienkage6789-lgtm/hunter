@@ -11,6 +11,7 @@ class CombatEngine {
     const str = effStats.str ?? player.str ?? 5;
     const dex = effStats.dex ?? player.dex ?? 5;
     const agi = effStats.agi ?? player.agi ?? 5;
+    const luk = effStats.luk ?? player.luk ?? 5;
     const lv = player.lv || 1;
 
     let baseAtk = 10;
@@ -87,18 +88,20 @@ class CombatEngine {
     // Áp dụng bội số sát thương (nhân đôi sát thương của kỹ năng / song kích)
     let multiplier = 1;
     if (activeWeapon === 'knife') {
-      // 1. Song kích đao pháp (hai giai đoạn): 1%/Cấp + 1% mỗi 30 AGI (tối đa 50%)
+      // Song kích đao pháp Auto (knife_atk): 1%/Cấp + 1% mỗi 30 AGI (tối đa 50%)
       const knifeAtkLv = skills.knife_atk || 0;
       const doubleAtkChance = Math.min(0.50, 0.01 * knifeAtkLv + agi / 3000);
       if (Math.random() < doubleAtkChance) {
         multiplier *= 2;
       }
-      
-      // 2. Kỹ năng Double Attack (nếu có tăng cấp, tính là sát thương nhân thêm)
-      const doubleAtkLv = skills.double_attack || 0;
-      if (doubleAtkLv > 0) {
-        multiplier *= (1.1 + doubleAtkLv * 0.1) * 2;
-      }
+    }
+
+    // Tính tỷ lệ chí mạng chuẩn theo công thức game gốc
+    let crit = 0;
+    const critChance = (Math.min(50, Math.floor((str + luk) / 10)) + (player.rag_crit || 0) * 0.1) / 100;
+    if (Math.random() < critChance) {
+      crit = 1;
+      multiplier *= 2;
     }
 
     // Giảm trừ phòng thủ của quái
@@ -109,7 +112,10 @@ class CombatEngine {
 
     // Biên độ sát thương ngẫu nhiên (+- 10%)
     const variance = 0.9 + Math.random() * 0.2;
-    return Math.round(dmg * variance);
+    return {
+      dmg: Math.round(dmg * variance),
+      crit: crit
+    };
   }
 }
 

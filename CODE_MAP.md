@@ -31,6 +31,8 @@ ragnalok-private-server/
 │   ├── maps_cache.json         ← Dữ liệu cache của 13 bản đồ game
 │   ├── spots_cache.json        ← Tọa độ và thông tin các zone quái vật trên map
 │   └── mon_masters_cache.json  ← Dữ liệu cấu trúc quái vật (Level, tên, emoji)
+├── tests/                      ← Bộ kiểm thử tự động (Unit Test Suite)
+│   └── test_4_skill_trees.js   ← Kiểm thử tự động 17 test case cho 4 nhánh kỹ năng
 └── docs/                       ← Tài liệu phân tích và đảo ngược mã nguồn (Reverse Engineering)
 ```
 
@@ -65,15 +67,15 @@ Dưới đây là bảng ánh xạ chi tiết giữa **hành động/hàm trên 
 
 ### 1. Engine cốt lõi máy chủ (Server Core)
 *   **[WorldManager.js](file:///e:/game/ragnalok-private-server/server/game/WorldManager.js):**
-    *   *Nhiệm vụ:* Quản lý trạng thái sống của quái vật trên 13 bản đồ.
-    *   *Logic:* Spawn mặc định 36 quái cho mỗi zone (spot) khi khởi động. Chạy một hàm `tick()` mỗi 1 giây để xử lý hàng đợi hồi sinh quái vật (`respawnQueue`) và di chuyển quái vật ngẫu nhiên.
+    *   *Nhiệm vụ:* Quản lý trạng thái sống của quái vật và Boss MVP trên 13 bản đồ.
+    *   *Logic:* Spawn mặc định 36 quái cho mỗi zone (spot) khi khởi động. Sinh Boss MVP loại hiếm mỗi giờ tròn (`spawnMvps()`) cho tất cả bản đồ và cung cấp phương thức `getBossesForMap(mapId)` lấy danh sách Boss toàn map. Chạy một hàm `tick()` mỗi 1 giây để xử lý hàng đợi hồi sinh quái vật (`respawnQueue`) và di chuyển quái vật ngẫu nhiên.
     *   *Đồng bộ:* Lưu trữ danh sách vị trí người chơi thời gian thực (`activePlayers`) phục vụ hiển thị các nhân vật khác cùng bản đồ.
 *   **[CombatEngine.js](file:///e:/game/ragnalok-private-server/server/game/CombatEngine.js):**
     *   *Nhiệm vụ:* Tính toán sát thương chi tiết mỗi đòn đánh của nhân vật.
     *   *Logic:* 
-        *   Sử dụng công thức nâng cấp dao găm gốc: `ATK = (STR - 5) * 3 + 10 + (knife_atk_lv - 1) * 8`.
-        *   Tính bonus sát thương theo điểm `DEX` và kỹ năng bắn chí mạng `crit_shot` (+15 dmg mỗi cấp).
-        *   Áp dụng kỹ năng song kích `double_attack` để nhân đôi sát thương (Proc chance: $5\% + 5\% \times \text{level}$).
+        *   Sử dụng công thức nâng cấp Đao Kiếm gốc: `ATK = (STR - 5) * 3 + 10 + (knife_lv - 1) * 8 + knife_atk_lv * 6` (kèm Auto Double Swing: $1\%/\text{cấp} + 1\%$ mỗi 30 AGI).
+        *   Sử dụng công thức Phi Đao gốc: `ATK = (DEX - 5) * 3 + 10 + (gun_pistol_lv - 1) * 8 + crit_shot_lv * 10` (+2% mỗi cấp).
+        *   Tính tỷ lệ chí mạng chuẩn theo công thức game gốc: $\text{critChance} = (\min(50, \lfloor\frac{STR + LUK}{10}\rfloor) + \text{rag\_crit} \times 0.1) / 100$, nhân đôi sát thương khi chí mạng và trả về định dạng `{ dmg, crit }`.
         *   Giảm trừ qua thủ của quái (`DEF = monster.lv * 1.5`), dao động ngẫu nhiên biên độ $\pm10\%$.
 *   **[DropSystem.js](file:///e:/game/ragnalok-private-server/server/game/DropSystem.js):**
     *   *Nhiệm vụ:* Sinh phần thưởng khi tiêu diệt quái vật.
