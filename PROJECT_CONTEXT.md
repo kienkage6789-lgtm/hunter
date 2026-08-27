@@ -69,11 +69,11 @@ Scope:   Xác minh hoạt động hệ thống game trên môi trường thực 
 
 ## RECENT COMPLETED (last 5)
 ```
+[TASK-020] Khắc phục hiện tượng quái vật trong zone tự chết & đồng bộ hiển thị Client  DONE  27/08/2026
+[TASK-019] Sửa lỗi tính năng Khóa vị trí tấn công (Lock Attack) không hoạt động  DONE  27/08/2026
 [TASK-018] Hoàn thiện tính năng Mỏ khoáng Phi thuyền (Airship Mining System)  DONE  27/08/2026
 [TASK-017] Sửa lỗi Boss MVP giờ tròn (:00) không xuất hiện & phát sóng Boss toàn map  DONE  27/08/2026
 [TASK-016] Khắc phục lỗi di chuyển giữa các Zone (Spots) & đóng băng lưu dữ liệu do SQL mismatch  DONE  26/08/2026
-[TASK-015] Khắc phục lỗi tranh chấp chuyển bản đồ (Warp Race Condition) với acquireLock  DONE  26/08/2026
-[TASK-014] Khắc phục hiển thị & tính chỉ số khảm thẻ bài vào Module (backfillModuleCards)  DONE  26/08/2026
 ```
 
 ## KNOWN ISSUES
@@ -83,6 +83,8 @@ Không có lỗi nghiêm trọng nào được ghi nhận.
 
 ## LOG
 ```
+[2026-08-27] Khắc phục triệt để lỗi quái vật tự chết trong zone: bỏ ép bật Thần hộ mệnh Anubis/Đồng hành từ Lv.1 trong routes/game.js, bổ sung getMonstersInView gửi đầy đủ quái bao phủ màn hình, phân biệt quái chết thật vs quái ra khỏi tầm nhìn (fade out) trên Client xhrpg_canvas.js, và áp dụng hồi sinh so le ngẫu nhiên 3-7s trong WorldManager.js.
+[2026-08-27] Khắc phục lỗi chức năng Lock Attack: trích xuất lock_pos trên server routes/game.js, đóng băng di chuyển khi isLocked = true, tự động ưu tiên target quái vật lọt vào tầm đánh (attackRange) và đồng bộ _syncLockBtn trên client.
 [2026-08-27] Hoàn thiện hệ thống Mỏ khoáng Phi thuyền: chuẩn hóa mine_build, mine_up, mine_select_ore, mine_toggle, toggle_burn_wood và tích hợp vòng lặp game tick sản xuất quặng thời gian thực.
 [2026-08-27] Cập nhật hệ thống Boss MVP giờ tròn: cấu hình quái hiếm MVP cho toàn bộ 13 map, phát sóng danh sách Boss toàn map qua getBossesForMap.
 [2026-08-26] Khắc phục lỗi SQL 7 tham số cho Mock DB giúp nhân vật di chuyển giữa các zone mượt mà và lưu dữ liệu chính xác.
@@ -95,9 +97,9 @@ Không có lỗi nghiêm trọng nào được ghi nhận.
 
 ## SESSION NOTES
 ```
-- Đã khắc phục triệt để lỗi không xuất hiện Boss MVP lúc giờ tròn (:00):
-  + WorldManager.js đã được cấu hình spawn các loại boss hiếm cho tất cả bản đồ (Map 1, 2, 3, 6, 7, 8, 9, 10, 13).
-  + game.js trả về danh sách Boss MVP toàn bản đồ thay vì lọc trong phạm vi 300px quanh người chơi, giúp thanh HUD hiện nút Boss ngay lập tức.
-- Đã chuẩn hóa cơ chế lưu dữ liệu SQL 7 tham số tương thích với Mock DB JSON (queries.js) giúp việc tự động di chuyển giữa các Zone hoạt động chính xác.
-- Đã tích hợp acquireLock chống xung đột ghi đè giữa Warp và Game loop tick.
+- Đã khắc phục triệt để lỗi hiện tượng quái vật trong zone tự chết:
+  + Bỏ force-enable Anubis 2748 dmg / Đồng hành từ Lv.1 trên Server, chỉ kích hoạt khi nhân vật thực sự mở khóa.
+  + Thêm getMonstersInView bao phủ cả vị trí người chơi và explore center tối thiểu 350px.
+  + Sửa logic Client xhrpg_canvas.js phân biệt rõ quái chết thật (có sát thương/HP <= 0) vs quái đi ra khỏi tầm nhìn (fade out trong 440ms thay vì ngã gục thành xác chết).
+  + WorldManager.js hồi sinh ngẫu nhiên 3-7s giúp quái xuất hiện so le tự nhiên.
 ```

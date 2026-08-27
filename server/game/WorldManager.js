@@ -322,17 +322,21 @@ class WorldManager {
         const nextX = m.x + Math.round(Math.random() * 48 - 24);
         const nextY = m.y + Math.round(Math.random() * 48 - 24);
         
+        const spotCx = m.spot_cx !== undefined ? m.spot_cx : m.x;
+        const spotCy = m.spot_cy !== undefined ? m.spot_cy : m.y;
+        const spotRadius = m.spot_radius !== undefined ? m.spot_radius : 300;
+        
         // Kiểm tra xem tọa độ mới có nằm trong spot không
-        const dx = nextX - m.spot_cx;
-        const dy = nextY - m.spot_cy;
+        const dx = nextX - spotCx;
+        const dy = nextY - spotCy;
         const dist = Math.sqrt(dx*dx + dy*dy);
         
-        if (dist <= m.spot_radius) {
+        if (dist <= spotRadius) {
           m.x = nextX;
           m.y = nextY;
         } else {
           // Quay đầu hướng về tâm spot
-          const angle = Math.atan2(m.spot_cy - m.y, m.spot_cx - m.x);
+          const angle = Math.atan2(spotCy - m.y, spotCx - m.x);
           m.x += Math.round(Math.cos(angle) * 17);
           m.y += Math.round(Math.sin(angle) * 17);
         }
@@ -364,6 +368,18 @@ class WorldManager {
     });
   }
 
+  getMonstersInView(mapId, px, py, cx, cy, radius = 350) {
+    const map = this.maps[mapId];
+    if (!map) return [];
+    
+    const rSq = radius * radius;
+    return map.monsters.filter(m => {
+      const dPlayerSq = (m.x - px) * (m.x - px) + (m.y - py) * (m.y - py);
+      const dCenterSq = (m.x - cx) * (m.x - cx) + (m.y - cy) * (m.y - cy);
+      return dPlayerSq <= rSq || dCenterSq <= rSq;
+    });
+  }
+
   damageMonster(mapId, monsterId, damage) {
     const map = this.maps[mapId];
     if (!map) return null;
@@ -375,12 +391,12 @@ class WorldManager {
     m.hp -= damage;
     
     if (m.hp <= 0) {
-      // Đưa vào hàng đợi hồi sinh sau đúng 5 giây tại đúng spot cũ (Không hồi sinh tự động đối với quái MVP)
+      // Đưa vào hàng đợi hồi sinh ngẫu nhiên 3-7 giây tại đúng spot cũ (Không hồi sinh tự động đối với quái MVP)
       if (m.spot && !m.is_mvp) {
         this.respawnQueue.push({
           mapId: mapId,
           spot: m.spot,
-          respawnTime: Date.now() + 5000 // 5 giây hồi sinh
+          respawnTime: Date.now() + 3000 + Math.floor(Math.random() * 4000) // 3-7 giây hồi sinh so le
         });
       }
       map.monsters.splice(idx, 1);

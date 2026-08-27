@@ -5283,6 +5283,8 @@ const xhrpg = (() => {
   function _syncLockBtn() {
     const b = document.getElementById('lock-btn');
     if (b) { b.textContent = lockPos ? '🔒 LOCK ATK' : '🔓 LOCK ATK'; b.style.background = lockPos ? '#dc2626' : '#475569'; }
+    const b2 = document.getElementById('cfg-lock-toggle');
+    if (b2) { b2.textContent = lockPos ? '🔒 LOCK ATK' : '🔓 LOCK ATK'; b2.style.background = lockPos ? '#dc2626' : '#475569'; }
   }
 
   function toggleSfx() {
@@ -11496,15 +11498,17 @@ const xhrpg = (() => {
             //       "อยู่ในสายตา" ทั้งที่ไกลจากตัวเรา ถ้าวัดจากผู้เล่นอย่างเดียวจะตัดสินว่า "หลุดระยะ"
             //       ทุกครั้ง = ยานยิงตายแล้วไม่มีฉากตายให้ดู → วัดจากยานด้วย เอาอันที่ใกล้กว่า
             const _pp = _prevP || player;
-            let _dr2 = MON_DEAD_R * MON_DEAD_R, _ox2 = _pp.x, _oy2 = _pp.y;
+            const _effDeadR = Math.max(50, Math.min(exploreRadius || 300, 300) - 50);
+            let _dr2 = _effDeadR * _effDeadR, _ox2 = _pp.x, _oy2 = _pp.y;
             if (player && (player.house_lv | 0) >= ORION_RAIL_LV && player.house_x != null) {
               const _sr = _orionReachPx() - 40; // เว้นขอบเท่ากับ MON_DEAD_R (กัน "เดินหลุดวง" กลายเป็นศพปลอม)
               if ((_gx - player.house_x) ** 2 + (_gy - player.house_y) ** 2 <= _sr * _sr) { _dr2 = _sr * _sr; _ox2 = player.house_x; _oy2 = player.house_y; }
             }
             const _far = ((_gx - _ox2) ** 2 + (_gy - _oy2) ** 2) > _dr2;
-            // 💀 ตายจริงแต่ไม่ใช่ฝีมือเรา (เพื่อน/ป้อมคนอื่นฆ่า) — เดิมมีแค่ศพเงียบๆ ไม่มีเครื่องหมายบอกเลย
-            if (!_far) deathMarkers.push({ x: _gx, y: _gy, born: performance.now(), icon: '', dim: 1 });
-            _pushMonGhost(m, _gx, _gy, !_far);
+            // 💀 Phân biệt quái chết thật (có sát thương/HP <= 0) vs quái chỉ đi ra khỏi tầm nhìn (fade out)
+            const _isRealDead = !_far && (m.hp <= 0 || _imp > 0);
+            if (_isRealDead) deathMarkers.push({ x: _gx, y: _gy, born: performance.now(), icon: '', dim: 1 });
+            _pushMonGhost(m, _gx, _gy, _isRealDead);
           });
         }
 

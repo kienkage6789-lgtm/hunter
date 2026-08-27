@@ -1,6 +1,6 @@
 const assert = require('assert');
 const path = require('path');
-const combatEngine = require(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'game', 'ragnalok-private-server', 'server', 'game', 'CombatEngine'));
+const combatEngine = require(path.join(__dirname, '..', 'server', 'game', 'CombatEngine'));
 
 // Màu sắc terminal để in kết quả test trực quan
 const colors = {

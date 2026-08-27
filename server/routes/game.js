@@ -260,7 +260,8 @@ function getEffectiveStats(player) {
 }
 
 router.post('/', async (req, res) => {
-  const { line_uid, session_token, explore_cx, explore_cy, explore_radius, target_monster_id, have_static, bot, manual_dir, traveling } = req.body;
+  const { line_uid, session_token, explore_cx, explore_cy, explore_radius, target_monster_id, have_static, bot, manual_dir, traveling, lock_pos } = req.body;
+  const isLocked = (lock_pos == '1' || lock_pos === 1 || lock_pos === true);
   
   if (!line_uid || !session_token) {
     return res.json({ ok: false, error: 'Auth failed' });
@@ -288,20 +289,16 @@ router.post('/', async (req, res) => {
       playerObj = { line_uid }; 
     }
 
-    // Đảm bảo đồng hành tự động kích hoạt hỗ trợ nhân vật từ lvl 1
-    const nowTs = Math.floor(Date.now() / 1000);
-    playerObj.priest_expires = Math.max(playerObj.priest_expires || 0, nowTs + 86400 * 365);
-    playerObj.knight_expires = Math.max(playerObj.knight_expires || 0, nowTs + 86400 * 365);
-    playerObj.archer_expires = Math.max(playerObj.archer_expires || 0, nowTs + 86400 * 365);
-    playerObj.priest_on = playerObj.priest_on !== undefined ? Number(playerObj.priest_on) : 1;
-    playerObj.knight_on = playerObj.knight_on !== undefined ? Number(playerObj.knight_on) : 1;
-    playerObj.archer_on = playerObj.archer_on !== undefined ? Number(playerObj.archer_on) : 1;
-    playerObj.priest_lv = playerObj.priest_lv || 1;
-    playerObj.knight_lv = playerObj.knight_lv || 1;
-    playerObj.archer_lv = playerObj.archer_lv || 1;
-    playerObj.robot_lv = Math.max(playerObj.robot_lv || 0, 1);
-    playerObj.dv_pet = Math.max(playerObj.dv_pet || 0, 1);
-    playerObj.dv_on = playerObj.dv_on !== undefined ? Number(playerObj.dv_on) : 1;
+    // Đồng hành chỉ kích hoạt khi nhân vật thực sự mở khóa hoặc đã bật trong dữ liệu người chơi
+    playerObj.priest_on = Number(playerObj.priest_on || 0);
+    playerObj.knight_on = Number(playerObj.knight_on || 0);
+    playerObj.archer_on = Number(playerObj.archer_on || 0);
+    playerObj.priest_lv = playerObj.priest_lv || 0;
+    playerObj.knight_lv = playerObj.knight_lv || 0;
+    playerObj.archer_lv = playerObj.archer_lv || 0;
+    playerObj.robot_lv = playerObj.robot_lv || 0;
+    playerObj.dv_pet = playerObj.dv_pet || 0;
+    playerObj.dv_on = Number(playerObj.dv_on || 0);
 
     let card_coll = 0;
     if (playerObj.cards) {
@@ -535,7 +532,10 @@ router.post('/', async (req, res) => {
   if (playerObj.last_tick_at && (now - playerObj.last_tick_at) < 800) {
     const bossesList = worldManager.getBossesForMap(mapId);
     const otherPlayers = worldManager.getOthersOnMap(mapId, line_uid);
-    const finalMonsters = worldManager.getMonstersInRadius(mapId, playerObj.x, playerObj.y, 300);
+    const eCx = parseFloat(explore_cx) || playerObj.x || 1125;
+    const eCy = parseFloat(explore_cy) || playerObj.y || 1125;
+    const eRadius = parseFloat(explore_radius) || 300;
+    const finalMonsters = worldManager.getMonstersInView(mapId, playerObj.x, playerObj.y, eCx, eCy, Math.max(eRadius, 350));
 
     const responseData = {
       ok: 1,
@@ -880,6 +880,35 @@ router.post('/', async (req, res) => {
   if (activeWeapon === 'pistol') combatIcon = '🔫';
   else if (activeWeapon === 'sniper') combatIcon = '🎯';
 
+  // Nếu đang khóa vị trí (Lock Attack):
+  // Nếu target hiện tại nằm ngoài tầm đánh (attackRange), nhưng có quái khác trong localMonsters đang nằm trong tầm đánh,
+  // ưu tiên tự động chuyển sang quái gần nhất trong tầm để xả sát thương liên tục.
+  if (isLocked) {
+    let inRangeTarget = null;
+    if (targetM) {
+      const d = Math.hypot(targetM.x - playerObj.x, targetM.y - playerObj.y);
+      if (d <= attackRange) {
+        inRangeTarget = targetM;
+      }
+    }
+    if (!inRangeTarget && localMonsters.length > 0) {
+      let closestInRange = null;
+      let minD = Infinity;
+      for (const m of localMonsters) {
+        if (m.hp <= 0) continue;
+        const d = Math.hypot(m.x - playerObj.x, m.y - playerObj.y);
+        if (d <= attackRange && d < minD) {
+          minD = d;
+          closestInRange = m;
+        }
+      }
+      if (closestInRange) {
+        targetM = closestInRange;
+        playerObj.target_monster_id = targetM.id;
+      }
+    }
+  }
+
   // Khởi tạo các thông số di chuyển ngẫu nhiên duy nhất cho mỗi nhân vật để tránh trùng nhau
   if (!playerObj.speed_modifier) {
     playerObj.speed_modifier = 0.85 + Math.random() * 0.30;
@@ -891,7 +920,9 @@ router.post('/', async (req, res) => {
   const baseMoveSpeed = 51.75; // Tăng 15% tốc độ di chuyển (45 * 1.15)
   const speed = baseMoveSpeed * playerObj.speed_modifier;
 
-  if (manual_dir) {
+  if (isLocked) {
+    // 0. LOCK ATK (Khóa vị trí tấn công) — Đứng yên tuyệt đối tại vị trí hiện tại, không di chuyển
+  } else if (manual_dir) {
     // 1. Di chuyển bằng tay (D-pad / WASD)
     if (manual_dir === 'up') playerObj.y -= speed;
     if (manual_dir === 'down') playerObj.y += speed;
@@ -2097,7 +2128,7 @@ router.post('/', async (req, res) => {
   `).run(playerObj.x, playerObj.y, pRow.exp, pRow.gold, pRow.lv, JSON.stringify(playerObj), line_uid);
 
   // Lấy danh sách quái vật mới trong tầm (sau khi đã xử lý chết/spawn) để gửi về client
-  const finalMonsters = worldManager.getMonstersInRadius(mapId, cx, cy, radius);
+  const finalMonsters = worldManager.getMonstersInView(mapId, playerObj.x, playerObj.y, cx, cy, Math.max(radius, 350));
 
   // Lấy toàn bộ BOSS MVP còn sống trên toàn bản đồ (không lọc theo bán kính tầm nhìn)
   const bossesList = worldManager.getBossesForMap(mapId);
