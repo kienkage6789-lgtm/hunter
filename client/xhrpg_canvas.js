@@ -106,6 +106,7 @@ const xhrpg = (() => {
   const LOOT_PER_KILL = 3;   // สูงสุดกี่ชิ้นต่อ "จุดมอนตาย" 1 จุด (เดิมไม่จำกัด → กองเป็นพะเนิน)
   const LOOT_MAX      = 12;  // สูงสุดบนจอพร้อมกัน (เดิม 60 — ทุกชิ้นมี shadowBlur ต่อเฟรม)
   let baseUrl = '/human/';
+  const _ASSET_VER = '?v=' + Date.now();
   // ไอคอนมีด (inline-SVG · Bold outline) — ใช้ทุกจุดที่โชว์ไอคอนมีด (HUD/log/tab/การ์ด/ตลาด/ยานบิน/help ฯลฯ)
   //   มีดสั้น = ใบสั้นด้ามใหญ่ · มีดยาว = ใบเรียวยาว ด้ามสั้น · นิยามไว้บนสุดให้ทุก const/ฟังก์ชันอ้างได้ · แก้ที่นี่ที่เดียว = เปลี่ยนทั้งเกม
   const _LOG_KNIFE_S = `<svg viewBox="0 0 32 32" width="15" height="15" style="vertical-align:-3px;filter:drop-shadow(0 0 0.7px rgba(255,255,255,0.55))"><g stroke="#1e293b" stroke-width="1.6" stroke-linejoin="round"><path d="M16 4 L19 18 L13 18 Z" fill="#dbe2ea"/><rect x="9" y="17" width="14" height="3" rx="1.4" fill="#f5b53c"/><rect x="13.2" y="20" width="5.6" height="8.4" rx="1.8" fill="#8a5636"/></g></svg>`;
@@ -517,10 +518,10 @@ const xhrpg = (() => {
       .forEach(([k, f]) => list.push([k, baseUrl + 'assets/hero/archer/' + f + '.png']));
     // นักขว้างมีด (thrower 4 ทิศ · เฟรมจัตุรัส 64px · 4 แถว: 0=หน้า 1=ซ้าย 2=ขวา 3=หลัง) + มีด 2 ขนาด — ชุดหลักแทนนักธนู (arc_* ด้านบนคงไว้เป็น fallback) · โหลดพลาดไม่เป็นไร (draw site fallback นักธนูเอง)
     ['th_idle','th_walk','th_run','th_attack','th_walk_atk','th_run_atk','th_hurt','th_death','fx_knife_s','fx_knife_b']
-      .forEach(n => list.push([n, baseUrl + 'assets/hero/thrower/' + n + '.png']));
+      .forEach(n => list.push([n, baseUrl + 'assets/hero/thrower/' + n + '.png' + _ASSET_VER]));
     // สกินฮีโร่ (Swordsman lvl2-9 · layout เดียวกับ th_* ทุกประการ) — 8 ชีท/สกิน · โหลดพลาด → fallback th_* default (ดู docs/hero-skin-spec.md)
     HERO_SKIN_DEFS.forEach(hk => TH_STATES
-      .forEach(st => list.push(['hs_' + hk.key + '_' + st, baseUrl + 'assets/hero/thrower/skins/' + hk.key + '_' + st + '.png'])));
+      .forEach(st => list.push(['hs_' + hk.key + '_' + st, baseUrl + 'assets/hero/thrower/skins/' + hk.key + '_' + st + '.png' + _ASSET_VER])));
     // สกินไททัน — 3 sheet (idle/walk/attack) + 1 prev ต่อสกิน · โหลดพลาดไม่เป็นไร (onerror นับถอยเหมือนกัน → render fallback ไททัน default)
     SKIN_DEFS.forEach(sk => ['idle','walk','attack','prev']
       .forEach(kind => list.push(['skin_' + sk.key + '_' + kind, baseUrl + 'assets/hero/skins/robot_' + sk.key + '_' + kind + '.png'])));
@@ -13943,7 +13944,7 @@ const xhrpg = (() => {
       if (sheet && sheet.naturalWidth) { cols = Math.max(1, Math.round(sheet.naturalWidth / 64)); rows = Math.max(1, Math.round(sheet.naturalHeight / 64)); }
       return `<div style="width:${box}px;height:${box}px;background-image:url('${url}');background-repeat:no-repeat;background-position:0 0;background-size:${cols * box}px ${rows * box}px;image-rendering:pixelated"></div>`;
     };
-    const _heroImgOf = hk => _heroImg(SUM['hs_' + hk.key + '_idle'], baseUrl + 'assets/hero/thrower/skins/' + hk.key + '_idle.png', 52);
+    const _heroImgOf = hk => _heroImg(SUM['hs_' + hk.key + '_idle'], baseUrl + 'assets/hero/thrower/skins/' + hk.key + '_idle.png' + _ASSET_VER, 52);
     const heroCards = (_skinGrp.hero ? HERO_SKIN_DEFS.filter(hk => _grpOf(hk, SKIN_GROUP_DEFS.hero) === _skinGrp.hero) : []).map(hk => {
       const owned    = _ownedHeroes.indexOf(hk.key) >= 0;
       const equipped = curHero === hk.key;
@@ -13963,7 +13964,7 @@ const xhrpg = (() => {
           ? _grpBar('hero', (SKIN_GROUP_DEFS.hero.find(g => g.key === _skinGrp.hero) || {}).name || '', '#4f46e5')
               + `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px">${heroCards}</div>`
           : _grpCards('hero', SKIN_GROUP_DEFS.hero, HERO_SKIN_DEFS, _ownedHeroes, curHero, _heroImgOf, '#4f46e5',
-              _grpFreeCard(T('นักรบฝึกหัด'), _heroImg(SUM['th_idle'], baseUrl + 'assets/hero/thrower/th_idle.png', 52),
+              _grpFreeCard(T('นักรบฝึกหัด'), _heroImg(SUM['th_idle'], baseUrl + 'assets/hero/thrower/th_idle.png' + _ASSET_VER, 52),
                            curHero === '', _heroUseBtn(''), '#4f46e5'))}
       </div>`;
 
@@ -17244,7 +17245,7 @@ const xhrpg = (() => {
       const sheet = SUM['hs_' + hk.key + '_idle'];
       let cols = 12, rows = 4;
       if (sheet && sheet.naturalWidth) { cols = Math.max(1, Math.round(sheet.naturalWidth / 64)); rows = Math.max(1, Math.round(sheet.naturalHeight / 64)); }
-      return `width:72px;height:72px;background-image:url('${baseUrl}assets/hero/thrower/skins/${hk.key}_idle.png');background-repeat:no-repeat;background-position:0 0;background-size:${cols * 72}px ${rows * 72}px;image-rendering:pixelated`;
+      return `width:72px;height:72px;background-image:url('${baseUrl}assets/hero/thrower/skins/${hk.key}_idle.png${_ASSET_VER}');background-repeat:no-repeat;background-position:0 0;background-size:${cols * 72}px ${rows * 72}px;image-rendering:pixelated`;
     })();
     const box = document.createElement('div');
     box.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center';

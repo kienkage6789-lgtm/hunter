@@ -13,12 +13,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Cung cấp các file tĩnh của client
-app.use(express.static(path.join(__dirname, '..', 'client')));
-app.use('/client', express.static(path.join(__dirname, '..', 'client')));
+// Cung cấp các file tĩnh của client (tắt cache để luôn nạp asset mới nhất)
+const staticOptions = {
+  etag: false,
+  maxAge: 0,
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+};
+app.use(express.static(path.join(__dirname, '..', 'client'), staticOptions));
+app.use('/client', express.static(path.join(__dirname, '..', 'client'), staticOptions));
 // (Một số file có thể tải từ /js, /css)
-app.use('/js', express.static(path.join(__dirname, '..', 'client')));
-app.use('/css', express.static(path.join(__dirname, '..', 'client')));
+app.use('/js', express.static(path.join(__dirname, '..', 'client'), staticOptions));
+app.use('/css', express.static(path.join(__dirname, '..', 'client'), staticOptions));
 
 // Routes
 const authRoutes = require('./routes/auth');
