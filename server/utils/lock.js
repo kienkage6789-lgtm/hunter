@@ -35,4 +35,22 @@ function acquireLock(line_uid) {
   return promise.then(() => release);
 }
 
-module.exports = { acquireLock };
+/**
+ * Khóa hai người chơi theo thứ tự cố định (lexicographical) để tránh Deadlock.
+ * @param {string} uidA
+ * @param {string} uidB
+ * @returns {Promise<Function>} Hàm release mở khóa cả 2
+ */
+async function acquireTwoLocks(uidA, uidB) {
+  if (!uidA) return await acquireLock(uidB);
+  if (!uidB || uidA === uidB) return await acquireLock(uidA);
+  const [first, second] = uidA < uidB ? [uidA, uidB] : [uidB, uidA];
+  const rel1 = await acquireLock(first);
+  const rel2 = await acquireLock(second);
+  return () => {
+    try { rel2(); } catch (e) {}
+    try { rel1(); } catch (e) {}
+  };
+}
+
+module.exports = { acquireLock, acquireTwoLocks };

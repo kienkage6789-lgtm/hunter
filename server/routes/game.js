@@ -5,6 +5,9 @@ const db = require('../db/queries');
 const worldManager = require('../game/WorldManager');
 const combatEngine = require('../game/CombatEngine');
 const dropSystem = require('../game/DropSystem');
+const pvpManager = require('../game/PvPManager');
+const raidManager = require('../game/RaidManager');
+const arenaManager = require('../game/ArenaManager');
 
 const router = express.Router();
 
@@ -2113,6 +2116,32 @@ router.post('/', async (req, res) => {
     events.push({ type: "dead", msg: "💀 Bạn đã hy sinh! Tự động hồi sinh tại Cánh đồng trung tâm." });
   }
 
+  // Tích hợp Đấu trường Arena Boss Combat Tick
+  if (playerObj.arena_run) {
+    const arenaCombat = arenaManager.tickCombat(playerObj, activeWeapon);
+    if (arenaCombat) {
+      if (arenaCombat.events && arenaCombat.events.length) {
+        events.push(...arenaCombat.events);
+      }
+      if (arenaCombat.drops && arenaCombat.drops.length) {
+        drops.push(...arenaCombat.drops);
+      }
+      if (arenaCombat.state === 'WIN') {
+        let heroExpNext = expNextHero(playerObj.lv || 1);
+        while (playerObj.exp >= heroExpNext && playerObj.lv < 99) {
+          playerObj.lv = (playerObj.lv || 1) + 1;
+          playerObj.stat_points = (playerObj.stat_points || 0) + 3;
+          events.push({
+            type: "levelup",
+            hero_lv: playerObj.lv,
+            msg: `🆙 Chúc mừng! Bạn đã lên cấp ${playerObj.lv}!`
+          });
+          heroExpNext = expNextHero(playerObj.lv);
+        }
+      }
+    }
+  }
+
   // Đồng bộ các trường hiển thị quan trọng
   playerObj.exp_next = expNextHero(playerObj.lv || 1) - playerObj.exp;
   pRow.exp = playerObj.exp;
@@ -2135,6 +2164,20 @@ router.post('/', async (req, res) => {
 
   // Lấy danh sách người chơi khác cùng map
   const otherPlayers = worldManager.getOthersOnMap(mapId, line_uid);
+
+  // Tích hợp PvP 1v1 Tick
+  const pvpResult = pvpManager.tickPlayer(line_uid, playerObj);
+  if (pvpResult && pvpResult.pvp) {
+    playerObj.pvp = pvpResult.pvp;
+  } else {
+    playerObj.pvp = null;
+  }
+  if (pvpResult && pvpResult.events && pvpResult.events.length) {
+    events.push(...pvpResult.events);
+  }
+
+  // Tích hợp Raid Quota
+  const raidQuota = raidManager.getPlayerQuota(playerObj);
 
   // Trả về JSON chuẩn của game
   const responseData = {
@@ -2167,7 +2210,13 @@ router.post('/', async (req, res) => {
     gturrets: [],
     ci: 532, 
     otbl: 10733,
-    araid: { on: 1, g: 0, c: 0, used: 1, max: 5 },
+    araid: {
+      on: playerObj.araid_on || 0,
+      g: playerObj.araid_g || 0,
+      c: playerObj.araid_c || 0,
+      used: raidQuota.qUsed,
+      max: raidQuota.qMax
+    },
     auc: { end: Math.floor(Date.now() / 1000) + 3600, bid: 0, now: Math.floor(Date.now() / 1000) }
   };
 
@@ -2189,7 +2238,13 @@ router.post('/', async (req, res) => {
     responseData.mon_masters = enrichedMonMasters;
   }
 
-    res.json(responseData);
+  // Tích hợp Raid Toast Notification
+  const raidPops = raidManager.popRaidNotifications(line_uid);
+  if (raidPops && raidPops.length > 0) {
+    responseData.raidpop = raidPops;
+  }
+
+  res.json(responseData);
   } finally {
     release();
   }

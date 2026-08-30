@@ -48,6 +48,14 @@ const premiumRoutes = require('./routes/premium');
 const adminRoutes = require('./routes/admin');
 const eq2Routes = require('./routes/eq2');
 const mdcRoutes = require('./routes/mdc');
+const logoutRoutes = require('./routes/logout');
+const phistoryRoutes = require('./routes/phistory');
+const homeRoutes = require('./routes/home');
+const chatUploadRoutes = require('./routes/chat_upload');
+const chatImgRoutes = require('./routes/chat_img');
+const pvpRoutes = require('./routes/pvp');
+const raidRoutes = require('./routes/raid');
+const { createUnimplementedRouter } = require('./routes/unimplemented');
 
 app.use('/api', authRoutes);
 // Game gốc dùng đường dẫn php này
@@ -69,8 +77,26 @@ app.use('/xhrpg_translate.php', translateRoutes);
 app.use('/xhrpg_premium.php', premiumRoutes);
 app.use('/xhrpg_eq2.php', eq2Routes);
 app.use('/xhrpg_mdc.php', mdcRoutes);
+app.use('/xhrpg_logout.php', logoutRoutes);
+app.use('/xhrpg_phistory.php', phistoryRoutes);
+app.use('/xhrpg_home.php', homeRoutes);
+app.use('/xhrpg_chat_upload.php', chatUploadRoutes);
+app.use('/xhrpg_chat_img.php', chatImgRoutes);
+app.use('/xhrpg_pvp.php', pvpRoutes);
+app.use('/xhrpg_raid.php', raidRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/xhrpg_google_auth.php', authRoutes); // fallback
+
+// Backlog P1 Endpoints (Phase B & C) - Contract HTTP 501 Not Implemented an toàn
+app.use('/xhrpg_gacha.php', createUnimplementedRouter('Gacha (Vòng quay)'));
+app.use('/xhrpg_orion_raid.php', createUnimplementedRouter('Orion Raid (Săn Boss Orion)'));
+app.use('/xhrpg_auction.php', createUnimplementedRouter('Auction (Đấu giá)'));
+app.use('/xhrpg_migrate.php', createUnimplementedRouter('Migrate Code (Di cư tài khoản)'));
+app.use('/xhrpg_voucher.php', createUnimplementedRouter('Voucher (Đổi thẻ quà tặng)'));
+app.use('/xhrpg_stripe_topup.php', createUnimplementedRouter('Stripe Topup (Cổng thanh toán Stripe)'));
+app.use('/xhrpg_topup_promo.php', createUnimplementedRouter('Topup Promo (Khuyến mãi nạp tiền)'));
+app.use('/xhrpg_coda_paycode.php', createUnimplementedRouter('CodaPay (Cổng thanh toán CodaPay)'));
+app.use('/xhrpg_xsolla_token.php', createUnimplementedRouter('XSolla PayStation (Cổng thanh toán XSolla)'));
 
 app.get('/', (req, res) => {
   res.redirect('/client/play.html');

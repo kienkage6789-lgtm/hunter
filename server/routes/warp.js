@@ -20,15 +20,23 @@ const MAP_DEFS = {
 };
 
 router.post('/', async (req, res) => {
-  const { line_uid, target_map, home_exit } = req.body;
-  if (!line_uid) {
-    return res.json({ ok: false, error: 'Missing line_uid' });
+  const { line_uid, session_token, target_map, home_exit } = req.body;
+  if (!line_uid || !session_token) {
+    return res.json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
   }
 
   const { acquireLock } = require('../utils/lock');
   const release = await acquireLock(line_uid);
 
+  db.load();
+  const snapshot = JSON.parse(JSON.stringify(db.data));
+
   try {
+    const userRow = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
+    if (!userRow) {
+      return res.json({ ok: false, error: 'Unauthorized: Invalid session_token' });
+    }
+
     const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
     if (!pRow) {
       return res.json({ ok: false, error: 'Player not found' });
@@ -54,6 +62,7 @@ router.post('/', async (req, res) => {
       playerObj.y = hr.y;
       playerObj.explore_cx = hr.x;
       playerObj.explore_cy = hr.y;
+      playerObj.target_monster_id = null;
       delete playerObj.home_return;
 
       // Cập nhật DB
@@ -109,12 +118,14 @@ router.post('/', async (req, res) => {
         playerObj.y = 780;
         playerObj.explore_cx = 928;
         playerObj.explore_cy = 780;
+        playerObj.target_monster_id = null;
       } else {
         playerObj.map = mapId;
         playerObj.x = 1125; // Tọa độ tâm bản đồ mới
         playerObj.y = 1125;
         playerObj.explore_cx = 1125;
         playerObj.explore_cy = 1125;
+        playerObj.target_monster_id = null;
       }
 
       // Cập nhật DB
@@ -137,6 +148,7 @@ router.post('/', async (req, res) => {
     playerObj.y = 1125;
     playerObj.explore_cx = 1125;
     playerObj.explore_cy = 1125;
+    playerObj.target_monster_id = null;
 
     db.prepare(`
       UPDATE players SET 
@@ -150,6 +162,11 @@ router.post('/', async (req, res) => {
       x: playerObj.x,
       y: playerObj.y
     });
+  } catch (err) {
+    db.data = snapshot;
+    try { db.save(); } catch (e) {}
+    console.error('Lỗi dịch chuyển:', err);
+    return res.json({ ok: false, error: 'Lỗi dịch chuyển: ' + (err.message || 'Lỗi hệ thống') });
   } finally {
     release();
   }

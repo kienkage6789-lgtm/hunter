@@ -18,18 +18,16 @@ function isPlayerOnline(uid) {
 
 router.post('/', (req, res) => {
   const { line_uid, session_token, action } = req.body;
-  if (!line_uid) {
-    return res.json({ ok: false, error: 'Missing line_uid' });
+  if (!line_uid || !session_token) {
+    return res.json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
   }
 
   db.load();
   
   // Verify user session
-  if (session_token) {
-    const user = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
-    if (!user) {
-      return res.json({ ok: false, error: 'Invalid session' });
-    }
+  const user = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
+  if (!user) {
+    return res.json({ ok: false, error: 'Unauthorized: Invalid session_token' });
   }
 
   // Load player raw_data

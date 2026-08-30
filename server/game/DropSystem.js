@@ -26,6 +26,11 @@ const MODULE_SLOTS = ['barrel', 'sight'];
 
 const EQ2_STATS = ['spd', 'brg', 'drp', 'rdf', 'ene', 'pam', 'def', 'atk'];
 
+function clampChance(val) {
+  if (typeof val !== 'number' || isNaN(val)) return 0.0;
+  return Math.max(0.0, Math.min(1.0, val));
+}
+
 function getDropMultiplier(player) {
   const now = Date.now() / 1000;
   
@@ -44,9 +49,8 @@ function getDropMultiplier(player) {
   const vipBonus = vipLv * 0.05;
   
   // LUK bonus (every 10 LUK = +1% drop rate)
-  const luk = player.luk_eff || player.luk || 5;
-  // const lukBonus = Math.floor(luk / 10) * 0.01;
-  const lukBonus = Math.floor(luk * 10); 
+  const luk = player.luk_eff ?? player.luk ?? 5;
+  const lukBonus = Math.floor(Math.max(0, luk) / 10) * 0.01;
   
   // Lucky Drop skill bonus (+2% per level)
   let skills = {};
@@ -76,6 +80,15 @@ function isMvp(monster) {
 }
 
 class DropSystem {
+  static getDropMultiplier(player) {
+    return getDropMultiplier(player);
+  }
+
+  static getResourceChance(player) {
+    const luk = player.luk_eff ?? player.luk ?? 5;
+    return Math.max(0.0, Math.min(0.48, 0.20 + (luk - 5) * 0.01));
+  }
+
   static generateDrops(player, monster, mapId) {
     const drops = [];
     const events = [];
@@ -83,12 +96,15 @@ class DropSystem {
     const isMonsterMvp = isMvp(monster);
     
     // Khởi tạo drop_log nếu chưa có
-    if (!player.drop_log) {
-      player.drop_log = [];
-    } else if (typeof player.drop_log === 'string') {
-      try {
-        player.drop_log = JSON.parse(player.drop_log);
-      } catch (e) {
+    if (!Array.isArray(player.drop_log)) {
+      if (typeof player.drop_log === 'string') {
+        try {
+          const parsed = JSON.parse(player.drop_log);
+          player.drop_log = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          player.drop_log = [];
+        }
+      } else {
         player.drop_log = [];
       }
     }
@@ -96,10 +112,7 @@ class DropSystem {
     const mult = getDropMultiplier(player);
 
     // --- 1. RỚT NGUYÊN LIỆU THƯỜNG ---
-    const luk = player.luk || 5;
-    //const resChance = Math.min(0.48, 0.20 + (luk - 5) * 0.01); đây là chính thức
-    // test x10
-    const resChance = Math.min(0.48, 0.20 + (luk - 5) * 0.1);
+    const resChance = DropSystem.getResourceChance(player);
     
     if (Math.random() < resChance) {
       const allowedRes = getResourcesForMap(mapId);
@@ -131,7 +144,7 @@ class DropSystem {
 
     // --- 2. RỚT KIM CƯƠNG XANH ---
     const blueBaseChance = 0.00035; // 0.035%
-    const blueChance = blueBaseChance * mult;
+    const blueChance = clampChance(blueBaseChance * mult);
     if (Math.random() < blueChance) {
       player.diamond_blue = (player.diamond_blue || 0) + 1;
       drops.push('💎');
@@ -141,7 +154,7 @@ class DropSystem {
     // --- 3. RỚT KIM CƯƠNG ĐỎ (Chỉ quái Lv >= 25) ---
     if (monster.lv >= 25) {
       const redBaseChance = isMonsterMvp ? 0.30 : 0.00014; // MVP: 30%, Thường: 0.014%
-      const redChance = redBaseChance * mult;
+      const redChance = clampChance(redBaseChance * mult);
       if (Math.random() < redChance) {
         player.diamond_red = (player.diamond_red || 0) + 1;
         drops.push('💎');
@@ -153,7 +166,7 @@ class DropSystem {
     const cardBase = isMonsterMvp 
       ? (0.10 - (monster.lv - 1) * (0.10 - 0.020) / 99) 
       : (0.080 - (monster.lv - 1) * (0.080 - 0.004) / 99);
-    const cardChance = (cardBase / 100) * mult;
+    const cardChance = clampChance((cardBase / 100) * mult);
     
     if (Math.random() < cardChance) {
       let cards = {};
@@ -185,7 +198,7 @@ class DropSystem {
     const eggBase = isMonsterMvp 
       ? (0.05 - (monster.lv - 1) * (0.05 - 0.010) / 99) 
       : (0.080 - (monster.lv - 1) * (0.080 - 0.002) / 99);
-    const eggChance = (eggBase / 100) * mult;
+    const eggChance = clampChance((eggBase / 100) * mult);
     
     if (Math.random() < eggChance) {
       let eggs = {};
@@ -243,7 +256,7 @@ class DropSystem {
       }
     }
     
-    const modChance = (modBaseChance / 100) * mult;
+    const modChance = clampChance((modBaseChance / 100) * mult);
     if (Math.random() < modChance) {
       const weapon = MODULE_WEAPONS[Math.floor(Math.random() * MODULE_WEAPONS.length)];
       const slot = MODULE_SLOTS[Math.floor(Math.random() * MODULE_SLOTS.length)];
@@ -288,7 +301,7 @@ class DropSystem {
     ];
     
     for (const conf of eq2ConfigList) {
-      const chance = (conf[1] / 100) * mult;
+      const chance = clampChance((conf[1] / 100) * mult);
       if (Math.random() < chance) {
         eq2Tier = conf[0];
         // Break để nhận tier cao nhất có thể trong lần roll này (hoặc có thể roll từng cái riêng biệt)
@@ -349,7 +362,7 @@ class DropSystem {
       // Hộp mô-đun
       let boxModBase = 6.75;
       if (monster.lv <= 20) boxModBase = 11.25;
-      const boxModChance = (boxModBase / 100) * mult;
+      const boxModChance = clampChance((boxModBase / 100) * mult);
       
       const boxTier = monster.lv <= 20 ? 1 : (monster.lv <= 40 ? 2 : (monster.lv <= 60 ? 3 : 4));
       
@@ -364,7 +377,7 @@ class DropSystem {
       let boxCardBase = 2;
       if (monster.lv <= 20) boxCardBase = 10;
       else if (monster.lv <= 40) boxCardBase = 5;
-      const boxCardChance = (boxCardBase / 100) * mult;
+      const boxCardChance = clampChance((boxCardBase / 100) * mult);
       
       if (Math.random() < boxCardChance) {
         const isCard = Math.random() < 0.5;

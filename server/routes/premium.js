@@ -144,15 +144,21 @@ function getPickPrice(statsRaw) {
 }
 
 router.post('/', async (req, res) => {
-  const { line_uid, action } = req.body;
-  if (!line_uid) {
-    return res.json({ ok: false, error: 'Missing line_uid' });
+  const { line_uid, session_token, action } = req.body;
+  if (!line_uid || !session_token) {
+    return res.json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
   }
 
   const release = await acquireLock(line_uid);
   db.load();
+  const snapshot = JSON.parse(JSON.stringify(db.data));
 
   try {
+    const userRow = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
+    if (!userRow) {
+      return res.json({ ok: false, error: 'Unauthorized: Invalid session_token' });
+    }
+
     const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
     if (!pRow) {
       return res.json({ ok: false, error: 'Player not found' });
@@ -444,8 +450,10 @@ router.post('/', async (req, res) => {
         return res.json({ ok: false, error: `Hành động ${action} chưa được hỗ trợ!` });
     }
   } catch (err) {
+    db.data = snapshot;
+    try { db.save(); } catch (e) {}
     console.error('Lỗi xử lý Premium Shop:', err);
-    return res.json({ ok: false, error: 'Lỗi hệ thống máy chủ!' });
+    return res.json({ ok: false, error: 'Lỗi hệ thống máy chủ: ' + (err.message || 'Lỗi không xác định') });
   } finally {
     release();
   }

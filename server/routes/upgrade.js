@@ -50,6 +50,39 @@ const WEAPON_NAMES = {
 
 const _MVP_CB_TYPES = ['str','agi','vit','dex','intel','luk','atk','armor','hp','mp','hp_regen','mp_regen'];
 
+const COUNTRY_CODES = ['VN', 'TH', 'PH', 'ID', 'MY', 'SG', 'JP', 'KR', 'TW', 'BR'];
+
+function getCountryListData(playerObj, allPlayers) {
+  const counts = {};
+  for (const c of COUNTRY_CODES) counts[c] = 0;
+  for (const p of (allPlayers || [])) {
+    let pObj = {};
+    try { pObj = JSON.parse(p.raw_data || '{}'); } catch(e) {}
+    const c = (pObj.country || p.country || 'VN').toUpperCase();
+    if (counts[c] !== undefined) counts[c]++;
+    else counts[c] = 1;
+  }
+
+  const list = Object.keys(counts).map(cc => ({ cc, n: counts[cc] }));
+  const now = (playerObj.country || 'VN').toUpperCase();
+  const home = (playerObj.cc_home || playerObj.country || 'VN').toUpperCase();
+  const moves = parseInt(playerObj.cc_moves) || 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const left = moves > 0 ? Math.max(0, (parseInt(playerObj.cc_at) || 0) + 7 * 86400 - nowSec) : 0;
+
+  return {
+    list,
+    now,
+    home,
+    moves,
+    left,
+    cost: { g: 1000000, p: 50 },
+    days: 7,
+    hfrom: 21,
+    hto: 23
+  };
+}
+
 function _mvpCardBonus(mid, lv) {
   lv = Math.max(1, parseInt(lv) || 1);
   const t = _MVP_CB_TYPES[Math.abs(parseInt(mid) || 0) % 12];
@@ -239,15 +272,23 @@ function backfillModuleCards(playerObj) {
 }
 
 router.post('/', async (req, res) => {
-  const { line_uid, action } = req.body;
-  if (!line_uid) {
-    return res.json({ ok: false, error: 'Missing line_uid' });
+  const { line_uid, session_token, action } = req.body;
+  if (!line_uid || !session_token) {
+    return res.json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
   }
 
   const { acquireLock } = require('../utils/lock');
   const release = await acquireLock(line_uid);
 
+  db.load();
+  const snapshot = JSON.parse(JSON.stringify(db.data));
+
   try {
+    const userRow = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
+    if (!userRow) {
+      return res.json({ ok: false, error: 'Unauthorized: Invalid session_token' });
+    }
+
     const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
     if (!pRow) {
       return res.json({ ok: false, error: 'Player not found' });
@@ -602,6 +643,31 @@ router.post('/', async (req, res) => {
       playerObj.copper = (playerObj.copper || 0) - r;
       playerObj.knight_lv = targetLv;
       msg = `Nâng cấp Hiệp sĩ lên Lv.${targetLv} thành công!`;
+    }
+  }
+
+  // 8.1 Nâng cấp Cung thủ (archer_up)
+  else if (action === 'archer_up') {
+    const arLv = playerObj.archer_lv || 1;
+    const targetLv = arLv + 1;
+    if (arLv >= 100) {
+      success = false;
+      msg = 'Cung thủ đã đạt cấp tối đa Lv.100!';
+    } else {
+      const m = upgCostMult(targetLv);
+      const r = Math.ceil(tierRes(targetLv) * m);
+      const costGold = Math.ceil(tierGold(targetLv) * m);
+
+      if ((playerObj.gold || 0) < costGold || (playerObj.stone || 0) < r || (playerObj.copper || 0) < r) {
+        success = false;
+        msg = `Thiếu tài nguyên! Cần ${costGold} Gold, ${r} Đá và ${r} Đồng`;
+      } else {
+        playerObj.gold = (playerObj.gold || 0) - costGold;
+        playerObj.stone = (playerObj.stone || 0) - r;
+        playerObj.copper = (playerObj.copper || 0) - r;
+        playerObj.archer_lv = targetLv;
+        msg = `Nâng cấp Cung thủ lên Lv.${targetLv} thành công!`;
+      }
     }
   }
 
@@ -1220,6 +1286,63 @@ router.post('/', async (req, res) => {
         playerObj.home_lv = targetLv;
         msg = `Nâng cấp nhà nông trại lên Lv.${targetLv} thành công!`;
       }
+    }
+  }
+
+  // --- LÍNH CANH NHÀ BẰNG TRỨNG (guard_set) ---
+  else if (action === 'guard_set') {
+    const mid = parseInt(req.body.mid);
+    const mvp = parseInt(req.body.mvp) ? 1 : 0;
+    const hlv = parseInt(playerObj.house_lv) || 1;
+    const maxSlots = 3 + Math.floor(Math.max(1, hlv) / 10);
+
+    let guards = Array.isArray(playerObj.home_guards) ? playerObj.home_guards : (typeof playerObj.home_guards === 'string' ? JSON.parse(playerObj.home_guards || '[]') : []);
+
+    if (guards.length >= maxSlots) {
+      success = false;
+      msg = 'Số lượng lính canh nhà đã đạt tối đa!';
+    } else {
+      let eggs = typeof playerObj.eggs === 'string' ? JSON.parse(playerObj.eggs || '{}') : (playerObj.eggs || {});
+      const eggEntry = eggs[mid] || { n: 0, m: 0 };
+
+      if (mvp === 1) {
+        if ((eggEntry.m || 0) <= 0) {
+          success = false;
+          msg = 'Không có trứng MVP này trong kho!';
+        } else {
+          eggEntry.m -= 1;
+        }
+      } else {
+        if ((eggEntry.n || 0) <= 0) {
+          success = false;
+          msg = 'Không có trứng thường này trong kho!';
+        } else {
+          eggEntry.n -= 1;
+        }
+      }
+
+      if (success) {
+        eggs[mid] = eggEntry;
+        playerObj.eggs = eggs;
+        guards.push({ id: mid, mvp: mvp });
+        playerObj.home_guards = guards;
+        msg = 'Đặt trứng làm lính canh thành công!';
+      }
+    }
+  }
+
+  // --- GỠ LÍNH CANH NHÀ (guard_remove) ---
+  else if (action === 'guard_remove') {
+    const idx = parseInt(req.body.idx);
+    let guards = Array.isArray(playerObj.home_guards) ? playerObj.home_guards : (typeof playerObj.home_guards === 'string' ? JSON.parse(playerObj.home_guards || '[]') : []);
+
+    if (isNaN(idx) || idx < 0 || idx >= guards.length) {
+      success = false;
+      msg = 'Vị trí lính canh không hợp lệ!';
+    } else {
+      guards.splice(idx, 1);
+      playerObj.home_guards = guards;
+      msg = 'Đã gỡ lính canh!';
     }
   }
 
@@ -2597,6 +2720,189 @@ router.post('/', async (req, res) => {
     }
   }
 
+  // --- QUỐC GIA: Danh sách chuyển quốc gia (cc_list) ---
+  else if (action === 'cc_list') {
+    const allPlayers = db.data.players || [];
+    const ccData = getCountryListData(playerObj, allPlayers);
+    return res.json({ ok: true, cc: ccData });
+  }
+
+  // --- QUỐC GIA: Đổi quốc gia (cc_change) ---
+  else if (action === 'cc_change') {
+    const to = (req.body.to || '').toUpperCase().trim();
+    const pay = (req.body.pay === 'p') ? 'p' : 'g';
+
+    if (!COUNTRY_CODES.includes(to)) {
+      return res.json({ ok: false, error: 'cc_bad', msg: 'Quốc gia không hợp lệ!' });
+    }
+
+    const cur = (playerObj.country || 'VN').toUpperCase();
+    if (to === cur) {
+      return res.json({ ok: false, error: 'cc_same', msg: 'Bạn đang ở quốc gia này rồi!' });
+    }
+
+    // Kiểm tra giờ chiến tranh (21:00 - 23:00)
+    const nowUtcHour = (new Date()).getUTCHours();
+    const vnHour = (nowUtcHour + 7) % 24;
+    if (vnHour >= 21 && vnHour < 23) {
+      return res.json({ ok: false, error: 'cc_war_hours', msg: 'Không thể chuyển quốc gia trong giờ chiến tranh!' });
+    }
+
+    const moves = parseInt(playerObj.cc_moves) || 0;
+    const nowSec = Math.floor(Date.now() / 1000);
+    const left = moves > 0 ? Math.max(0, (parseInt(playerObj.cc_at) || 0) + 7 * 86400 - nowSec) : 0;
+    if (moves > 0 && left > 0) {
+      return res.json({ ok: false, error: 'cc_cooldown', msg: 'Chưa hết thời gian hồi để chuyển quốc gia!' });
+    }
+
+    // Thanh toán chi phí nếu không phải lần đầu
+    if (moves > 0) {
+      if (pay === 'p') {
+        const curP = (playerObj.p_points || userRow.p_points || 0);
+        if (curP < 50) {
+          return res.json({ ok: false, error: 'cc_no_p', need: 50, msg: 'Không đủ P-points (cần 50 P)!' });
+        }
+        playerObj.p_points = (playerObj.p_points || 0) - 50;
+        if (userRow.p_points !== undefined) {
+          userRow.p_points = Math.max(0, (userRow.p_points || 0) - 50);
+          db.prepare('UPDATE users SET p_points = ? WHERE line_uid = ?').run(userRow.p_points, line_uid);
+        }
+      } else {
+        if ((playerObj.gold || 0) < 1000000) {
+          return res.json({ ok: false, error: 'cc_no_g', need: 1000000, msg: 'Không đủ Gold (cần 1,000,000 G)!' });
+        }
+        playerObj.gold = (playerObj.gold || 0) - 1000000;
+      }
+    }
+
+    if (!playerObj.cc_home) {
+      playerObj.cc_home = cur;
+    }
+    playerObj.country = to;
+    playerObj.last_cc = to;
+    playerObj.cc_moves = moves + 1;
+    playerObj.cc_at = nowSec;
+
+    const allPlayers = db.data.players || [];
+    const ccData = getCountryListData(playerObj, allPlayers);
+    res.locals = res.locals || {};
+    res.locals.payloadExt = { to: to, cc: ccData };
+    msg = `Đổi quốc gia sang ${to} thành công!`;
+  }
+
+  // --- BẬT/TẮT DRONE (toggle_drone) ---
+  else if (action === 'toggle_drone') {
+    const droneLv = parseInt(playerObj.drone_lv) || 0;
+    const droneExp = parseInt(playerObj.drone_expires) || 0;
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (droneLv <= 0 && droneExp <= nowSec) {
+      success = false;
+      msg = 'Drone chưa được mở khóa!';
+    } else {
+      const cur = (playerObj.drone_enabled ?? 1) ? 1 : 0;
+      const targetVal = req.body.value !== undefined ? (parseInt(req.body.value) ? 1 : 0) : (cur ? 0 : 1);
+      playerObj.drone_enabled = targetVal;
+      msg = `Đã ${targetVal === 1 ? 'bật' : 'tắt'} Drone`;
+    }
+  }
+
+  // --- MỞ KHÓA CHUYÊN MÔN NGHỀ NGHIỆP (job2_unlock) ---
+  else if (action === 'job2_unlock') {
+    const tree = (req.body.tree || '').trim();
+    const validTrees = ['atk', 'def', 'melee', 'turret'];
+    if (!validTrees.includes(tree)) {
+      success = false;
+      msg = 'Nhánh nghề nghiệp không hợp lệ!';
+    } else if ((parseInt(playerObj.lv) || 1) < 60) {
+      success = false;
+      msg = 'Cần đạt cấp 60 trở lên để mở khóa chuyên môn!';
+    } else {
+      let stars = typeof playerObj.job2_star === 'string' ? JSON.parse(playerObj.job2_star || '{}') : (playerObj.job2_star || {});
+      const curStar = parseInt(stars[tree]) || 0;
+      if (curStar >= 5) {
+        success = false;
+        msg = 'Đã đạt cấp sao tối đa của nhánh này!';
+      } else {
+        let exps = typeof playerObj.job2_exp === 'string' ? JSON.parse(playerObj.job2_exp || '{}') : (playerObj.job2_exp || {});
+        let needs = typeof playerObj.job2_need === 'string' ? JSON.parse(playerObj.job2_need || '{}') : (playerObj.job2_need || {});
+        const curExp = Number(exps[tree]) || 0;
+        const needExp = Number(needs[tree]) || 500000000;
+
+        if (curExp < needExp) {
+          success = false;
+          msg = 'Chưa đủ điểm kinh nghiệm chuyên môn!';
+        } else {
+          stars[tree] = curStar + 1;
+          exps[tree] = Math.max(0, curExp - needExp);
+          playerObj.job2_star = stars;
+          playerObj.job2_exp = exps;
+          msg = `Mở khóa cấp sao ⭐${curStar + 1} chuyên môn thành công!`;
+        }
+      }
+    }
+  }
+
+  // --- MUA HỘP VIP (vip_box_buy) ---
+  else if (action === 'vip_box_buy') {
+    const kind = (req.body.kind || '').trim();
+    const validKinds = ['card', 'egg', 'module'];
+    if (!validKinds.includes(kind)) {
+      success = false;
+      msg = 'Loại hộp không hợp lệ!';
+    } else {
+      const tier = Math.max(1, Math.min(8, parseInt(req.body.tier) || 1));
+      const qty = Math.max(1, Math.min(5, parseInt(req.body.qty) || 1));
+      const pay = (req.body.pay === 'p') ? 'p' : 'g';
+      const vipLv = parseInt(playerObj.vip_lv) || 0;
+      const maxTier = Math.max(1, Math.min(8, vipLv || 1));
+
+      if (tier > maxTier) {
+        success = false;
+        msg = `Cấp VIP ${vipLv} chỉ có thể mua tối đa hộp cấp ${maxTier}!`;
+      } else {
+        if (pay === 'p') {
+          const costP = tier * 5 * qty;
+          const curP = (playerObj.p_points || userRow.p_points || 0);
+          if (curP < costP) {
+            success = false;
+            msg = `Không đủ P-points! Cần ${costP} P`;
+          } else {
+            playerObj.p_points = (playerObj.p_points || 0) - costP;
+            if (userRow.p_points !== undefined) {
+              userRow.p_points = Math.max(0, (userRow.p_points || 0) - costP);
+              db.prepare('UPDATE users SET p_points = ? WHERE line_uid = ?').run(userRow.p_points, line_uid);
+            }
+          }
+        } else {
+          const costG = tier * 100000 * qty;
+          if ((playerObj.gold || 0) < costG) {
+            success = false;
+            msg = `Không đủ Gold! Cần ${costG} Gold`;
+          } else {
+            playerObj.gold = (playerObj.gold || 0) - costG;
+          }
+        }
+
+        if (success) {
+          const boxField = `${kind}_box${tier}`;
+          playerObj[boxField] = (parseInt(playerObj[boxField]) || 0) + qty;
+          msg = `Mua thành công ${qty} hộp ${kind} cấp ${tier}!`;
+        }
+      }
+    }
+  }
+
+  // --- CÀI ĐẶT AUTO-RAID (araid_set) ---
+  else if (action === 'araid_set') {
+    const on = req.body.on ? 1 : 0;
+    const g = req.body.g ? 1 : 0;
+    const c = req.body.c ? 1 : 0;
+    playerObj.araid_on = on;
+    playerObj.araid_g = g;
+    playerObj.araid_c = c;
+    msg = on ? 'Đã kích hoạt Auto-Raid!' : 'Đã tắt Auto-Raid!';
+  }
+
   if (!success) {
       return res.json({ ok: false, error: msg });
     }
@@ -2625,6 +2931,14 @@ router.post('/', async (req, res) => {
     }
 
     res.json(responsePayload);
+  } catch (err) {
+    db.data = snapshot;
+    try {
+      db.save();
+    } catch (saveErr) {
+      console.error('[Upgrade Rollback] Lỗi khi lưu rollback snapshot:', saveErr);
+    }
+    return res.json({ ok: false, error: 'Lỗi máy chủ nâng cấp: ' + (err.message || 'Lỗi không xác định') });
   } finally {
     release();
   }

@@ -94,6 +94,14 @@ class JSONDatabase {
           }
           this.save();
         }
+        else if (query.includes('DELETE FROM users WHERE line_uid = ?')) {
+          this.data.users = this.data.users.filter(u => u.line_uid !== args[0]);
+          this.save();
+        }
+        else if (query.includes('DELETE FROM players WHERE line_uid = ?')) {
+          this.data.players = this.data.players.filter(p => p.line_uid !== args[0]);
+          this.save();
+        }
       }
     };
   }

@@ -4,6 +4,37 @@ const { acquireLock } = require('../utils/lock');
 
 const router = express.Router();
 
+// Middleware xác thực ADMIN_API_KEY qua HTTP Headers
+router.use((req, res, next) => {
+  const adminKey = process.env.ADMIN_API_KEY || (process.env.NODE_ENV === 'test' ? 'test_admin_secret_key' : null);
+
+  if (!adminKey) {
+    return res.status(403).json({ ok: false, error: 'Admin API is disabled (missing ADMIN_API_KEY)' });
+  }
+
+  // Chặn tuyệt đối và từ chối nếu truyền key qua query params hoặc request body (ngăn ngừa rò rỉ secret trong logs/URL)
+  if ((req.query && (req.query.admin_api_key || req.query.key)) || (req.body && (req.body.admin_api_key || req.body.key))) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized: admin_api_key via query or body is prohibited. Use x-admin-api-key or Authorization header.' });
+  }
+
+  // Chỉ trích xuất từ Headers
+  let token = null;
+  const rawHeader = req.headers['x-admin-api-key'] || req.headers['authorization'];
+  if (typeof rawHeader === 'string') {
+    if (rawHeader.startsWith('Bearer ')) {
+      token = rawHeader.slice(7).trim();
+    } else {
+      token = rawHeader.trim();
+    }
+  }
+
+  if (!token || token !== adminKey) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized: Missing or invalid ADMIN_API_KEY' });
+  }
+
+  next();
+});
+
 // API cấp P Point cho người chơi
 router.post('/give_p', async (req, res) => {
   const { line_uid, amount } = req.body;
@@ -18,6 +49,7 @@ router.post('/give_p', async (req, res) => {
 
   const release = await acquireLock(line_uid);
   db.load();
+  const snapshot = JSON.parse(JSON.stringify(db.data));
 
   try {
     const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
@@ -44,6 +76,8 @@ router.post('/give_p', async (req, res) => {
 
     return res.json({ ok: true, msg: `Cấp thành công ${pAmount} P. Số dư hiện tại: ${playerObj.p_points} P.`, player: playerObj });
   } catch (err) {
+    db.data = snapshot;
+    try { db.save(); } catch (e) {}
     console.error('Lỗi cấp P Point:', err);
     return res.json({ ok: false, error: 'Lỗi hệ thống' });
   } finally {
@@ -65,6 +99,7 @@ router.post('/give_gold', async (req, res) => {
 
   const release = await acquireLock(line_uid);
   db.load();
+  const snapshot = JSON.parse(JSON.stringify(db.data));
 
   try {
     const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
@@ -87,6 +122,8 @@ router.post('/give_gold', async (req, res) => {
 
     return res.json({ ok: true, msg: `Cấp thành công ${gAmount} Gold. Số dư hiện tại: ${playerObj.gold} Gold.`, player: playerObj });
   } catch (err) {
+    db.data = snapshot;
+    try { db.save(); } catch (e) {}
     console.error('Lỗi cấp Gold:', err);
     return res.json({ ok: false, error: 'Lỗi hệ thống' });
   } finally {
@@ -108,6 +145,7 @@ router.post('/set_level', async (req, res) => {
 
   const release = await acquireLock(line_uid);
   db.load();
+  const snapshot = JSON.parse(JSON.stringify(db.data));
 
   try {
     const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
@@ -130,6 +168,8 @@ router.post('/set_level', async (req, res) => {
 
     return res.json({ ok: true, msg: `Đã cập nhật cấp độ lên Lv.${lv}.`, player: playerObj });
   } catch (err) {
+    db.data = snapshot;
+    try { db.save(); } catch (e) {}
     console.error('Lỗi cập nhật level:', err);
     return res.json({ ok: false, error: 'Lỗi hệ thống' });
   } finally {

@@ -8,12 +8,17 @@ const VIP_REQ = [0, 100, 300, 600, 1000, 1500, 2200, 3000, 4000, 5200, 6600, 820
 const VIP_QUOTA = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 router.post('/', (req, res) => {
-  const { line_uid } = req.body;
-  if (!line_uid) {
-    return res.json({ ok: false, error: 'Missing line_uid' });
+  const { line_uid, session_token } = req.body;
+  if (!line_uid || !session_token) {
+    return res.json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
   }
 
   db.load();
+
+  const userRow = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
+  if (!userRow) {
+    return res.json({ ok: false, error: 'Unauthorized: Invalid session_token' });
+  }
 
   const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
   if (!pRow) {

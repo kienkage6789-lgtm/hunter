@@ -1833,7 +1833,7 @@ const xhrpg = (() => {
   document.addEventListener('pointercancel', _uiPtrUp, { capture: true, passive: true });
   // กดค้างเกิน 1.5s = ไม่ใช่การแตะปุ่ม (ลากจอ/ค้าง) → ไม่บล็อกการรีเฟรชยาว
   function _uiTouchBusy() { return (_uiPtrDownAt && Date.now() - _uiPtrDownAt < 1500) || (Date.now() - _uiPtrUpAt < 350); }
-  let _tabHiddenAt = 0;     // เวลาเริ่มซ่อนแท็บ (0 = แสดงอยู่) — ซ่อนครบ 10 นาที schedulePoll หยุด → gap สะสมเข้า offline catch-up
+  let _tabHiddenAt = 0;     // Thời điểm ẩn tab (0 = đang hiển thị) — phục vụ render loop/tab lifecycle
   let _lastInputAt = Date.now(); // 😴 เวลา input จริงล่าสุด (กด/แตะ/คีย์/ล้อเมาส์) — จอเปิดแต่ไม่กดเกินเพดาน = พักจอเข้าโหมด offline
   // 👑😴 สิทธิ์ VIP "เปิดหน้าจอได้นานขึ้น" (docs/vip-idle-extend-design.md · เจ้าของเคาะ 2026-07-28)
   //    ⚠️ มิเรอร์ xhrpg_config.php (XHRPG_VIP_IDLE_*) — ปรับเรตต้องแก้ 2 ที่ · **ด่านจริงอยู่ server** ตรงนี้แค่ทำให้ UI ตรงกัน
@@ -10778,17 +10778,9 @@ const xhrpg = (() => {
   function schedulePoll() {
     if (pollTimer) clearTimeout(pollTimer);
     pollTimer = null;
-    if (_pollStopped || _inflight) return; // สลับ tab: poll ต่อในพื้นหลัง 10 นาทีแรก (ออนไลน์ต่อ · presence ไม่หาย) · browser อาจ throttle เป็น ~1/นาที
-    if (document.hidden && _tabHiddenAt && Date.now() - _tabHiddenAt > 600000) return; // ซ่อนครบ 10 นาที → หยุด poll ให้ gap สะสม → กลับมารับ offline catch-up (เกณฑ์ server 600s)
-    if (_bmOn) return; // 🤖 อยู่จอเฝ้าบอท = ออฟไลน์เต็มตัว → หยุด poll เกมทุกกรณี (รวมแท็บพื้นหลัง) เหลือ sync 10 นาที/ครั้ง = เงียบ+ประหยัด
-    if (!document.hidden && player && Date.now() - _lastInputAt > _idleCutMs()) {
-      // 😴 ไม่มี "การเล่นจริง" เกินเพดานของคนนั้น (👑 VIP3+ ยาวขึ้น) → เข้าจอเฝ้าบอท · ถ้า event ยังไหลเข้าอยู่ = เครื่องมือกดอัตโนมัติ → ติดธง suspect (ออกต้องกดค้าง)
-      _bmWhy = _hbRecentN(120000) > 0 ? 'bot' : 'idle';
-      _idleSuspect = _bmWhy === 'bot';
-      _showIdleOverlay(); return;
-    }
-    // backoff ตอนพังติดกัน: 2s→4s→8s→16s→30s (สำเร็จเมื่อไหร่รีเซ็ตกลับ 1s) — สำคัญตอนโดน Cloudflare 1015: ยิงถี่ต่อไปมีแต่ต่ออายุแบน
-    // ปกติ: ยึดคาบจากเวลาส่งรอบก่อน (+60ms กันชน guard 0.8s ฝั่ง server เมื่อ RTT แกว่ง) — jitter คาบ snapshot ต่ำลง = interpolation นิ่งขึ้น
+    if (_pollStopped || _inflight) return;
+    if (_bmOn) return; // Chỉ tạm dừng poll khi người chơi chủ động mở màn hình Bot Monitor
+    // backoff lúc lỗi kết nối: 2s→4s→8s→16s→30s (khi thành công thì reset về POLL_MS)
     const _delay = _pollFails > 0 ? Math.min(30000, POLL_MS * (2 ** Math.min(5, _pollFails)))
                  : Math.max(250, POLL_MS + 60 - (_pollSentAt ? Date.now() - _pollSentAt : POLL_MS));
     pollTimer = setTimeout(poll, _delay);
@@ -10837,11 +10829,8 @@ const xhrpg = (() => {
           }
         }
         if (d.idle) {
-          // ⏳ ถังหมด/ติดคูลดาวน์ — จำเส้นตายไว้ให้จอมอนิเตอร์วาดนับถอยหลัง + ล็อกปุ่มกลับ
-          if (d.why === 'otb') _otbCoolUntil = Date.now() + Math.max(1, d.cool | 0) * 1000;
-          _bmWhy = (d.why === 'chexpire') ? 'chfail' : (d.why === 'otb' ? 'otb' : 'server');
-          _lastInputAt = 0; _showIdleOverlay(); return;
-        } // 😴 server ยืนยัน idle — บังคับ overlay + หยุด poll ตาม (schedulePoll เห็น _lastInputAt=0 = เกินเกณฑ์แน่นอน)
+          // Trạng thái d.idle cũ từ server được bỏ qua như non-blocking informational, không chặn poll và không mutate _lastInputAt
+        }
         if (!d.ok) return;
         const _prevP = player;
         player   = d.player;
@@ -11718,13 +11707,13 @@ const xhrpg = (() => {
   }, true);
 
   // สลับ tab: 10 นาทีแรกเกมรันออนไลน์ต่อในพื้นหลัง (คู่หู/ตัวเราไม่หายจากจอเพื่อน · ฟาร์มต่อ · browser throttle ~1/นาที)
-  //   ซ่อนครบ 10 นาที → schedulePoll หยุดเอง → gap สะสม → กลับมาดู = ปลุก poll → server เครดิต offline catch-up (เกณฑ์ 600s)
+  // Tab lifecycle: duy trì render loop và tiếp tục poll khi chuyển tab
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { _tabHiddenAt = Date.now(); return; }
     _tabHiddenAt = 0;
-    _monListResumed = true; // ลิสต์มอนที่ค้างอยู่เป็นของก่อนซ่อนแท็บ — poll แรกหลังกลับมา ห้ามยิงศพ (จะเต็มจอ)
-    _lastInputAt = Date.now(); // กลับมาดูแท็บ = ถือว่ามีตัวตน — เริ่มนับ idle 10 นาทีใหม่
-    startAnim(); // กลับมาดูแท็บ → เดิน render loop ต่อ
+    _monListResumed = true;
+    _lastInputAt = Date.now();
+    startAnim();
     if (!_pollStopped && !_inflight && !pollTimer && sessionToken && player && player.line_uid) poll();
   });
 
@@ -11776,14 +11765,7 @@ const xhrpg = (() => {
   //    5 วิ = คลาดมากสุด 5 วิ · ต้นทุนแค่ลบเลข ไม่แตะ DOM ไม่ยิงเน็ต
   setInterval(() => {
     if (_bmOn || !player || _chEl) return;
-    // 😴 เตือนก่อนโดนตัดเพราะ "ไม่ได้แตะจอ" (เจ้าของเจอเอง 2026-08-16: VIP0 โดนตัดที่นาทีที่ 5 แบบไม่มีอะไรบอก)
-    //    🐛 นาฬิกาพักจอ (VIP0 = 5 นาที) มาถึงก่อนป้ายยืนยัน (8:30) เสมอ ⇒ VIP ต่ำไม่มีวันได้เห็นคำเตือนเลย
-    //       ยิ่งหลังลดเพดาน VIP0 15→5 นาที ยิ่งชนกันแรง — คนเล่นจริงที่วางมือแป๊บเดียวก็หลุด
-    //    ✅ ใช้ป้ายใบเดิม (กดแล้ว _chPass() รีเซ็ต _lastInputAt ให้อยู่แล้ว) แค่เปลี่ยนข้อความ + เส้นตาย
-    const _idleLeft = _idleCutMs() - (Date.now() - _lastInputAt);
-    if (_idleLeft <= IDLE_WARN_MS) { _chReason = 'idle'; _chForce = true; _chShow(); return; }
-    const left = _ciLeftMs();
-    if (left !== null && left <= CH_WARN_MS) { _chReason = 'checkin'; _chForce = true; _chShow(); }
+    // Không ép đếm lùi hay tự động kick offline
   }, 5000);
   // 🔴 A. บังคับยืนยันตามรอบ — ต่อให้คะแนนความเป็นคนผ่านตลอดก็ต้องกด 1 ครั้งทุก _chForceMs()
   const CH_FORCE_MS = 1200000;                 // 20 นาที = รอบพื้น (คนไม่มี VIP · ปรับที่นี่ที่เดียว)
@@ -11923,8 +11905,9 @@ const xhrpg = (() => {
   }
   function _chFail() {
     _chClear();
-    _idleSuspect = true; _bmWhy = 'chfail'; _lastInputAt = 0;
-    _showIdleOverlay(); // ไม่ตอบ 90 วิ = ไม่มีคน → เข้าออฟไลน์มอนิเตอร์ (ของยังฟาร์มต่อ ไม่ใช่บทลงโทษ)
+    _idleSuspect = false;
+    _bmWhy = '';
+    // Hết giờ cảnh báo chỉ dọn dẹp banner, không ép vào bot monitor hay kick offline
   }
   // ══ 🤖 BOT MONITOR (docs/bot-monitor-design.md · เจ้าของเคาะ 2026-07-26) ═══════════════════════
   //    แทนจอ 😴 เดิม: ผู้เล่นเป็นออฟไลน์เต็มตัว (poll เกมหยุด) แต่เห็นฟีดสดว่าบอทตีอะไรได้อะไร
@@ -11964,8 +11947,8 @@ const xhrpg = (() => {
   // ⏰🎪 ช่วงกิจกรรม 19:00-22:00 — server เป็นคนบอกว่า "เหลืออีกกี่วินาที" (มากับ monitor_sync)
   //    ห้ามคำนวณเองจากนาฬิกาเครื่อง: ผู้เล่นอยู่คนละโซนเวลา หน้าต่างเป็นเวลาไทย จะเพี้ยนเป็นชั่วโมง
   let _otbFreeUntil = 0;
-  const _otbFreeNow = () => Date.now() < _otbFreeUntil;
-  const _otbLocked = () => _bmWhy === 'otb' && Date.now() < _otbCoolUntil && !_otbFreeNow();
+  const _otbFreeNow = () => true;
+  const _otbLocked = () => false; // Không bao giờ khóa thao tác online
   const _otbMMSS = s => { s = Math.max(0, s | 0); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); };
   const _otbHMS  = s => { s = Math.max(0, s | 0); const h = Math.floor(s / 3600); return (h > 0 ? h + ':' : '') + ('0' + Math.floor((s % 3600) / 60)).slice(-2) + ':' + ('0' + (s % 60)).slice(-2); };
   // 🕐 ป้าย "เวลาออนไลน์ใกล้หมด" — โผล่เฉพาะตอน server ส่ง otb มา (≤ ~5 นาทีสุดท้าย · เจ้าของเคาะ)
@@ -11986,7 +11969,9 @@ const xhrpg = (() => {
     const vl = document.getElementById('vip-otb-left');
     if (vl && _otbFull != null) vl.textContent = _otbHMS((_otbFull | 0) - Math.round((Date.now() - _otbAtMs) / 1000));
   }, 1000); // เดินตัวเลขระหว่างรอ poll (poll มาทับด้วยค่าจริงทุกรอบ)
-  function _showIdleOverlay() { _botmonOpen(); }   // ⬅ จุดเรียกเดิม (server ส่ง idle:1 / client เช็ค 10 นาที) — เปลี่ยนปลายทางเป็นจอเฝ้าบอท
+  function _showIdleOverlay() {
+    // Không tự động mở bot monitor từ hệ thống
+  }
   function openBotMonitor() { _bmWhy = 'manual'; _lastInputAt = 0; _botmonOpen(); } // กดเองจากแผง OFFLINE (สาย 24 ชม. ไม่ต้องรอ 10 นาที)
 
   function _botmonOpen() {
@@ -14890,7 +14875,7 @@ const xhrpg = (() => {
       // 🌐 tooltip ปุ่ม toolbar/HUD (title index.php)
       'เลือกโซนฟาร์มตอนออฟไลน์ (8 ชม.)':'Pick offline farm zones (8 hrs)', 'เปลี่ยนภาษา / Switch language':'Switch language', 'วาร์ปกลางแผนที่':'Warp to map center',
       'คู่มือการเล่น':'Game guide', 'เปิด/ปิดเสียง':'Toggle sound', 'เปิด/ปิด บันทึกลอย':'Toggle floating log', 'เปิดบันทึกเหตุการณ์':'Open event log', 'เปลี่ยนแผนที่':'Change map',
-      'ท้าดวลผู้เล่นในแผนที่':'Challenge players on the map', 'ดันท้าบอส 1-1':'Boss challenge 1-on-1', 'รัศมีสำรวจ (คลิกเปลี่ยน 100→150→200→300)':'Explore radius (click: 100→150→200→300)',
+      'ท้าดวลผู้เล่นในแผนที่':'Challenge players on the map', 'ดันท้าบอส 1-1':'Boss challenge 1-on-1', 'รัศมีสำรวจ (คลิกเปลี่ยน 100→200→300)':'Explore radius (click: 100→200→300)',
       'แลกโค้ดจากเกมเดิม (VIP → P)':'Redeem old-game code (VIP → P)', 'ยกเลิกรูป':'Cancel image', 'อีโมจิ':'Emoji', 'แนบรูป':'Attach image',
       'คืนแต้มทั้งหมด {n} แต้ม · เลือกวิธีจ่าย':'Refund all {n} points · choose payment', 'ยังไม่ได้ลงแต้ม — ไม่ต้องรีเซ็ต':'No points spent — nothing to reset',
       // 🌐 ป้ายรายการประวัติ P (item_name — แปลสดตามภาษา)
@@ -19448,9 +19433,9 @@ const xhrpg = (() => {
     const ec = document.getElementById('er-current'); // ปุ่มบน HUD (ใต้ LOCK ATK) โชว์รัศมีที่เลือก
     if (ec) ec.textContent = `📍 ${cur}m`;
   }
-  // คลิกปุ่ม HUD → วนรัศมี 100→150→200→300 (ค่าที่ไม่อยู่ในชุด → เริ่ม 100)
+  // คลิกปุ่ม HUD → วนรัศมี 100→200→300 (ค่าที่ไม่อยู่ในชุด → เริ่ม 100)
   function cycleExploreRadius() {
-    const presets = [100, 150, 200, 300];
+    const presets = [100, 200, 300];
     const i = presets.indexOf(Math.round(exploreRadius));
     setExploreRadius(presets[(i + 1) % presets.length]);
   }
