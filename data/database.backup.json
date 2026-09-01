@@ -1,0 +1,1305 @@
+{
+  "users": [
+    {
+      "line_uid": "local_3def32ad1401ab2a919db0305181d5eb",
+      "username": "test",
+      "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+      "session_token": "ee21aa7fdded989a466fd7582762d48c",
+      "role": "user"
+    },
+    {
+      "line_uid": "local_3085dceb09b40b20a725b61eb0105964",
+      "username": "admin",
+      "password_hash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+      "session_token": "ac850833580ffdce8b1252f0c336c931",
+      "role": "user"
+    },
+    {
+      "line_uid": "local_a84ede713aed3eadf4e998002e217217",
+      "username": "Test",
+      "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+      "session_token": "11103b88e8bf75a72607c60b3ea3fcf3",
+      "role": "user"
+    },
+    {
+      "line_uid": "local_8e474cf3230c4f09fb05ba1f7eb9a20c",
+      "username": "test1",
+      "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+      "session_token": "c858998f94a2803479b3f35531410cc1",
+      "role": "user"
+    },
+    {
+      "line_uid": "local_fa9f5a625c3592346b072d0b5dedb750",
+      "username": "tester_1308",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "session_token": "c40bc67032abfb643751d797444a9e98",
+      "role": "user"
+    },
+    {
+      "line_uid": "local_921956963363062f1184fcbd4dd68564",
+      "username": "tester_1229",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "session_token": "63a0332b622b5d59669fab962e068c86",
+      "role": "user"
+    }
+  ],
+  "players": [
+    {
+      "line_uid": "local_3def32ad1401ab2a919db0305181d5eb",
+      "name": "test",
+      "lv": 25,
+      "exp": 400432,
+      "hp": 300,
+      "hp_max": 300,
+      "gold": 1344645,
+      "map": 1,
+      "raw_data": "{\"id\":1996,\"line_uid\":\"local_3def32ad1401ab2a919db0305181d5eb\",\"pay_code\":null,\"display_name\":\"test\",\"created_at\":\"2026-07-14 06:12:11\",\"last_flush\":\"2026-08-20 16:51:17\",\"p_points\":36330,\"profile_pic\":\"https://lh3.googleusercontent.com/a/ACg8ocIUjAPkVnM177S4_rVoE6XrxLl9Dp7Dfu_0jWo9fSN9mmvhW2so=s96-c\",\"lv\":25,\"exp\":400432,\"exp_next\":451451,\"hp\":850,\"hp_max\":810,\"x\":971,\"y\":1200,\"is_dead\":0,\"gold\":1344645,\"stat_pts\":25,\"str\":5,\"agi\":5,\"dex\":200,\"intel\":5,\"vit\":5,\"luk\":5,\"gun_pistol_lv\":1,\"gun_sniper_lv\":1,\"active_gun\":1,\"ammo_pistol\":170,\"ammo_sniper\":170,\"hp_potion\":5,\"knife_lv\":1,\"robot_axe_lv\":3,\"robot_gun_lv\":0,\"ammo_robot_gun\":170,\"robot_railgun_lv\":0,\"railgun_charge\":100,\"last_seen\":1787219476,\"house_lv\":2,\"house_x\":928,\"house_y\":780,\"house_ammo_pistol\":0,\"house_ammo_sniper\":147,\"house_ammo_robot\":0,\"house_last_prod\":1787904755,\"wood\":25087,\"stone\":25038,\"iron\":25000,\"copper\":25000,\"house_prod_pistol\":1,\"house_prod_sniper\":1,\"house_prod_robot\":1,\"house_energy\":122,\"robot_lv\":5,\"robot_energy\":422,\"herb\":25198,\"house_ammo_potion\":166,\"house_prod_potion\":1,\"ammo_potion\":0,\"auto_use_potion\":1,\"mp\":75,\"armor\":203,\"auto_refill_pistol\":1,\"auto_refill_sniper\":1,\"auto_refill_robot_gun\":0,\"skills\":\"{\\\"tough_body\\\":5,\\\"armor_up\\\":5,\\\"hp_regen\\\":5}\",\"skill_pts\":29,\"equipment\":{\"foot\":[1]},\"equipment_qty\":[],\"kills\":0,\"premium_exp_expires\":0,\"premium_gold_expires\":0,\"premium_miner_expires\":0,\"stat_reset_last\":1787625102,\"ammo_pistol_extra\":[160,155,150,147,145],\"ammo_sniper_extra\":[160,155,150,147,145],\"ammo_robot_extra\":[160,155,150,147,145],\"house_ammo_pistol_extra\":\"[0,210,0,0,0]\",\"house_ammo_sniper_extra\":\"[133,210,0,0,0]\",\"house_ammo_robot_extra\":\"[147,210,0,0,0]\",\"house_prod_pistol_tier\":1,\"house_prod_sniper_tier\":1,\"house_prod_robot_tier\":1,\"pistol_tier_enabled\":1,\"sniper_tier_enabled\":0,\"robot_tier_enabled\":3,\"house_prod_pistol_mask\":4,\"house_prod_sniper_mask\":4,\"house_prod_robot_mask\":0,\"gun_use_pistol\":1,\"gun_use_sniper\":1,\"gun_use_robot_gun\":0,\"hp_potion_extra\":\"[29,26,0,0,0]\",\"house_ammo_potion_extra\":\"[209,206,0,0,0]\",\"potion_tier_enabled\":2,\"house_prod_potion_mask\":6,\"auto_potion_threshold\":50,\"solar_cell_lv\":3,\"drone_lv\":0,\"drone_expires\":0,\"drone_x\":0,\"drone_y\":0,\"drone_state\":\"idle\",\"drone_cooldown\":0,\"drone_cargo_ammo\":\"{}\",\"drone_cargo_pot\":\"[0,0,0,0,0,0]\",\"cat_lv\":0,\"cat_x\":1104,\"cat_y\":1073,\"cat_state\":\"idle\",\"cat_cooldown\":1787219556,\"cat_cargo\":{\"pistol\":[0,0,0,0,0,0],\"sniper\":[0,0,0,0,0,0],\"robot\":[0,0,0,0,0,0]},\"cat_enabled\":1,\"robot_railgun_expires\":0,\"robot_disabled\":0,\"last_ip\":\"113.160.149.56\",\"robot_stun_lv\":0,\"gun_use_stun\":0,\"diamond_blue\":5010,\"diamond_red\":500,\"diamond_green\":0,\"armor_lv\":1,\"robot_skin\":\"char2\",\"robot_skins\":\"[\\\"char2\\\"]\",\"robot_skin_stats\":\"{\\\"_g\\\":{\\\"s\\\":\\\"agi\\\",\\\"v\\\":10,\\\"b\\\":10,\\\"xp\\\":249}}\",\"auto_refill_potion\":0,\"mine_lv\":\"[0,0,0,0,0,0]\",\"mine_ore\":\"[\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\"]\",\"mine_on\":\"[0,0,0,0,0,0]\",\"mine_last_prod\":1787219547,\"pet_skin\":\"\",\"pet_skins\":\"[]\",\"pet_skin_stats\":\"{}\",\"map\":1,\"module_box1\":3,\"module_box2\":0,\"module_box3\":0,\"module_box4\":0,\"pet_mid\":46,\"pet_mvp\":0,\"pet_olv\":40,\"pet_exp\":18216,\"pet_cards\":\"[]\",\"card_box1\":1,\"card_box2\":0,\"card_box3\":0,\"card_box4\":0,\"card_box5\":0,\"card_box6\":0,\"card_box7\":0,\"card_box8\":0,\"hero_skin\":\"hs07\",\"hero_skins\":\"[\\\"sw9\\\",\\\"sw2\\\",\\\"hs09\\\",\\\"sw6\\\",\\\"sw4\\\",\\\"hs04\\\",\\\"hs02\\\",\\\"sw8\\\",\\\"sw5\\\",\\\"hs07\\\"]\",\"hero_skin_stats\":\"{}\",\"offline_zones\":\"1:1,1:4\",\"offline_zones_map\":1,\"pet_batk\":181,\"pet_bhp\":8225,\"pet_hp\":16450,\"pet_down\":0,\"pet_up_atk\":5,\"pet_up_hp\":0,\"pet_up_reco\":0,\"orion_gun_lv\":0,\"orion_cannon_lv\":0,\"orion_gun_expires\":0,\"gun_use_turret\":0,\"turret_lv\":0,\"premium_offline_expires\":0,\"country\":\"VN\",\"rag_lv\":1,\"rag_exp\":0,\"rag_pts\":0,\"rag_hp\":0,\"rag_mp\":0,\"rag_atk\":0,\"rag_crit\":0,\"rag_def\":0,\"rag_armor\":0,\"priest_expires\":1819255436,\"priest_lv\":1,\"archer_expires\":1819255436,\"archer_lv\":5,\"archer_on\":1,\"premium_drop_expires\":0,\"egg_box1\":0,\"egg_box2\":0,\"egg_box3\":0,\"egg_box4\":0,\"egg_box5\":0,\"egg_box6\":0,\"egg_box7\":98,\"egg_box8\":0,\"vip_lv\":0,\"home_lv\":0,\"home_seeds\":\"{\\\"4\\\":4}\",\"eq2\":{\"_auto\":3,\"head\":{\"id\":\"ee90864fb3b\",\"s\":\"head\",\"t\":4,\"lv\":18,\"af\":[[\"spd\",5],[\"brg\",1],[\"drp\",77],[\"rdf\",80]]}},\"knight_expires\":1819255436,\"knight_lv\":5,\"dv_pet\":1,\"dv_exp\":2132,\"dv_hp\":186660,\"dv_down\":0,\"dv_up_atk\":0,\"dv_up_hp\":0,\"dv_up_reco\":0,\"dv_cards\":\"[]\",\"dv_on\":1,\"god_cards\":\"{}\",\"home_guards\":\"[]\",\"guild_id\":29,\"guild_tag\":\"News|0:0:1\",\"job2_exp\":{\"atk\":0,\"def\":334821245,\"melee\":447319330,\"turret\":10314045},\"job2_star\":\"{}\",\"ore1\":0,\"ore2\":0,\"ore3\":0,\"last_device\":\"pc\",\"priest_on\":1,\"knight_on\":1,\"eq2_scrap\":1883,\"ore4\":0,\"ore5\":0,\"ore6\":0,\"eqc_opt\":\"{}\",\"mod_scrap\":13,\"premium_np_expires\":1788767136,\"premium_pk_expires\":1788489080,\"premium_pro_expires\":0,\"last_cc\":\"VN\",\"cc_home\":\"VN\",\"cc_moves\":0,\"cc_at\":null,\"vip_fx\":1,\"sac_cards\":\"{}\",\"sac_eggs\":\"{}\",\"araid_on\":1,\"araid_g\":0,\"araid_c\":0,\"last_action_at\":1787219481,\"last_active\":1787219548,\"explore_radius\":300,\"explore_cx\":1125,\"explore_cy\":1125,\"_vitHpBonus\":4,\"house_prod_last\":{\"pistol\":[],\"sniper\":[],\"robot\":[],\"potion\":[]},\"_regen_at\":1787219548,\"tick\":861,\"skill_cds\":[],\"target_monster_id\":null,\"stuck_ticks\":0,\"robot_x\":986,\"robot_y\":1200,\"robot_pull_at\":1787219547,\"pet_x\":993,\"pet_y\":1212,\"str_eff\":13,\"vit_eff\":5,\"agi_eff\":5,\"intel_eff\":5,\"stat_sum_eff\":273,\"orion_cd\":55,\"explore_tx\":1125,\"explore_ty\":1125,\"cat_cargo_pot\":[0,0,0,0,0,0],\"job2_need\":{\"atk\":5230417820,\"def\":5230417820,\"melee\":5230417820,\"turret\":5230417820},\"mp_max\":50,\"p_total\":2600,\"speed_modifier\":1.098978779731269,\"wander_change_rate\":0.23634475566476476,\"drop_log\":\"[{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T4\\\",\\\"q\\\":1,\\\"ts\\\":1787565336},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787565594},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787565795},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787566101},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787714845},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787714848},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787714852},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787714854},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787714861},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787719332},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787719333},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787719348},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T2\\\",\\\"q\\\":1,\\\"ts\\\":1787719352},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787719353},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787719354},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Vua cây bóng tối\\\",\\\"q\\\":1,\\\"ts\\\":1787719402},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787899447},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp mô-đun T1\\\",\\\"q\\\":1,\\\"ts\\\":1787899447},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp thẻ bài T1\\\",\\\"q\\\":1,\\\"ts\\\":1787899447},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T3\\\",\\\"q\\\":1,\\\"ts\\\":1787900302},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787900310},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787900332},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787900349},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787900353},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T2\\\",\\\"q\\\":1,\\\"ts\\\":1787900354},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787900362},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787900464},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787900467},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787900473},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787901120},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787901137},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787901142},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T3\\\",\\\"q\\\":1,\\\"ts\\\":1787901170},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787901178},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787901195},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787903057},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787903073},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787903073},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787903125},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787903132},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787903135},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787903138},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787903144},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787903144},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T2\\\",\\\"q\\\":1,\\\"ts\\\":1787903147},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787903148},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787903152},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787903161},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787903165},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787903173},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787903176},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787903197},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787903207},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787903565},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787903571},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787903576},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T4\\\",\\\"q\\\":1,\\\"ts\\\":1787903578},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T2\\\",\\\"q\\\":1,\\\"ts\\\":1787903617},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787903635},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787903663},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787903664},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787903669},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T2\\\",\\\"q\\\":1,\\\"ts\\\":1787903669},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787903675},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787903680},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787903704},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787904139},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787904145},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787904147},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787904152},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T3\\\",\\\"q\\\":1,\\\"ts\\\":1787904516},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787904530},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787904532},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787904544},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787904548},{\\\"a\\\":\\\"module_drop\\\",\\\"n\\\":\\\"Mô-đun ROBOT (T1)\\\",\\\"q\\\":1,\\\"ts\\\":1787904553},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787904570},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787904576},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787904593},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787904594},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787904612},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T3\\\",\\\"q\\\":1,\\\"ts\\\":1787904670},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787904725}]\",\"last_tick_at\":1787904755392,\"home_crops\":\"[]\",\"turret_modules\":{},\"robot_modules\":{\"core_brain\":{\"id\":\"c82c7ncqrldcj78av0oiut\",\"t\":1,\"slot\":\"core_brain\",\"rarity\":1,\"sockets\":1,\"c\":[null],\"cards\":[null],\"opt\":{\"def\":5}},\"core_center\":{\"id\":\"0cpcpev0vf9mvgrkr78b5a\",\"t\":1,\"slot\":\"core_center\",\"rarity\":1,\"sockets\":1,\"c\":[null],\"cards\":[null],\"opt\":{\"str\":5}}},\"axe_modules\":{\"sight\":{\"id\":\"1kk28u3qn55g9vjbhhs2tt\",\"t\":1,\"slot\":\"sight\",\"rarity\":2,\"sockets\":2,\"c\":[null,null],\"cards\":[null,null],\"opt\":{\"def\":7}},\"barrel\":{\"id\":\"scr8p11107l60e8ew37rek\",\"t\":1,\"slot\":\"barrel\",\"rarity\":1,\"sockets\":1,\"c\":[null],\"cards\":[null],\"opt\":{\"intel\":5}}},\"cards\":\"{\\\"1\\\":{\\\"n\\\":10,\\\"m\\\":0},\\\"2\\\":{\\\"n\\\":7,\\\"m\\\":0},\\\"3\\\":{\\\"n\\\":7,\\\"m\\\":0},\\\"14\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"16\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"17\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"18\\\":{\\\"n\\\":2,\\\"m\\\":0},\\\"27\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"40\\\":{\\\"n\\\":2,\\\"m\\\":0}}\",\"eggs\":\"{\\\"1\\\":{\\\"n\\\":6,\\\"m\\\":0},\\\"2\\\":{\\\"n\\\":7,\\\"m\\\":0},\\\"3\\\":{\\\"n\\\":5,\\\"m\\\":0},\\\"14\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"15\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"16\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"17\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"21\\\":{\\\"n\\\":3,\\\"m\\\":0},\\\"68\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"74\\\":{\\\"n\\\":1,\\\"m\\\":0}}\",\"module_inventory\":[],\"pistol_modules\":{},\"axe_module_inventory\":[],\"knife_modules\":{\"barrel\":{\"id\":\"mzxv4wiym5ht93wy3ek98\",\"t\":1,\"slot\":\"barrel\",\"rarity\":1,\"sockets\":1,\"c\":[{\"mid\":40,\"mvp\":0,\"s\":\"str\",\"v\":4,\"stat\":\"str\",\"lv\":33,\"sName\":\"STR\",\"value\":4,\"mb\":null}],\"cards\":[{\"mid\":40,\"mvp\":0,\"s\":\"str\",\"v\":4,\"stat\":\"str\",\"lv\":33,\"sName\":\"STR\",\"value\":4,\"mb\":null}],\"opt\":{\"dex\":5}}},\"robot_gun_modules\":{},\"sniper_modules\":{},\"sniper_module_inventory\":[],\"knife_module_inventory\":[],\"robot_module_inventory\":\"[{\\\"rarity\\\":1,\\\"plus\\\":0,\\\"slot\\\":\\\"sight\\\",\\\"cards\\\":[]}]\",\"robot_gun_module_inventory\":[],\"railgun_modules\":{},\"railgun_module_inventory\":[],\"armor_modules\":{\"a_regen\":{\"id\":\"xyn9cks2ijdzxdhvhz9ghk\",\"t\":1,\"slot\":\"a_regen\",\"rarity\":1,\"sockets\":1,\"c\":[{\"mid\":40,\"mvp\":0,\"s\":\"str\",\"v\":4,\"stat\":\"str\",\"lv\":33,\"sName\":\"STR\",\"value\":4,\"mb\":null}],\"cards\":[{\"mid\":40,\"mvp\":0,\"s\":\"str\",\"v\":4,\"stat\":\"str\",\"lv\":33,\"sName\":\"STR\",\"value\":4,\"mb\":null}],\"opt\":{\"dex\":5}}},\"armor_module_inventory\":[],\"house_modules\":{\"h_wall\":{\"id\":\"eeoxnp52kbbdn2140neoy\",\"t\":1,\"slot\":\"h_wall\",\"rarity\":1,\"sockets\":1,\"c\":[null],\"cards\":[null],\"opt\":{\"luk\":5}},\"h_roof\":{\"id\":\"jvj1xvo1foihy7reba1uj9\",\"t\":1,\"slot\":\"h_roof\",\"rarity\":1,\"sockets\":1,\"c\":[null],\"cards\":[null],\"opt\":{\"spd\":5}}},\"house_module_inventory\":[],\"turret_module_inventory\":[],\"eq2_inv\":\"[{\\\"id\\\":\\\"0gzezuy8vd\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":4,\\\"lv\\\":1,\\\"af\\\":[[\\\"atk\\\",6],[\\\"pam\\\",7],[\\\"drp\\\",7]]},{\\\"id\\\":\\\"6lr184ldey\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",2]]},{\\\"id\\\":\\\"mmc2utyk0g\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",1]]},{\\\"id\\\":\\\"fnvasysjj1\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"af\\\":[[\\\"def\\\",5],[\\\"pam\\\",2]]},{\\\"id\\\":\\\"9fbhphi3bn\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",3]]},{\\\"id\\\":\\\"1tzpwsv4zv\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":3,\\\"lv\\\":1,\\\"af\\\":[[\\\"pam\\\",2],[\\\"def\\\",7],[\\\"atk\\\",8]]},{\\\"id\\\":\\\"etj5a0mqds\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"pam\\\",1]]},{\\\"id\\\":\\\"pt84f68lpv\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",1],[\\\"drp\\\",2]]},{\\\"id\\\":\\\"85s1yf65j8\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"def\\\",1]]},{\\\"id\\\":\\\"x2xfbpj5jy\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":3,\\\"lv\\\":1,\\\"af\\\":[[\\\"ene\\\",8],[\\\"drp\\\",5],[\\\"pam\\\",8]]},{\\\"id\\\":\\\"hz0h22n2ht\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",3]]},{\\\"id\\\":\\\"0ceuj5naq2\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"pam\\\",1]]},{\\\"id\\\":\\\"ao0gijrkl2\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",2],[\\\"atk\\\",2]]},{\\\"id\\\":\\\"ar5ktsul74\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"def\\\",1]]},{\\\"id\\\":\\\"i0kok3236\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"pam\\\",3]]},{\\\"id\\\":\\\"scj47hstxp\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"pam\\\",1]]},{\\\"id\\\":\\\"y3ye41sv6p\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",1]]},{\\\"id\\\":\\\"vnc9qxiukj\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":4,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",6],[\\\"def\\\",12],[\\\"drp\\\",2]]},{\\\"id\\\":\\\"z1eerbwnzj\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",5],[\\\"rdf\\\",1]]},{\\\"id\\\":\\\"6pal6z0p4g\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"brg\\\",2]]},{\\\"id\\\":\\\"vlcbssp39g\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",4],[\\\"def\\\",5]]},{\\\"id\\\":\\\"nqglw63h9g\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",2]]},{\\\"id\\\":\\\"no8um3kvav\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":3,\\\"lv\\\":1,\\\"af\\\":[[\\\"ene\\\",6],[\\\"def\\\",2],[\\\"rdf\\\",6]]},{\\\"id\\\":\\\"r6h3adgbgb\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",3]]},{\\\"id\\\":\\\"56fc2iyy3q\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",2]]},{\\\"id\\\":\\\"7ii67tanye\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",2]]},{\\\"id\\\":\\\"kquvymivof\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",2]]},{\\\"id\\\":\\\"w4hhq42qjq\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":3,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",7],[\\\"def\\\",9],[\\\"atk\\\",4]]}]\",\"knight_x\":991,\"knight_y\":1214,\"dv_x\":993,\"dv_y\":1190,\"p_spend_total\":15580,\"dex_eff\":200,\"luk_eff\":5,\"turrets\":[],\"_mine_frac\":[0,0,0,0,0,0]}",
+      "x": 971,
+      "y": 1200
+    },
+    {
+      "line_uid": "local_3085dceb09b40b20a725b61eb0105964",
+      "name": "admin",
+      "lv": 30,
+      "exp": 2810285,
+      "hp": 300,
+      "hp_max": 300,
+      "gold": 3441989,
+      "map": 2,
+      "raw_data": "{\"id\":1996,\"line_uid\":\"local_3085dceb09b40b20a725b61eb0105964\",\"pay_code\":null,\"display_name\":\"admin\",\"created_at\":\"2026-07-14 06:12:11\",\"last_flush\":\"2026-08-20 16:51:17\",\"p_points\":42799,\"profile_pic\":\"https://lh3.googleusercontent.com/a/ACg8ocIUjAPkVnM177S4_rVoE6XrxLl9Dp7Dfu_0jWo9fSN9mmvhW2so=s96-c\",\"lv\":30,\"exp\":2810285,\"exp_next\":1771344,\"hp\":785,\"hp_max\":775,\"x\":1242,\"y\":1203,\"is_dead\":0,\"gold\":3441989,\"stat_pts\":20,\"str\":165,\"agi\":10,\"dex\":5,\"intel\":50,\"vit\":15,\"luk\":10,\"gun_pistol_lv\":1,\"gun_sniper_lv\":1,\"active_gun\":1,\"ammo_pistol\":200,\"ammo_sniper\":195,\"hp_potion\":10,\"knife_lv\":1,\"robot_axe_lv\":0,\"robot_gun_lv\":0,\"ammo_robot_gun\":195,\"robot_railgun_lv\":0,\"railgun_charge\":100,\"last_seen\":1787219476,\"house_lv\":20,\"house_x\":928,\"house_y\":780,\"house_ammo_pistol\":0,\"house_ammo_sniper\":147,\"house_ammo_robot\":0,\"house_last_prod\":1787907399,\"wood\":20873,\"stone\":16056,\"iron\":24910,\"copper\":25000,\"house_prod_pistol\":1,\"house_prod_sniper\":1,\"house_prod_robot\":1,\"house_energy\":0,\"robot_lv\":4,\"robot_energy\":400,\"herb\":25378,\"house_ammo_potion\":166,\"house_prod_potion\":1,\"ammo_potion\":0,\"auto_use_potion\":1,\"mp\":300,\"armor\":244,\"auto_refill_pistol\":0,\"auto_refill_sniper\":0,\"auto_refill_robot_gun\":0,\"skills\":\"{\\\"knife_atk\\\":5,\\\"double_attack\\\":5}\",\"skill_pts\":39,\"equipment\":{\"foot\":[1]},\"equipment_qty\":[],\"kills\":0,\"premium_exp_expires\":1789354032,\"premium_gold_expires\":1789354035,\"premium_miner_expires\":1789354044,\"stat_reset_last\":1785211747,\"ammo_pistol_extra\":[190,185,180,177,175],\"ammo_sniper_extra\":[185,180,175,172,170],\"ammo_robot_extra\":[185,180,175,172,170],\"house_ammo_pistol_extra\":\"[0,210,0,0,0]\",\"house_ammo_sniper_extra\":\"[133,210,0,0,0]\",\"house_ammo_robot_extra\":\"[147,210,0,0,0]\",\"house_prod_pistol_tier\":1,\"house_prod_sniper_tier\":1,\"house_prod_robot_tier\":1,\"pistol_tier_enabled\":0,\"sniper_tier_enabled\":0,\"robot_tier_enabled\":3,\"house_prod_pistol_mask\":4,\"house_prod_sniper_mask\":4,\"house_prod_robot_mask\":0,\"gun_use_pistol\":0,\"gun_use_sniper\":0,\"gun_use_robot_gun\":0,\"hp_potion_extra\":\"[29,26,0,0,0]\",\"house_ammo_potion_extra\":\"[209,206,0,0,0]\",\"potion_tier_enabled\":2,\"house_prod_potion_mask\":6,\"auto_potion_threshold\":90,\"solar_cell_lv\":3,\"drone_lv\":0,\"drone_expires\":0,\"drone_x\":0,\"drone_y\":0,\"drone_state\":\"idle\",\"drone_cooldown\":0,\"drone_cargo_ammo\":\"{}\",\"drone_cargo_pot\":\"[0,0,0,0,0,0]\",\"cat_lv\":10,\"cat_x\":1104,\"cat_y\":1073,\"cat_state\":\"idle\",\"cat_cooldown\":1787219556,\"cat_cargo\":{\"pistol\":[0,0,0,0,0,0],\"sniper\":[0,0,0,0,0,0],\"robot\":[0,0,0,0,0,0]},\"cat_enabled\":1,\"robot_railgun_expires\":1789354050,\"robot_disabled\":0,\"last_ip\":\"113.160.149.56\",\"robot_stun_lv\":0,\"gun_use_stun\":0,\"diamond_blue\":4848,\"diamond_red\":441,\"diamond_green\":0,\"armor_lv\":1,\"robot_skin\":\"\",\"robot_skins\":\"[]\",\"robot_skin_stats\":\"{}\",\"auto_refill_potion\":0,\"mine_lv\":\"[12,0,0,10,0,0]\",\"mine_ore\":\"[\\\"wood\\\",\\\"\\\",\\\"\\\",\\\"wood\\\",\\\"\\\",\\\"\\\"]\",\"mine_on\":\"[1,0,0,1,0,0]\",\"mine_last_prod\":1787219547,\"pet_skin\":\"fmon3\",\"pet_skins\":\"[\\\"fmon3\\\"]\",\"pet_skin_stats\":\"{}\",\"map\":2,\"module_box1\":0,\"module_box2\":2,\"module_box3\":0,\"module_box4\":0,\"pet_mid\":46,\"pet_mvp\":0,\"pet_olv\":40,\"pet_exp\":80740,\"pet_cards\":\"[]\",\"card_box1\":0,\"card_box2\":1,\"card_box3\":0,\"card_box4\":0,\"card_box5\":0,\"card_box6\":0,\"card_box7\":0,\"card_box8\":0,\"hero_skin\":\"\",\"hero_skins\":\"[\\\"hs05\\\"]\",\"hero_skin_stats\":\"{}\",\"offline_zones\":\"1:1,1:4\",\"offline_zones_map\":1,\"pet_batk\":120,\"pet_bhp\":320,\"pet_hp\":800,\"pet_down\":0,\"pet_up_atk\":0,\"pet_up_hp\":0,\"pet_up_reco\":0,\"orion_gun_lv\":0,\"orion_cannon_lv\":0,\"orion_gun_expires\":1789354056,\"gun_use_turret\":0,\"turret_lv\":0,\"premium_offline_expires\":1789354029,\"country\":\"VN\",\"rag_lv\":1,\"rag_exp\":0,\"rag_pts\":0,\"rag_hp\":0,\"rag_mp\":0,\"rag_atk\":0,\"rag_crit\":0,\"rag_def\":0,\"rag_armor\":0,\"priest_expires\":1819362806,\"priest_lv\":1,\"archer_expires\":1819362806,\"archer_lv\":1,\"archer_on\":1,\"premium_drop_expires\":0,\"egg_box1\":1,\"egg_box2\":1,\"egg_box3\":0,\"egg_box4\":0,\"egg_box5\":0,\"egg_box6\":0,\"egg_box7\":0,\"egg_box8\":0,\"vip_lv\":0,\"home_lv\":0,\"home_seeds\":\"{}\",\"eq2\":\"{\\\"_auto\\\":3,\\\"head\\\":{\\\"id\\\":\\\"ee90864fb3b\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":4,\\\"lv\\\":18,\\\"af\\\":[[\\\"spd\\\",5],[\\\"brg\\\",1],[\\\"drp\\\",77],[\\\"rdf\\\",80]],\\\"p\\\":10},\\\"foot\\\":{\\\"id\\\":\\\"iwf3zg4cr3\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":4,\\\"lv\\\":1,\\\"af\\\":[[\\\"brg\\\",6],[\\\"ene\\\",8],[\\\"def\\\",8]],\\\"p\\\":11},\\\"ring1\\\":{\\\"id\\\":\\\"2np60cikmi\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":3,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",2],[\\\"atk\\\",9],[\\\"brg\\\",7]]},\\\"ring2\\\":{\\\"id\\\":\\\"6eyci1nbow\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":3,\\\"lv\\\":1,\\\"af\\\":[[\\\"atk\\\",2],[\\\"def\\\",6],[\\\"spd\\\",6]]},\\\"body\\\":{\\\"id\\\":\\\"qkoytv9u2p\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":3,\\\"lv\\\":1,\\\"af\\\":[[\\\"pam\\\",5],[\\\"spd\\\",6],[\\\"rdf\\\",7]]}}\",\"knight_expires\":1819362806,\"knight_lv\":1,\"dv_pet\":1,\"dv_exp\":7670,\"dv_hp\":193980,\"dv_down\":0,\"dv_up_atk\":0,\"dv_up_hp\":0,\"dv_up_reco\":0,\"dv_cards\":\"[]\",\"dv_on\":1,\"god_cards\":\"{}\",\"home_guards\":\"[]\",\"guild_id\":29,\"guild_tag\":\"News|0:0:1\",\"job2_exp\":{\"atk\":0,\"def\":334821245,\"melee\":447319330,\"turret\":10314045},\"job2_star\":\"{}\",\"ore1\":0,\"ore2\":0,\"ore3\":0,\"last_device\":\"pc\",\"priest_on\":1,\"knight_on\":1,\"eq2_scrap\":2141,\"ore4\":0,\"ore5\":0,\"ore6\":0,\"eqc_opt\":\"{}\",\"mod_scrap\":13,\"premium_np_expires\":1790218016,\"premium_pk_expires\":1789354022,\"premium_pro_expires\":1789354025,\"last_cc\":\"VN\",\"cc_home\":\"VN\",\"cc_moves\":0,\"cc_at\":null,\"vip_fx\":1,\"sac_cards\":\"{}\",\"sac_eggs\":\"{}\",\"araid_on\":1,\"araid_g\":0,\"araid_c\":0,\"last_action_at\":1787219481,\"last_active\":1787219548,\"explore_radius\":300,\"explore_cx\":1125,\"explore_cy\":1125,\"_vitHpBonus\":4,\"house_prod_last\":{\"pistol\":[],\"sniper\":[],\"robot\":[],\"potion\":[]},\"_regen_at\":1787219548,\"tick\":3859,\"skill_cds\":[],\"target_monster_id\":353,\"stuck_ticks\":0,\"robot_x\":1240,\"robot_y\":1191,\"robot_pull_at\":1787219547,\"pet_x\":1239,\"pet_y\":1191,\"str_eff\":165,\"vit_eff\":15,\"agi_eff\":10,\"intel_eff\":50,\"stat_sum_eff\":273,\"orion_cd\":55,\"explore_tx\":1125,\"explore_ty\":1125,\"cat_cargo_pot\":[0,0,0,0,0,0],\"job2_need\":{\"atk\":5230417820,\"def\":5230417820,\"melee\":5230417820,\"turret\":5230417820},\"mp_max\":50,\"p_total\":500,\"last_tick_at\":1787907399334,\"speed_modifier\":0.9142673689550561,\"wander_change_rate\":0.269997268002261,\"drop_log\":\"[{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Vua bò tót\\\",\\\"q\\\":1,\\\"ts\\\":1787826422},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Bò\\\",\\\"q\\\":1,\\\"ts\\\":1787826425},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Bò\\\",\\\"q\\\":1,\\\"ts\\\":1787826426},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Cừu\\\",\\\"q\\\":1,\\\"ts\\\":1787826429},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T2\\\",\\\"q\\\":1,\\\"ts\\\":1787826429},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826438},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp mô-đun T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826438},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp thẻ bài T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826438},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787826441},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826441},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Cừu\\\",\\\"q\\\":1,\\\"ts\\\":1787826445},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T3\\\",\\\"q\\\":1,\\\"ts\\\":1787826471},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826475},{\\\"a\\\":\\\"module_drop\\\",\\\"n\\\":\\\"Mô-đun KNIFE (T2)\\\",\\\"q\\\":1,\\\"ts\\\":1787826492},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826492},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp mô-đun T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826492},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp trứng T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826492},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826514},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826522},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826523},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787826531},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T3\\\",\\\"q\\\":1,\\\"ts\\\":1787826534},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826535},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787826545},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826545},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T2\\\",\\\"q\\\":1,\\\"ts\\\":1787826547},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787826557},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826557},{\\\"a\\\":\\\"module_drop\\\",\\\"n\\\":\\\"Mô-đun ARMOR (T1)\\\",\\\"q\\\":1,\\\"ts\\\":1787826573},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787826577},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787826579},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787826609},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Gà con\\\",\\\"q\\\":1,\\\"ts\\\":1787826609},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826616},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T3\\\",\\\"q\\\":1,\\\"ts\\\":1787826647},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826662},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787826664},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787826673},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787826723},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương đỏ\\\",\\\"q\\\":1,\\\"ts\\\":1787826756},{\\\"a\\\":\\\"module_drop\\\",\\\"n\\\":\\\"Mô-đun SNIPER (T3)\\\",\\\"q\\\":1,\\\"ts\\\":1787826756},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826756},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp mô-đun T2\\\",\\\"q\\\":1,\\\"ts\\\":1787826756},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp trứng T2\\\",\\\"q\\\":1,\\\"ts\\\":1787826756},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787826781},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Vua sói\\\",\\\"q\\\":1,\\\"ts\\\":1787826805},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem cổ đại\\\",\\\"q\\\":1,\\\"ts\\\":1787906190},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem cổ đại\\\",\\\"q\\\":1,\\\"ts\\\":1787906190},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906198},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương đỏ\\\",\\\"q\\\":1,\\\"ts\\\":1787906235},{\\\"a\\\":\\\"module_drop\\\",\\\"n\\\":\\\"Mô-đun HOUSE (T3)\\\",\\\"q\\\":1,\\\"ts\\\":1787906235},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906235},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp mô-đun T2\\\",\\\"q\\\":1,\\\"ts\\\":1787906235},{\\\"a\\\":\\\"box_drop\\\",\\\"n\\\":\\\"Hộp thẻ bài T2\\\",\\\"q\\\":1,\\\"ts\\\":1787906235},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906278},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906294},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906294},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906298},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906312},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem đá tảng\\\",\\\"q\\\":1,\\\"ts\\\":1787906348},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906356},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906366},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787906372},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá tảng\\\",\\\"q\\\":1,\\\"ts\\\":1787906372},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787906402},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906402},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá tảng\\\",\\\"q\\\":1,\\\"ts\\\":1787906412},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem cổ đại\\\",\\\"q\\\":1,\\\"ts\\\":1787906430},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem cổ đại\\\",\\\"q\\\":1,\\\"ts\\\":1787906456},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906476},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906480},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T2\\\",\\\"q\\\":1,\\\"ts\\\":1787906488},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906496},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906508},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá tảng\\\",\\\"q\\\":1,\\\"ts\\\":1787906530},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787906536},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906540},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906544},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906548},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá tảng\\\",\\\"q\\\":1,\\\"ts\\\":1787906570},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906582},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787906598},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906598},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem đá tảng\\\",\\\"q\\\":1,\\\"ts\\\":1787906606},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá tảng\\\",\\\"q\\\":1,\\\"ts\\\":1787906626},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787906630},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị HEAD T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906642},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906650},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem đá tảng\\\",\\\"q\\\":1,\\\"ts\\\":1787906672},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906676},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem cổ đại\\\",\\\"q\\\":1,\\\"ts\\\":1787906686},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906694},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem đá\\\",\\\"q\\\":1,\\\"ts\\\":1787906730},{\\\"a\\\":\\\"diamond_drop\\\",\\\"n\\\":\\\"Kim cương xanh\\\",\\\"q\\\":1,\\\"ts\\\":1787906750},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem cổ đại\\\",\\\"q\\\":1,\\\"ts\\\":1787906754},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị FOOT T1\\\",\\\"q\\\":1,\\\"ts\\\":1787906754},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị BODY T2\\\",\\\"q\\\":1,\\\"ts\\\":1787906768},{\\\"a\\\":\\\"mvp_drop\\\",\\\"n\\\":\\\"Trang bị RING T2\\\",\\\"q\\\":1,\\\"ts\\\":1787906798},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Golem cổ đại\\\",\\\"q\\\":1,\\\"ts\\\":1787906806},{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Golem cổ đại\\\",\\\"q\\\":1,\\\"ts\\\":1787906836}]\",\"robot_modules\":\"{\\\"core_brain\\\":{\\\"id\\\":\\\"cwy4m5hpgxagzcbhlar0rd\\\",\\\"t\\\":1,\\\"slot\\\":\\\"core_brain\\\",\\\"rarity\\\":1,\\\"sockets\\\":1,\\\"c\\\":[null],\\\"cards\\\":[null],\\\"opt\\\":{\\\"dex\\\":5}},\\\"core_back\\\":{\\\"id\\\":\\\"n12wcooa7qavnotdfnkpu\\\",\\\"t\\\":1,\\\"slot\\\":\\\"core_back\\\",\\\"rarity\\\":1,\\\"sockets\\\":1,\\\"c\\\":[null],\\\"cards\\\":[null],\\\"opt\\\":{\\\"str\\\":5}}}\",\"knife_modules\":\"{\\\"sight\\\":{\\\"id\\\":\\\"vc0t53xli5ewfsiz8zcn9\\\",\\\"t\\\":1,\\\"slot\\\":\\\"sight\\\",\\\"rarity\\\":1,\\\"sockets\\\":1,\\\"c\\\":[null],\\\"cards\\\":[null],\\\"opt\\\":{\\\"vit\\\":5}}}\",\"house_modules\":\"{\\\"h_floor\\\":{\\\"id\\\":\\\"l5rrf1qf65by2b8i3es8yn\\\",\\\"t\\\":1,\\\"slot\\\":\\\"h_floor\\\",\\\"rarity\\\":1,\\\"sockets\\\":1,\\\"c\\\":[null],\\\"cards\\\":[null],\\\"opt\\\":{\\\"atk\\\":5}}}\",\"cards\":\"{\\\"1\\\":{\\\"n\\\":10,\\\"m\\\":0},\\\"2\\\":{\\\"n\\\":8,\\\"m\\\":0},\\\"3\\\":{\\\"n\\\":6,\\\"m\\\":0},\\\"17\\\":{\\\"n\\\":3,\\\"m\\\":0},\\\"18\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"27\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"28\\\":{\\\"n\\\":6,\\\"m\\\":0},\\\"29\\\":{\\\"n\\\":5,\\\"m\\\":0},\\\"30\\\":{\\\"n\\\":4,\\\"m\\\":0},\\\"40\\\":{\\\"n\\\":2,\\\"m\\\":0},\\\"41\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"42\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"43\\\":{\\\"n\\\":1,\\\"m\\\":0}}\",\"eggs\":\"{\\\"1\\\":{\\\"n\\\":9,\\\"m\\\":0},\\\"2\\\":{\\\"n\\\":13,\\\"m\\\":0},\\\"3\\\":{\\\"n\\\":11,\\\"m\\\":0},\\\"16\\\":{\\\"n\\\":2,\\\"m\\\":0},\\\"18\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"19\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"21\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"28\\\":{\\\"n\\\":4,\\\"m\\\":0},\\\"29\\\":{\\\"n\\\":3,\\\"m\\\":0},\\\"30\\\":{\\\"n\\\":4,\\\"m\\\":0},\\\"40\\\":{\\\"n\\\":4,\\\"m\\\":0},\\\"41\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"42\\\":{\\\"n\\\":3,\\\"m\\\":0},\\\"46\\\":{\\\"n\\\":0,\\\"m\\\":0},\\\"68\\\":{\\\"n\\\":2,\\\"m\\\":0},\\\"69\\\":{\\\"n\\\":2,\\\"m\\\":0},\\\"70\\\":{\\\"n\\\":2,\\\"m\\\":0},\\\"72\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"73\\\":{\\\"n\\\":2,\\\"m\\\":0},\\\"75\\\":{\\\"n\\\":1,\\\"m\\\":0}}\",\"eq2_inv\":\"[{\\\"id\\\":\\\"jr8o3lc6qj\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"c\\\":1,\\\"af\\\":[null,null]},{\\\"id\\\":\\\"6pj4tos652\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":3,\\\"lv\\\":1,\\\"af\\\":[[\\\"atk\\\",8],[\\\"ene\\\",6],[\\\"spd\\\",8]]},{\\\"id\\\":\\\"hncvc0gjc4\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",1]]},{\\\"id\\\":\\\"7437u7x8iw\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",3]]},{\\\"id\\\":\\\"4odejanw5r\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"brg\\\",1]]},{\\\"id\\\":\\\"61e9hlmewv\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",3]]},{\\\"id\\\":\\\"ochc8ryfhl\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",3]]},{\\\"id\\\":\\\"moydewvpfu\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"ene\\\",1]]},{\\\"id\\\":\\\"ofir1r6upw\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",3]]},{\\\"id\\\":\\\"h96jx6irpi\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"def\\\",1]]},{\\\"id\\\":\\\"zgn90io6dh\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"pam\\\",3]]},{\\\"id\\\":\\\"gdeltjty52\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",2]]},{\\\"id\\\":\\\"rkcv2l6iqh\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",6],[\\\"def\\\",4]]},{\\\"id\\\":\\\"rdse5ypr2w\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",2]]},{\\\"id\\\":\\\"74jdyhi047\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",3]]},{\\\"id\\\":\\\"5u2hauomdg\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"def\\\",3]]},{\\\"id\\\":\\\"r963bkx2up\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",1]]},{\\\"id\\\":\\\"wv0a92kq78\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",3]]},{\\\"id\\\":\\\"0k3jkcl9ue\\\",\\\"s\\\":\\\"head\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"atk\\\",1]]},{\\\"id\\\":\\\"l91e8gnfdw\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",2]]},{\\\"id\\\":\\\"s9bb81lwny\\\",\\\"s\\\":\\\"foot\\\",\\\"t\\\":1,\\\"lv\\\":1,\\\"af\\\":[[\\\"drp\\\",2]]},{\\\"id\\\":\\\"hbouo0pbmt\\\",\\\"s\\\":\\\"body\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"af\\\":[[\\\"rdf\\\",1],[\\\"pam\\\",5]]},{\\\"id\\\":\\\"ep1yaxhp2n\\\",\\\"s\\\":\\\"ring\\\",\\\"t\\\":2,\\\"lv\\\":1,\\\"af\\\":[[\\\"spd\\\",2],[\\\"atk\\\",3]]}]\",\"knight_x\":1238,\"knight_y\":1183,\"dv_x\":1236,\"dv_y\":1176,\"turrets\":[],\"p_spend_total\":7201,\"wander_angle\":2.4914628366448097,\"dex_eff\":5,\"luk_eff\":10,\"axe_module_inventory\":\"[{\\\"rarity\\\":1,\\\"plus\\\":0,\\\"slot\\\":\\\"sight\\\",\\\"cards\\\":[]}]\",\"knife_module_inventory\":\"[{\\\"rarity\\\":2,\\\"plus\\\":0,\\\"slot\\\":\\\"sight\\\",\\\"cards\\\":[]}]\",\"turret_modules\":\"{\\\"t_range\\\":{\\\"id\\\":\\\"da0uj8hqcq9qawm83tgg0d\\\",\\\"t\\\":1,\\\"slot\\\":\\\"t_range\\\",\\\"rarity\\\":1,\\\"sockets\\\":1,\\\"c\\\":[null],\\\"cards\\\":[null],\\\"opt\\\":{\\\"intel\\\":5}}}\",\"armor_module_inventory\":\"[{\\\"rarity\\\":1,\\\"plus\\\":0,\\\"slot\\\":\\\"sight\\\",\\\"cards\\\":[]}]\",\"sniper_module_inventory\":\"[{\\\"rarity\\\":3,\\\"plus\\\":0,\\\"slot\\\":\\\"barrel\\\",\\\"cards\\\":[]}]\",\"_mine_frac\":[0.8000000000000682,0,0,0.6666666666666288,0,0],\"house_module_inventory\":\"[{\\\"rarity\\\":3,\\\"plus\\\":0,\\\"slot\\\":\\\"barrel\\\",\\\"cards\\\":[]}]\"}",
+      "x": 1242,
+      "y": 1203
+    },
+    {
+      "line_uid": "local_a84ede713aed3eadf4e998002e217217",
+      "name": "Test",
+      "lv": 5,
+      "exp": 22,
+      "hp": 300,
+      "hp_max": 300,
+      "gold": 495535,
+      "map": 1,
+      "raw_data": "{\"id\":1996,\"line_uid\":\"local_a84ede713aed3eadf4e998002e217217\",\"pay_code\":null,\"display_name\":\"Test\",\"created_at\":\"2026-07-14 06:12:11\",\"last_flush\":\"2026-08-20 16:51:17\",\"p_points\":500,\"profile_pic\":\"https://lh3.googleusercontent.com/a/ACg8ocIUjAPkVnM177S4_rVoE6XrxLl9Dp7Dfu_0jWo9fSN9mmvhW2so=s96-c\",\"lv\":5,\"exp\":22,\"exp_next\":485,\"hp\":360,\"hp_max\":360,\"x\":1167,\"y\":1204,\"is_dead\":0,\"gold\":495535,\"stat_pts\":120,\"str\":5,\"agi\":5,\"dex\":5,\"intel\":5,\"vit\":5,\"luk\":5,\"gun_pistol_lv\":1,\"gun_sniper_lv\":1,\"active_gun\":1,\"ammo_pistol\":100,\"ammo_sniper\":100,\"hp_potion\":10,\"knife_lv\":1,\"robot_axe_lv\":0,\"robot_gun_lv\":0,\"ammo_robot_gun\":100,\"robot_railgun_lv\":0,\"railgun_charge\":100,\"last_seen\":1787219476,\"house_lv\":1,\"house_x\":928,\"house_y\":780,\"house_ammo_pistol\":0,\"house_ammo_sniper\":147,\"house_ammo_robot\":0,\"house_last_prod\":1787619148,\"wood\":24900,\"stone\":24903,\"iron\":25000,\"copper\":25000,\"house_prod_pistol\":1,\"house_prod_sniper\":1,\"house_prod_robot\":1,\"house_energy\":60,\"robot_lv\":0,\"robot_energy\":787,\"herb\":25004,\"house_ammo_potion\":166,\"house_prod_potion\":1,\"ammo_potion\":0,\"auto_use_potion\":1,\"mp\":180,\"armor\":65,\"auto_refill_pistol\":0,\"auto_refill_sniper\":0,\"auto_refill_robot_gun\":0,\"skills\":\"{}\",\"skill_pts\":24,\"equipment\":{\"foot\":[1]},\"equipment_qty\":[],\"kills\":0,\"premium_exp_expires\":0,\"premium_gold_expires\":0,\"premium_miner_expires\":0,\"stat_reset_last\":1785211747,\"ammo_pistol_extra\":\"[0,210,0,0,0]\",\"ammo_sniper_extra\":\"[209,136,0,0,0]\",\"ammo_robot_extra\":\"[215,0,0,0,0]\",\"house_ammo_pistol_extra\":\"[0,210,0,0,0]\",\"house_ammo_sniper_extra\":\"[133,210,0,0,0]\",\"house_ammo_robot_extra\":\"[147,210,0,0,0]\",\"house_prod_pistol_tier\":1,\"house_prod_sniper_tier\":1,\"house_prod_robot_tier\":1,\"pistol_tier_enabled\":0,\"sniper_tier_enabled\":0,\"robot_tier_enabled\":3,\"house_prod_pistol_mask\":4,\"house_prod_sniper_mask\":4,\"house_prod_robot_mask\":0,\"gun_use_pistol\":0,\"gun_use_sniper\":0,\"gun_use_robot_gun\":0,\"hp_potion_extra\":\"[29,26,0,0,0]\",\"house_ammo_potion_extra\":\"[209,206,0,0,0]\",\"potion_tier_enabled\":2,\"house_prod_potion_mask\":6,\"auto_potion_threshold\":50,\"solar_cell_lv\":3,\"drone_lv\":0,\"drone_expires\":0,\"drone_x\":0,\"drone_y\":0,\"drone_state\":\"idle\",\"drone_cooldown\":0,\"drone_cargo_ammo\":\"{}\",\"drone_cargo_pot\":\"[0,0,0,0,0,0]\",\"cat_lv\":0,\"cat_x\":1104,\"cat_y\":1073,\"cat_state\":\"idle\",\"cat_cooldown\":1787219556,\"cat_cargo\":{\"pistol\":[0,0,0,0,0,0],\"sniper\":[0,0,0,0,0,0],\"robot\":[0,0,0,0,0,0]},\"cat_enabled\":1,\"robot_railgun_expires\":0,\"robot_disabled\":0,\"last_ip\":\"113.160.149.56\",\"robot_stun_lv\":0,\"gun_use_stun\":0,\"diamond_blue\":5000,\"diamond_red\":500,\"diamond_green\":0,\"armor_lv\":1,\"robot_skin\":\"\",\"robot_skins\":\"[]\",\"robot_skin_stats\":\"{}\",\"auto_refill_potion\":0,\"mine_lv\":\"[0,0,0,0,0,0]\",\"mine_ore\":\"[\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\"]\",\"mine_on\":\"[0,0,0,0,0,0]\",\"mine_last_prod\":1787219547,\"pet_skin\":\"\",\"pet_skins\":\"[]\",\"pet_skin_stats\":\"{}\",\"map\":1,\"module_box1\":0,\"module_box2\":0,\"module_box3\":0,\"module_box4\":0,\"pet_mid\":46,\"pet_mvp\":0,\"pet_olv\":40,\"pet_exp\":1298,\"pet_cards\":\"[]\",\"card_box1\":0,\"card_box2\":0,\"card_box3\":0,\"card_box4\":0,\"card_box5\":0,\"card_box6\":0,\"card_box7\":0,\"card_box8\":0,\"hero_skin\":\"\",\"hero_skins\":\"[]\",\"hero_skin_stats\":\"{}\",\"offline_zones\":\"1:1,1:4\",\"offline_zones_map\":1,\"pet_batk\":120,\"pet_bhp\":320,\"pet_hp\":340,\"pet_down\":0,\"pet_up_atk\":3,\"pet_up_hp\":0,\"pet_up_reco\":0,\"orion_gun_lv\":0,\"orion_cannon_lv\":0,\"orion_gun_expires\":0,\"gun_use_turret\":0,\"turret_lv\":0,\"premium_offline_expires\":0,\"country\":\"VN\",\"rag_lv\":1,\"rag_exp\":0,\"rag_pts\":0,\"rag_hp\":0,\"rag_mp\":0,\"rag_atk\":0,\"rag_crit\":0,\"rag_def\":0,\"rag_armor\":0,\"priest_expires\":0,\"priest_lv\":0,\"archer_expires\":0,\"archer_lv\":1,\"archer_on\":1,\"premium_drop_expires\":0,\"egg_box1\":0,\"egg_box2\":0,\"egg_box3\":0,\"egg_box4\":0,\"egg_box5\":0,\"egg_box6\":0,\"egg_box7\":0,\"egg_box8\":0,\"vip_lv\":0,\"home_lv\":0,\"home_seeds\":\"{}\",\"eq2\":{\"_auto\":3,\"head\":{\"id\":\"ee90864fb3b\",\"s\":\"head\",\"t\":4,\"lv\":18,\"af\":[[\"spd\",5],[\"brg\",1],[\"drp\",77],[\"rdf\",80]]}},\"knight_expires\":0,\"knight_lv\":0,\"dv_pet\":0,\"dv_exp\":0,\"dv_hp\":0,\"dv_down\":0,\"dv_up_atk\":0,\"dv_up_hp\":0,\"dv_up_reco\":0,\"dv_cards\":\"[]\",\"dv_on\":1,\"god_cards\":\"{}\",\"home_guards\":\"[]\",\"guild_id\":29,\"guild_tag\":\"News|0:0:1\",\"job2_exp\":{\"atk\":0,\"def\":334821245,\"melee\":447319330,\"turret\":10314045},\"job2_star\":\"{}\",\"ore1\":0,\"ore2\":0,\"ore3\":0,\"last_device\":\"pc\",\"priest_on\":1,\"knight_on\":1,\"eq2_scrap\":1883,\"ore4\":0,\"ore5\":0,\"ore6\":0,\"eqc_opt\":\"{}\",\"mod_scrap\":13,\"premium_np_expires\":0,\"premium_pk_expires\":0,\"premium_pro_expires\":0,\"last_cc\":\"VN\",\"cc_home\":\"VN\",\"cc_moves\":0,\"cc_at\":null,\"vip_fx\":1,\"sac_cards\":\"{}\",\"sac_eggs\":\"{}\",\"araid_on\":1,\"araid_g\":0,\"araid_c\":0,\"last_action_at\":1787219481,\"last_active\":1787219548,\"explore_radius\":300,\"explore_cx\":1125,\"explore_cy\":1125,\"_vitHpBonus\":4,\"house_prod_last\":{\"pistol\":[],\"sniper\":[],\"robot\":[],\"potion\":[]},\"_regen_at\":1787219548,\"tick\":58,\"skill_cds\":[],\"target_monster_id\":229,\"stuck_ticks\":0,\"robot_x\":994,\"robot_y\":1146,\"robot_pull_at\":1787219547,\"pet_x\":981,\"pet_y\":1126,\"str_eff\":216,\"vit_eff\":7,\"agi_eff\":17,\"intel_eff\":26,\"stat_sum_eff\":273,\"orion_cd\":55,\"explore_tx\":1125,\"explore_ty\":1125,\"cat_cargo_pot\":[0,0,0,0,0,0],\"job2_need\":{\"atk\":5230417820,\"def\":5230417820,\"melee\":5230417820,\"turret\":5230417820},\"mp_max\":50,\"p_total\":500,\"last_tick_at\":1787619184499,\"speed_modifier\":1.0091976132291485,\"wander_change_rate\":0.11693782586607725,\"drop_log\":\"[]\",\"cards\":\"{\\\"40\\\":{\\\"n\\\":0,\\\"m\\\":0}}\",\"eggs\":\"{\\\"26\\\":{\\\"n\\\":1,\\\"m\\\":0},\\\"46\\\":{\\\"n\\\":0,\\\"m\\\":0}}\",\"axe_modules\":\"{\\\"sight\\\":{\\\"id\\\":\\\"odm9ezsqtpf3rkc8iaqu\\\",\\\"t\\\":1,\\\"slot\\\":\\\"sight\\\",\\\"rarity\\\":3,\\\"sockets\\\":3,\\\"c\\\":[{\\\"mid\\\":40,\\\"mvp\\\":0,\\\"stat\\\":\\\"str\\\",\\\"lv\\\":33,\\\"sName\\\":\\\"STR\\\",\\\"value\\\":4,\\\"mb\\\":null},null,null],\\\"cards\\\":[{\\\"mid\\\":40,\\\"mvp\\\":0,\\\"stat\\\":\\\"str\\\",\\\"lv\\\":33,\\\"sName\\\":\\\"STR\\\",\\\"value\\\":4,\\\"mb\\\":null},null,null],\\\"opt\\\":{\\\"vit\\\":9}}}\",\"railgun_modules\":\"{\\\"barrel\\\":{\\\"id\\\":\\\"u9c2usgv7jckq9zkq5ixt\\\",\\\"t\\\":1,\\\"slot\\\":\\\"barrel\\\",\\\"rarity\\\":1,\\\"sockets\\\":1,\\\"c\\\":[null],\\\"cards\\\":[null],\\\"opt\\\":{\\\"def\\\":5}}}\",\"robot_modules\":\"{\\\"core_back\\\":{\\\"id\\\":\\\"ciq7a4njftgbjqp1n3j5\\\",\\\"t\\\":1,\\\"slot\\\":\\\"core_back\\\",\\\"rarity\\\":2,\\\"sockets\\\":2,\\\"c\\\":[null,null],\\\"cards\\\":[null,null],\\\"opt\\\":{\\\"intel\\\":7}}}\"}",
+      "x": 1167,
+      "y": 1204
+    },
+    {
+      "line_uid": "local_8e474cf3230c4f09fb05ba1f7eb9a20c",
+      "name": "test1",
+      "lv": 13,
+      "exp": 11418,
+      "hp": 300,
+      "hp_max": 300,
+      "gold": 495570,
+      "map": 1,
+      "raw_data": "{\"id\":1996,\"line_uid\":\"local_8e474cf3230c4f09fb05ba1f7eb9a20c\",\"pay_code\":null,\"display_name\":\"test1\",\"created_at\":\"2026-07-14 06:12:11\",\"last_flush\":\"2026-08-20 16:51:17\",\"p_points\":500,\"profile_pic\":\"https://lh3.googleusercontent.com/a/ACg8ocIUjAPkVnM177S4_rVoE6XrxLl9Dp7Dfu_0jWo9fSN9mmvhW2so=s96-c\",\"lv\":13,\"exp\":11418,\"exp_next\":336,\"hp\":480,\"hp_max\":480,\"x\":979,\"y\":1174,\"is_dead\":0,\"gold\":495570,\"stat_pts\":155,\"str\":5,\"agi\":5,\"dex\":10,\"intel\":5,\"vit\":5,\"luk\":5,\"gun_pistol_lv\":1,\"gun_sniper_lv\":1,\"active_gun\":1,\"ammo_pistol\":100,\"ammo_sniper\":100,\"hp_potion\":10,\"knife_lv\":1,\"robot_axe_lv\":0,\"robot_gun_lv\":0,\"ammo_robot_gun\":100,\"robot_railgun_lv\":0,\"railgun_charge\":100,\"last_seen\":1787219476,\"house_lv\":9,\"house_x\":928,\"house_y\":780,\"house_ammo_pistol\":0,\"house_ammo_sniper\":147,\"house_ammo_robot\":0,\"house_last_prod\":1787623700,\"wood\":20816,\"stone\":20802,\"iron\":25000,\"copper\":25000,\"house_prod_pistol\":1,\"house_prod_sniper\":1,\"house_prod_robot\":1,\"house_energy\":60,\"robot_lv\":1,\"robot_energy\":787,\"herb\":25123,\"house_ammo_potion\":166,\"house_prod_potion\":1,\"ammo_potion\":0,\"auto_use_potion\":1,\"mp\":167,\"armor\":270,\"auto_refill_pistol\":1,\"auto_refill_sniper\":1,\"auto_refill_robot_gun\":0,\"skills\":\"{\\\"crit_shot\\\":5,\\\"kill_shot\\\":1}\",\"skill_pts\":26,\"equipment\":{\"foot\":[1]},\"equipment_qty\":[],\"kills\":0,\"premium_exp_expires\":0,\"premium_gold_expires\":0,\"premium_miner_expires\":0,\"stat_reset_last\":1785211747,\"ammo_pistol_extra\":\"[0,210,0,0,0]\",\"ammo_sniper_extra\":\"[209,136,0,0,0]\",\"ammo_robot_extra\":\"[215,0,0,0,0]\",\"house_ammo_pistol_extra\":\"[0,210,0,0,0]\",\"house_ammo_sniper_extra\":\"[133,210,0,0,0]\",\"house_ammo_robot_extra\":\"[147,210,0,0,0]\",\"house_prod_pistol_tier\":1,\"house_prod_sniper_tier\":1,\"house_prod_robot_tier\":1,\"pistol_tier_enabled\":0,\"sniper_tier_enabled\":0,\"robot_tier_enabled\":3,\"house_prod_pistol_mask\":4,\"house_prod_sniper_mask\":4,\"house_prod_robot_mask\":0,\"gun_use_pistol\":1,\"gun_use_sniper\":1,\"gun_use_robot_gun\":0,\"hp_potion_extra\":\"[29,26,0,0,0]\",\"house_ammo_potion_extra\":\"[209,206,0,0,0]\",\"potion_tier_enabled\":2,\"house_prod_potion_mask\":6,\"auto_potion_threshold\":50,\"solar_cell_lv\":3,\"drone_lv\":0,\"drone_expires\":0,\"drone_x\":0,\"drone_y\":0,\"drone_state\":\"idle\",\"drone_cooldown\":0,\"drone_cargo_ammo\":\"{}\",\"drone_cargo_pot\":\"[0,0,0,0,0,0]\",\"cat_lv\":0,\"cat_x\":1104,\"cat_y\":1073,\"cat_state\":\"idle\",\"cat_cooldown\":1787219556,\"cat_cargo\":{\"pistol\":[0,0,0,0,0,0],\"sniper\":[0,0,0,0,0,0],\"robot\":[0,0,0,0,0,0]},\"cat_enabled\":1,\"robot_railgun_expires\":0,\"robot_disabled\":0,\"last_ip\":\"113.160.149.56\",\"robot_stun_lv\":0,\"gun_use_stun\":0,\"diamond_blue\":5000,\"diamond_red\":500,\"diamond_green\":0,\"armor_lv\":1,\"robot_skin\":\"\",\"robot_skins\":\"[]\",\"robot_skin_stats\":\"{}\",\"auto_refill_potion\":0,\"mine_lv\":\"[0,0,0,0,0,0]\",\"mine_ore\":\"[\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\"]\",\"mine_on\":\"[0,0,0,0,0,0]\",\"mine_last_prod\":1787219547,\"pet_skin\":\"\",\"pet_skins\":\"[]\",\"pet_skin_stats\":\"{}\",\"map\":1,\"module_box1\":3,\"module_box2\":0,\"module_box3\":0,\"module_box4\":0,\"pet_mid\":0,\"pet_mvp\":0,\"pet_olv\":52,\"pet_exp\":0,\"pet_cards\":\"[]\",\"card_box1\":0,\"card_box2\":0,\"card_box3\":0,\"card_box4\":1,\"card_box5\":0,\"card_box6\":0,\"card_box7\":0,\"card_box8\":0,\"hero_skin\":\"\",\"hero_skins\":\"[]\",\"hero_skin_stats\":\"{}\",\"offline_zones\":\"1:1,1:4\",\"offline_zones_map\":1,\"pet_batk\":181,\"pet_bhp\":8225,\"pet_hp\":44208,\"pet_down\":0,\"pet_up_atk\":0,\"pet_up_hp\":0,\"pet_up_reco\":0,\"orion_gun_lv\":17,\"orion_cannon_lv\":0,\"orion_gun_expires\":0,\"gun_use_turret\":0,\"turret_lv\":0,\"premium_offline_expires\":0,\"country\":\"VN\",\"rag_lv\":1,\"rag_exp\":0,\"rag_pts\":0,\"rag_hp\":0,\"rag_mp\":0,\"rag_atk\":0,\"rag_crit\":0,\"rag_def\":0,\"rag_armor\":0,\"priest_expires\":1819161836,\"priest_lv\":1,\"archer_expires\":1819161836,\"archer_lv\":1,\"archer_on\":1,\"premium_drop_expires\":0,\"egg_box1\":0,\"egg_box2\":1,\"egg_box3\":0,\"egg_box4\":1,\"egg_box5\":0,\"egg_box6\":0,\"egg_box7\":0,\"egg_box8\":0,\"vip_lv\":0,\"home_lv\":0,\"home_seeds\":\"{}\",\"eq2\":{\"_auto\":3,\"head\":{\"id\":\"ee90864fb3b\",\"s\":\"head\",\"t\":4,\"lv\":18,\"af\":[[\"spd\",5],[\"brg\",1],[\"drp\",77],[\"rdf\",80]]}},\"knight_expires\":1819161836,\"knight_lv\":1,\"dv_pet\":1,\"dv_exp\":2264,\"dv_hp\":186660,\"dv_down\":0,\"dv_up_atk\":0,\"dv_up_hp\":0,\"dv_up_reco\":0,\"dv_cards\":\"[]\",\"dv_on\":1,\"god_cards\":\"{}\",\"home_guards\":\"[]\",\"guild_id\":29,\"guild_tag\":\"News|0:0:1\",\"job2_exp\":{\"atk\":0,\"def\":334821245,\"melee\":447319330,\"turret\":10314045},\"job2_star\":\"{}\",\"ore1\":0,\"ore2\":0,\"ore3\":0,\"last_device\":\"pc\",\"priest_on\":1,\"knight_on\":1,\"eq2_scrap\":1883,\"ore4\":0,\"ore5\":0,\"ore6\":0,\"eqc_opt\":\"{}\",\"mod_scrap\":13,\"premium_np_expires\":0,\"premium_pk_expires\":0,\"premium_pro_expires\":0,\"last_cc\":\"VN\",\"cc_home\":\"VN\",\"cc_moves\":0,\"cc_at\":null,\"vip_fx\":1,\"sac_cards\":\"{}\",\"sac_eggs\":\"{}\",\"araid_on\":1,\"araid_g\":0,\"araid_c\":0,\"last_action_at\":1787219481,\"last_active\":1787219548,\"explore_radius\":300,\"explore_cx\":1125,\"explore_cy\":1125,\"_vitHpBonus\":4,\"house_prod_last\":{\"pistol\":[],\"sniper\":[],\"robot\":[],\"potion\":[]},\"_regen_at\":1787219548,\"tick\":60,\"skill_cds\":[],\"target_monster_id\":null,\"stuck_ticks\":0,\"robot_x\":994,\"robot_y\":1174,\"robot_pull_at\":1787219547,\"pet_x\":981,\"pet_y\":1126,\"str_eff\":216,\"vit_eff\":7,\"agi_eff\":17,\"intel_eff\":26,\"stat_sum_eff\":273,\"orion_cd\":55,\"explore_tx\":1125,\"explore_ty\":1125,\"cat_cargo_pot\":[0,0,0,0,0,0],\"job2_need\":{\"atk\":5230417820,\"def\":5230417820,\"melee\":5230417820,\"turret\":5230417820},\"mp_max\":50,\"p_total\":500,\"last_tick_at\":1787625836026,\"speed_modifier\":0.9938577170931305,\"wander_change_rate\":0.14543217386861582,\"knight_x\":999,\"knight_y\":1188,\"drop_log\":\"[{\\\"a\\\":\\\"card_drop\\\",\\\"n\\\":\\\"Thẻ bài Cừu con\\\",\\\"q\\\":1,\\\"ts\\\":1787622805},{\\\"a\\\":\\\"egg_drop\\\",\\\"n\\\":\\\"Trứng Heo con\\\",\\\"q\\\":1,\\\"ts\\\":1787623369}]\",\"dv_x\":1001,\"dv_y\":1164,\"cards\":\"{\\\"3\\\":{\\\"n\\\":1,\\\"m\\\":0}}\",\"eggs\":\"{\\\"2\\\":{\\\"n\\\":1,\\\"m\\\":0}}\",\"turrets\":[]}",
+      "x": 979,
+      "y": 1174
+    },
+    {
+      "line_uid": "local_fa9f5a625c3592346b072d0b5dedb750",
+      "name": "tester_1308",
+      "lv": 1,
+      "exp": 55,
+      "hp": 300,
+      "hp_max": 300,
+      "gold": 499030,
+      "map": 1,
+      "raw_data": "{\"id\":1996,\"line_uid\":\"local_fa9f5a625c3592346b072d0b5dedb750\",\"pay_code\":null,\"display_name\":\"tester_1308\",\"created_at\":\"2026-07-14 06:12:11\",\"last_flush\":\"2026-08-20 16:51:17\",\"p_points\":500,\"profile_pic\":\"https://lh3.googleusercontent.com/a/ACg8ocIUjAPkVnM177S4_rVoE6XrxLl9Dp7Dfu_0jWo9fSN9mmvhW2so=s96-c\",\"lv\":1,\"exp\":55,\"exp_next\":45,\"hp\":300,\"hp_max\":300,\"x\":1125,\"y\":1125,\"is_dead\":0,\"gold\":499030,\"stat_pts\":98,\"str\":7,\"agi\":5,\"dex\":5,\"intel\":5,\"vit\":5,\"luk\":5,\"gun_pistol_lv\":1,\"gun_sniper_lv\":1,\"active_gun\":1,\"ammo_pistol\":100,\"ammo_sniper\":100,\"hp_potion\":10,\"knife_lv\":1,\"robot_axe_lv\":0,\"robot_gun_lv\":0,\"ammo_robot_gun\":100,\"robot_railgun_lv\":0,\"railgun_charge\":100,\"last_seen\":1787219476,\"house_lv\":1,\"house_x\":928,\"house_y\":780,\"house_ammo_pistol\":0,\"house_ammo_sniper\":147,\"house_ammo_robot\":0,\"house_last_prod\":1787644213,\"wood\":24900,\"stone\":24902,\"iron\":25000,\"copper\":25000,\"house_prod_pistol\":1,\"house_prod_sniper\":1,\"house_prod_robot\":1,\"house_energy\":60,\"robot_lv\":1,\"robot_energy\":787,\"herb\":25000,\"house_ammo_potion\":166,\"house_prod_potion\":1,\"ammo_potion\":0,\"auto_use_potion\":1,\"mp\":53,\"armor\":15,\"auto_refill_pistol\":0,\"auto_refill_sniper\":0,\"auto_refill_robot_gun\":0,\"skills\":\"{}\",\"skill_pts\":20,\"equipment\":{\"foot\":[1]},\"equipment_qty\":[],\"kills\":0,\"premium_exp_expires\":0,\"premium_gold_expires\":0,\"premium_miner_expires\":0,\"stat_reset_last\":1785211747,\"ammo_pistol_extra\":\"[0,210,0,0,0]\",\"ammo_sniper_extra\":\"[209,136,0,0,0]\",\"ammo_robot_extra\":\"[215,0,0,0,0]\",\"house_ammo_pistol_extra\":\"[0,210,0,0,0]\",\"house_ammo_sniper_extra\":\"[133,210,0,0,0]\",\"house_ammo_robot_extra\":\"[147,210,0,0,0]\",\"house_prod_pistol_tier\":1,\"house_prod_sniper_tier\":1,\"house_prod_robot_tier\":1,\"pistol_tier_enabled\":0,\"sniper_tier_enabled\":0,\"robot_tier_enabled\":3,\"house_prod_pistol_mask\":4,\"house_prod_sniper_mask\":4,\"house_prod_robot_mask\":0,\"gun_use_pistol\":0,\"gun_use_sniper\":0,\"gun_use_robot_gun\":0,\"hp_potion_extra\":\"[29,26,0,0,0]\",\"house_ammo_potion_extra\":\"[209,206,0,0,0]\",\"potion_tier_enabled\":2,\"house_prod_potion_mask\":6,\"auto_potion_threshold\":50,\"solar_cell_lv\":3,\"drone_lv\":0,\"drone_expires\":0,\"drone_x\":0,\"drone_y\":0,\"drone_state\":\"idle\",\"drone_cooldown\":0,\"drone_cargo_ammo\":\"{}\",\"drone_cargo_pot\":\"[0,0,0,0,0,0]\",\"cat_lv\":0,\"cat_x\":1104,\"cat_y\":1073,\"cat_state\":\"idle\",\"cat_cooldown\":1787219556,\"cat_cargo\":{\"pistol\":[0,0,0,0,0,0],\"sniper\":[0,0,0,0,0,0],\"robot\":[0,0,0,0,0,0]},\"cat_enabled\":1,\"robot_railgun_expires\":0,\"robot_disabled\":0,\"last_ip\":\"113.160.149.56\",\"robot_stun_lv\":0,\"gun_use_stun\":0,\"diamond_blue\":5000,\"diamond_red\":500,\"diamond_green\":0,\"armor_lv\":1,\"robot_skin\":\"\",\"robot_skins\":\"[]\",\"robot_skin_stats\":\"{}\",\"auto_refill_potion\":0,\"mine_lv\":\"[0,0,0,0,0,0]\",\"mine_ore\":\"[\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\"]\",\"mine_on\":\"[0,0,0,0,0,0]\",\"mine_last_prod\":1787219547,\"pet_skin\":\"\",\"pet_skins\":\"[]\",\"pet_skin_stats\":\"{}\",\"map\":1,\"module_box1\":3,\"module_box2\":0,\"module_box3\":0,\"module_box4\":0,\"pet_mid\":0,\"pet_mvp\":0,\"pet_olv\":52,\"pet_exp\":0,\"pet_cards\":\"[]\",\"card_box1\":0,\"card_box2\":0,\"card_box3\":0,\"card_box4\":1,\"card_box5\":0,\"card_box6\":0,\"card_box7\":0,\"card_box8\":0,\"hero_skin\":\"\",\"hero_skins\":\"[]\",\"hero_skin_stats\":\"{}\",\"offline_zones\":\"1:1,1:4\",\"offline_zones_map\":1,\"pet_batk\":181,\"pet_bhp\":8225,\"pet_hp\":44208,\"pet_down\":0,\"pet_up_atk\":0,\"pet_up_hp\":0,\"pet_up_reco\":0,\"orion_gun_lv\":0,\"orion_cannon_lv\":0,\"orion_gun_expires\":0,\"gun_use_turret\":0,\"turret_lv\":0,\"premium_offline_expires\":0,\"country\":\"VN\",\"rag_lv\":1,\"rag_exp\":0,\"rag_pts\":0,\"rag_hp\":0,\"rag_mp\":0,\"rag_atk\":0,\"rag_crit\":0,\"rag_def\":0,\"rag_armor\":0,\"priest_expires\":1819180213,\"priest_lv\":1,\"archer_expires\":1819180213,\"archer_lv\":1,\"archer_on\":1,\"premium_drop_expires\":0,\"egg_box1\":0,\"egg_box2\":1,\"egg_box3\":0,\"egg_box4\":1,\"egg_box5\":0,\"egg_box6\":0,\"egg_box7\":0,\"egg_box8\":0,\"vip_lv\":0,\"home_lv\":0,\"home_seeds\":\"{}\",\"eq2\":{\"_auto\":3,\"head\":{\"id\":\"ee90864fb3b\",\"s\":\"head\",\"t\":4,\"lv\":18,\"af\":[[\"spd\",5],[\"brg\",1],[\"drp\",77],[\"rdf\",80]]}},\"knight_expires\":1819180213,\"knight_lv\":1,\"dv_pet\":1,\"dv_exp\":2,\"dv_hp\":182999,\"dv_down\":0,\"dv_up_atk\":0,\"dv_up_hp\":0,\"dv_up_reco\":0,\"dv_cards\":\"[]\",\"dv_on\":1,\"god_cards\":\"{}\",\"home_guards\":\"[]\",\"guild_id\":29,\"guild_tag\":\"News|0:0:1\",\"job2_exp\":{\"atk\":0,\"def\":334821245,\"melee\":447319330,\"turret\":10314045},\"job2_star\":\"{}\",\"ore1\":0,\"ore2\":0,\"ore3\":0,\"last_device\":\"pc\",\"priest_on\":1,\"knight_on\":1,\"eq2_scrap\":1883,\"ore4\":0,\"ore5\":0,\"ore6\":0,\"eqc_opt\":\"{}\",\"mod_scrap\":13,\"premium_np_expires\":0,\"premium_pk_expires\":0,\"premium_pro_expires\":0,\"last_cc\":\"VN\",\"cc_home\":\"VN\",\"cc_moves\":0,\"cc_at\":null,\"vip_fx\":1,\"sac_cards\":\"{}\",\"sac_eggs\":\"{}\",\"araid_on\":1,\"araid_g\":0,\"araid_c\":0,\"last_action_at\":1787219481,\"last_active\":1787219548,\"explore_radius\":300,\"explore_cx\":1125,\"explore_cy\":1125,\"_vitHpBonus\":4,\"house_prod_last\":{\"pistol\":[],\"sniper\":[],\"robot\":[],\"potion\":[]},\"_regen_at\":1787219548,\"tick\":59,\"skill_cds\":[],\"target_monster_id\":null,\"stuck_ticks\":0,\"robot_x\":1052,\"robot_y\":1131,\"robot_pull_at\":1787219547,\"pet_x\":981,\"pet_y\":1126,\"str_eff\":5,\"vit_eff\":5,\"agi_eff\":5,\"intel_eff\":5,\"stat_sum_eff\":273,\"orion_cd\":55,\"explore_tx\":1125,\"explore_ty\":1125,\"cat_cargo_pot\":[0,0,0,0,0,0],\"job2_need\":{\"atk\":5230417820,\"def\":5230417820,\"melee\":5230417820,\"turret\":5230417820},\"mp_max\":50,\"p_total\":500,\"dex_eff\":5,\"luk_eff\":5,\"last_tick_at\":1787644213811,\"speed_modifier\":0.907493006484596,\"wander_change_rate\":0.11047259176198428,\"turrets\":[],\"knight_x\":1120,\"knight_y\":1129,\"drop_log\":\"[]\",\"dv_x\":1122,\"dv_y\":1117,\"cards\":\"{}\",\"eggs\":\"{}\"}",
+      "x": 1125,
+      "y": 1125
+    },
+    {
+      "line_uid": "local_921956963363062f1184fcbd4dd68564",
+      "name": "tester_1229",
+      "lv": 1,
+      "exp": 40,
+      "hp": 300,
+      "hp_max": 300,
+      "gold": 499025,
+      "map": 1,
+      "raw_data": "{\"id\":1996,\"line_uid\":\"local_921956963363062f1184fcbd4dd68564\",\"pay_code\":null,\"display_name\":\"tester_1229\",\"created_at\":\"2026-07-14 06:12:11\",\"last_flush\":\"2026-08-20 16:51:17\",\"p_points\":500,\"profile_pic\":\"https://lh3.googleusercontent.com/a/ACg8ocIUjAPkVnM177S4_rVoE6XrxLl9Dp7Dfu_0jWo9fSN9mmvhW2so=s96-c\",\"lv\":1,\"exp\":40,\"exp_next\":60,\"hp\":300,\"hp_max\":300,\"x\":1158,\"y\":1127,\"is_dead\":0,\"gold\":499025,\"stat_pts\":98,\"str\":7,\"agi\":5,\"dex\":5,\"intel\":5,\"vit\":5,\"luk\":5,\"gun_pistol_lv\":1,\"gun_sniper_lv\":1,\"active_gun\":1,\"ammo_pistol\":100,\"ammo_sniper\":100,\"hp_potion\":10,\"knife_lv\":1,\"robot_axe_lv\":0,\"robot_gun_lv\":0,\"ammo_robot_gun\":100,\"robot_railgun_lv\":0,\"railgun_charge\":100,\"last_seen\":1787219476,\"house_lv\":1,\"house_x\":928,\"house_y\":780,\"house_ammo_pistol\":0,\"house_ammo_sniper\":147,\"house_ammo_robot\":0,\"house_last_prod\":1787646022,\"wood\":24900,\"stone\":24900,\"iron\":25000,\"copper\":25000,\"house_prod_pistol\":1,\"house_prod_sniper\":1,\"house_prod_robot\":1,\"house_energy\":60,\"robot_lv\":1,\"robot_energy\":787,\"herb\":25001,\"house_ammo_potion\":166,\"house_prod_potion\":1,\"ammo_potion\":0,\"auto_use_potion\":1,\"mp\":53,\"armor\":15,\"auto_refill_pistol\":0,\"auto_refill_sniper\":0,\"auto_refill_robot_gun\":0,\"skills\":\"{}\",\"skill_pts\":20,\"equipment\":{\"foot\":[1]},\"equipment_qty\":[],\"kills\":0,\"premium_exp_expires\":0,\"premium_gold_expires\":0,\"premium_miner_expires\":0,\"stat_reset_last\":1785211747,\"ammo_pistol_extra\":\"[0,210,0,0,0]\",\"ammo_sniper_extra\":\"[209,136,0,0,0]\",\"ammo_robot_extra\":\"[215,0,0,0,0]\",\"house_ammo_pistol_extra\":\"[0,210,0,0,0]\",\"house_ammo_sniper_extra\":\"[133,210,0,0,0]\",\"house_ammo_robot_extra\":\"[147,210,0,0,0]\",\"house_prod_pistol_tier\":1,\"house_prod_sniper_tier\":1,\"house_prod_robot_tier\":1,\"pistol_tier_enabled\":0,\"sniper_tier_enabled\":0,\"robot_tier_enabled\":3,\"house_prod_pistol_mask\":4,\"house_prod_sniper_mask\":4,\"house_prod_robot_mask\":0,\"gun_use_pistol\":0,\"gun_use_sniper\":0,\"gun_use_robot_gun\":0,\"hp_potion_extra\":\"[29,26,0,0,0]\",\"house_ammo_potion_extra\":\"[209,206,0,0,0]\",\"potion_tier_enabled\":2,\"house_prod_potion_mask\":6,\"auto_potion_threshold\":50,\"solar_cell_lv\":3,\"drone_lv\":0,\"drone_expires\":0,\"drone_x\":0,\"drone_y\":0,\"drone_state\":\"idle\",\"drone_cooldown\":0,\"drone_cargo_ammo\":\"{}\",\"drone_cargo_pot\":\"[0,0,0,0,0,0]\",\"cat_lv\":0,\"cat_x\":1104,\"cat_y\":1073,\"cat_state\":\"idle\",\"cat_cooldown\":1787219556,\"cat_cargo\":{\"pistol\":[0,0,0,0,0,0],\"sniper\":[0,0,0,0,0,0],\"robot\":[0,0,0,0,0,0]},\"cat_enabled\":1,\"robot_railgun_expires\":0,\"robot_disabled\":0,\"last_ip\":\"113.160.149.56\",\"robot_stun_lv\":0,\"gun_use_stun\":0,\"diamond_blue\":5000,\"diamond_red\":500,\"diamond_green\":0,\"armor_lv\":1,\"robot_skin\":\"\",\"robot_skins\":\"[]\",\"robot_skin_stats\":\"{}\",\"auto_refill_potion\":0,\"mine_lv\":\"[0,0,0,0,0,0]\",\"mine_ore\":\"[\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\"]\",\"mine_on\":\"[0,0,0,0,0,0]\",\"mine_last_prod\":1787219547,\"pet_skin\":\"\",\"pet_skins\":\"[]\",\"pet_skin_stats\":\"{}\",\"map\":1,\"module_box1\":3,\"module_box2\":0,\"module_box3\":0,\"module_box4\":0,\"pet_mid\":0,\"pet_mvp\":0,\"pet_olv\":52,\"pet_exp\":0,\"pet_cards\":\"[]\",\"card_box1\":0,\"card_box2\":0,\"card_box3\":0,\"card_box4\":1,\"card_box5\":0,\"card_box6\":0,\"card_box7\":0,\"card_box8\":0,\"hero_skin\":\"\",\"hero_skins\":\"[]\",\"hero_skin_stats\":\"{}\",\"offline_zones\":\"1:1,1:4\",\"offline_zones_map\":1,\"pet_batk\":181,\"pet_bhp\":8225,\"pet_hp\":44208,\"pet_down\":0,\"pet_up_atk\":0,\"pet_up_hp\":0,\"pet_up_reco\":0,\"orion_gun_lv\":0,\"orion_cannon_lv\":0,\"orion_gun_expires\":0,\"gun_use_turret\":0,\"turret_lv\":0,\"premium_offline_expires\":0,\"country\":\"VN\",\"rag_lv\":1,\"rag_exp\":0,\"rag_pts\":0,\"rag_hp\":0,\"rag_mp\":0,\"rag_atk\":0,\"rag_crit\":0,\"rag_def\":0,\"rag_armor\":0,\"priest_expires\":1819182022,\"priest_lv\":1,\"archer_expires\":1819182022,\"archer_lv\":1,\"archer_on\":1,\"premium_drop_expires\":0,\"egg_box1\":0,\"egg_box2\":1,\"egg_box3\":0,\"egg_box4\":1,\"egg_box5\":0,\"egg_box6\":0,\"egg_box7\":0,\"egg_box8\":0,\"vip_lv\":0,\"home_lv\":0,\"home_seeds\":\"{}\",\"eq2\":{\"_auto\":3,\"head\":{\"id\":\"ee90864fb3b\",\"s\":\"head\",\"t\":4,\"lv\":18,\"af\":[[\"spd\",5],[\"brg\",1],[\"drp\",77],[\"rdf\",80]]}},\"knight_expires\":1819182022,\"knight_lv\":1,\"dv_pet\":1,\"dv_exp\":2,\"dv_hp\":182999,\"dv_down\":0,\"dv_up_atk\":0,\"dv_up_hp\":0,\"dv_up_reco\":0,\"dv_cards\":\"[]\",\"dv_on\":1,\"god_cards\":\"{}\",\"home_guards\":\"[]\",\"guild_id\":29,\"guild_tag\":\"News|0:0:1\",\"job2_exp\":{\"atk\":0,\"def\":334821245,\"melee\":447319330,\"turret\":10314045},\"job2_star\":\"{}\",\"ore1\":0,\"ore2\":0,\"ore3\":0,\"last_device\":\"pc\",\"priest_on\":1,\"knight_on\":1,\"eq2_scrap\":1883,\"ore4\":0,\"ore5\":0,\"ore6\":0,\"eqc_opt\":\"{}\",\"mod_scrap\":13,\"premium_np_expires\":0,\"premium_pk_expires\":0,\"premium_pro_expires\":0,\"last_cc\":\"VN\",\"cc_home\":\"VN\",\"cc_moves\":0,\"cc_at\":null,\"vip_fx\":1,\"sac_cards\":\"{}\",\"sac_eggs\":\"{}\",\"araid_on\":1,\"araid_g\":0,\"araid_c\":0,\"last_action_at\":1787219481,\"last_active\":1787219548,\"explore_radius\":300,\"explore_cx\":1125,\"explore_cy\":1125,\"_vitHpBonus\":4,\"house_prod_last\":{\"pistol\":[],\"sniper\":[],\"robot\":[],\"potion\":[]},\"_regen_at\":1787219548,\"tick\":59,\"skill_cds\":[],\"target_monster_id\":null,\"stuck_ticks\":0,\"robot_x\":1054,\"robot_y\":1140,\"robot_pull_at\":1787219547,\"pet_x\":981,\"pet_y\":1126,\"str_eff\":5,\"vit_eff\":5,\"agi_eff\":5,\"intel_eff\":5,\"stat_sum_eff\":273,\"orion_cd\":55,\"explore_tx\":1125,\"explore_ty\":1125,\"cat_cargo_pot\":[0,0,0,0,0,0],\"job2_need\":{\"atk\":5230417820,\"def\":5230417820,\"melee\":5230417820,\"turret\":5230417820},\"mp_max\":50,\"p_total\":500,\"dex_eff\":5,\"luk_eff\":5,\"last_tick_at\":1787646022713,\"speed_modifier\":0.8971801718887291,\"wander_change_rate\":0.29443070786899483,\"turrets\":[],\"knight_x\":1178,\"knight_y\":1141,\"drop_log\":\"[]\",\"dv_x\":1180,\"dv_y\":1117,\"cards\":\"{}\",\"eggs\":\"{}\"}",
+      "x": 1158,
+      "y": 1127
+    }
+  ],
+  "guilds": [],
+  "alliances": [],
+  "market_listings": [
+    {
+      "id": 101,
+      "item_name": "Thẻ Gà con (1⭐)",
+      "item_type": "card",
+      "item_id": 1,
+      "price_per": 500,
+      "qty": 1,
+      "seller_uid": "npc"
+    },
+    {
+      "id": 102,
+      "item_name": "Thẻ Heo con (1⭐)",
+      "item_type": "card",
+      "item_id": 2,
+      "price_per": 800,
+      "qty": 1,
+      "seller_uid": "npc"
+    },
+    {
+      "id": 103,
+      "item_name": "Trứng Slime xanh (1⭐)",
+      "item_type": "egg",
+      "item_id": 19,
+      "price_per": 1200,
+      "qty": 1,
+      "seller_uid": "npc"
+    },
+    {
+      "id": 104,
+      "item_name": "Module Súng T1",
+      "item_type": "module",
+      "item_id": 1,
+      "price_per": 1500,
+      "qty": 1,
+      "seller_uid": "npc"
+    },
+    {
+      "id": 105,
+      "item_name": "Module Dao T3",
+      "item_type": "module",
+      "item_id": 3,
+      "price_per": 2500,
+      "qty": 1,
+      "seller_uid": "npc"
+    },
+    {
+      "id": 106,
+      "item_name": "Thẻ bài #40",
+      "item_type": "card",
+      "item_id": 40,
+      "item_slot": "normal",
+      "price_per": 100,
+      "qty": 1,
+      "seller_uid": "local_3def32ad1401ab2a919db0305181d5eb"
+    }
+  ],
+  "market_history": [],
+  "trade_history": [],
+  "chat_messages": [],
+  "topup_history": [],
+  "reported_images": [],
+  "pvp_log": [],
+  "pvp_rank": [],
+  "cwar_feed": [
+    {
+      "id": "kill_bob_1",
+      "t": 1788271871,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788271871,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788271871,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788271871,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788271604,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788271604,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788271604,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788271604,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788271356,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788271356,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788271356,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788271356,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788271242,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788271242,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788271242,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788271242,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788270481,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788270481,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788270481,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788270481,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788269227,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788269227,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788269227,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788269227,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788269024,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788269024,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788269024,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788269024,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788267287,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788267287,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788267287,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788267287,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788267232,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788267232,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788267231,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788267231,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788255931,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788255931,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788255931,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788255931,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788255673,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788255673,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788255673,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788255673,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788252976,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788252976,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_somchai_1",
+      "t": 1788252976,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Somchai TH",
+      "vt": "TH",
+      "p": 5
+    },
+    {
+      "id": "kill_dave_1",
+      "t": 1788252976,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Dave JP",
+      "vt": "JP",
+      "p": 0
+    },
+    {
+      "id": "kill_bob_1",
+      "t": 1788250549,
+      "k": "Charlie TH",
+      "kt": "TH",
+      "v": "Bob VN",
+      "vt": "VN",
+      "p": 5
+    },
+    {
+      "id": "kill_charlie_1",
+      "t": 1788250549,
+      "k": "Alice VN",
+      "kt": "VN",
+      "v": "Charlie TH",
+      "vt": "TH",
+      "p": 5
+    }
+  ],
+  "gwar_flag": {
+    "holder_id": 1,
+    "holder_name": "Ragnalok",
+    "streak": 1,
+    "won_at": 1788271872
+  },
+  "gwar_history": [
+    {
+      "fight_id": 1788271872,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788271872383_fyjtuu",
+          "p": 0,
+          "last_score_ts": 1788271872
+        }
+      ]
+    },
+    {
+      "fight_id": 1788271604,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788271604713_q5iu19",
+          "p": 0,
+          "last_score_ts": 1788271604
+        }
+      ]
+    },
+    {
+      "fight_id": 1788271356,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788271356753_ap5oee",
+          "p": 0,
+          "last_score_ts": 1788271356
+        }
+      ]
+    },
+    {
+      "fight_id": 1788271243,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788271243015_exgnpi",
+          "p": 0,
+          "last_score_ts": 1788271243
+        }
+      ]
+    },
+    {
+      "fight_id": 1788270482,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788270482320_lq7i6x",
+          "p": 0,
+          "last_score_ts": 1788270482
+        }
+      ]
+    },
+    {
+      "fight_id": 1788269227,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788269227813_e90vc7",
+          "p": 0,
+          "last_score_ts": 1788269227
+        }
+      ]
+    },
+    {
+      "fight_id": 1788269025,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788269025153_mac5v7",
+          "p": 0,
+          "last_score_ts": 1788269025
+        }
+      ]
+    },
+    {
+      "fight_id": 1788267287,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788267287775_sozg9l",
+          "p": 0,
+          "last_score_ts": 1788267287
+        }
+      ]
+    },
+    {
+      "fight_id": 1788267232,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788267232462_snp0vn",
+          "p": 0,
+          "last_score_ts": 1788267232
+        }
+      ]
+    },
+    {
+      "fight_id": 1788255931,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788255931781_h1ikwp",
+          "p": 0,
+          "last_score_ts": 1788255931
+        }
+      ]
+    },
+    {
+      "fight_id": 1788255674,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788255674015_q37b3z",
+          "p": 0,
+          "last_score_ts": 1788255674
+        }
+      ]
+    },
+    {
+      "fight_id": 1788252976,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788252976842_y5n74a",
+          "p": 0,
+          "last_score_ts": 1788252976
+        }
+      ]
+    },
+    {
+      "fight_id": 1788250549,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788250549879_ymxmgo",
+          "p": 0,
+          "last_score_ts": 1788250549
+        }
+      ]
+    },
+    {
+      "fight_id": 1788250469,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788250469870_yvt1kh",
+          "p": 0,
+          "last_score_ts": 1788250469
+        }
+      ]
+    },
+    {
+      "fight_id": 1788250305,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788250305261_iw3yu4",
+          "p": 0,
+          "last_score_ts": 1788250305
+        }
+      ]
+    },
+    {
+      "fight_id": 1788243963,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788243963972_e2ipzl",
+          "p": 0,
+          "last_score_ts": 1788243963
+        }
+      ]
+    },
+    {
+      "fight_id": 1788243843,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788243843731_90qbys",
+          "p": 0,
+          "last_score_ts": 1788243843
+        }
+      ]
+    },
+    {
+      "fight_id": 1788243281,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788243281122_8ehkc1",
+          "p": 0,
+          "last_score_ts": 1788243281
+        }
+      ]
+    },
+    {
+      "fight_id": 1788241931,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788241931249_d352tm",
+          "p": 0,
+          "last_score_ts": 1788241931
+        }
+      ]
+    },
+    {
+      "fight_id": 1788241740,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788241740712_dblnor",
+          "p": 0,
+          "last_score_ts": 1788241740
+        }
+      ]
+    },
+    {
+      "fight_id": 1788239038,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788239038463_463ewe",
+          "p": 0,
+          "last_score_ts": 1788239038
+        }
+      ]
+    },
+    {
+      "fight_id": 1788238794,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788238794686_mbrydm",
+          "p": 0,
+          "last_score_ts": 1788238794
+        }
+      ]
+    },
+    {
+      "fight_id": 1788237878,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788237878417_eq6nmy",
+          "p": 0,
+          "last_score_ts": 1788237878
+        }
+      ]
+    },
+    {
+      "fight_id": 1788237645,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788237645590_g2ilc7",
+          "p": 0,
+          "last_score_ts": 1788237645
+        }
+      ]
+    },
+    {
+      "fight_id": 1788237192,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788237191997_5x8od2",
+          "p": 0,
+          "last_score_ts": 1788237192
+        }
+      ]
+    },
+    {
+      "fight_id": 1788237016,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788237016767_hnfhmi",
+          "p": 0,
+          "last_score_ts": 1788237016
+        }
+      ]
+    },
+    {
+      "fight_id": 1788236458,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788236458790_f5greu",
+          "p": 0,
+          "last_score_ts": 1788236458
+        }
+      ]
+    },
+    {
+      "fight_id": 1788235089,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788235089289_qdkr2z",
+          "p": 0,
+          "last_score_ts": 1788235089
+        }
+      ]
+    },
+    {
+      "fight_id": 1788234956,
+      "date": "2026-09-01",
+      "winner_id": 1,
+      "winner_name": "Ragnalok",
+      "points": 0,
+      "streak": 2,
+      "cancel": true,
+      "top": [
+        {
+          "g": 901,
+          "n": "TestGuild1_1788234956214_whd17c",
+          "p": 0,
+          "last_score_ts": 1788234956
+        }
+      ]
+    }
+  ],
+  "gwar_feed": [],
+  "admin_logs": [],
+  "auction_rounds": [
+    {
+      "date": "2026-09-01",
+      "opens_at": 1788235200,
+      "ends_at": 1788269400,
+      "settled": true,
+      "settled_at": 1788271881340,
+      "slots": [
+        {
+          "i": 0,
+          "cur": "P",
+          "mid": 45,
+          "name": "Vua Slime Card",
+          "lv": 38,
+          "cs": "agi",
+          "start": 95,
+          "top": 95,
+          "n": 0,
+          "leader_uid": null,
+          "nm": "",
+          "cc": ""
+        },
+        {
+          "i": 1,
+          "cur": "P",
+          "mid": 82,
+          "name": "Tiểu quỷ hỏa Card",
+          "lv": 77,
+          "cs": "dex",
+          "start": 190,
+          "top": 190,
+          "n": 0,
+          "leader_uid": null,
+          "nm": "",
+          "cc": ""
+        },
+        {
+          "i": 2,
+          "cur": "P",
+          "mid": 85,
+          "name": "Đầu lâu lửa Card",
+          "lv": 80,
+          "cs": "luk",
+          "start": 200,
+          "top": 200,
+          "n": 0,
+          "leader_uid": null,
+          "nm": "",
+          "cc": ""
+        },
+        {
+          "i": 3,
+          "cur": "G",
+          "mid": 22,
+          "name": "Slime vàng Card",
+          "lv": 15,
+          "cs": "vit",
+          "start": 750000,
+          "top": 750000,
+          "n": 0,
+          "leader_uid": null,
+          "nm": "",
+          "cc": ""
+        },
+        {
+          "i": 4,
+          "cur": "G",
+          "mid": 19,
+          "name": "Slime xanh lá Card",
+          "lv": 12,
+          "cs": "vit",
+          "start": 600000,
+          "top": 600000,
+          "n": 0,
+          "leader_uid": null,
+          "nm": "",
+          "cc": ""
+        },
+        {
+          "i": 5,
+          "cur": "G",
+          "mid": 21,
+          "name": "Vua Slime tím Card",
+          "lv": 14,
+          "cs": "agi",
+          "start": 700000,
+          "top": 700000,
+          "n": 0,
+          "leader_uid": null,
+          "nm": "",
+          "cc": ""
+        }
+      ]
+    }
+  ],
+  "auction_bids": [],
+  "auction_history": [
+    {
+      "round_date": "2026-09-01",
+      "item_name": "Vua Slime Card",
+      "item_lv": 38,
+      "winner_uid": null,
+      "winner_name": null,
+      "winner_cc": "",
+      "final_price": 0,
+      "cur": "P"
+    },
+    {
+      "round_date": "2026-09-01",
+      "item_name": "Tiểu quỷ hỏa Card",
+      "item_lv": 77,
+      "winner_uid": null,
+      "winner_name": null,
+      "winner_cc": "",
+      "final_price": 0,
+      "cur": "P"
+    },
+    {
+      "round_date": "2026-09-01",
+      "item_name": "Đầu lâu lửa Card",
+      "item_lv": 80,
+      "winner_uid": null,
+      "winner_name": null,
+      "winner_cc": "",
+      "final_price": 0,
+      "cur": "P"
+    },
+    {
+      "round_date": "2026-09-01",
+      "item_name": "Slime vàng Card",
+      "item_lv": 15,
+      "winner_uid": null,
+      "winner_name": null,
+      "winner_cc": "",
+      "final_price": 0,
+      "cur": "G"
+    },
+    {
+      "round_date": "2026-09-01",
+      "item_name": "Slime xanh lá Card",
+      "item_lv": 12,
+      "winner_uid": null,
+      "winner_name": null,
+      "winner_cc": "",
+      "final_price": 0,
+      "cur": "G"
+    },
+    {
+      "round_date": "2026-09-01",
+      "item_name": "Vua Slime tím Card",
+      "item_lv": 14,
+      "winner_uid": null,
+      "winner_name": null,
+      "winner_cc": "",
+      "final_price": 0,
+      "cur": "G"
+    }
+  ]
+}

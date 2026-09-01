@@ -1,74 +1,77 @@
 const express = require('express');
 const db = require('../db/queries');
+const { acquireLock } = require('../utils/lock');
+const cwarManager = require('../game/CWarManager');
+const gwarManager = require('../game/GWarManager');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
-  const { line_uid, session_token, action } = req.body;
-  if (!line_uid) {
-    return res.json({ ok: false, error: 'Missing line_uid' });
+router.post('/', async (req, res) => {
+  const { line_uid, session_token, action, kind } = req.body;
+  if (!line_uid || !session_token) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
   }
 
+  const release = await acquireLock(line_uid);
   db.load();
+  const snapshot = JSON.parse(JSON.stringify(db.data));
 
-  // Verify user session
-  if (session_token) {
-    const user = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
-    if (!user) {
-      return res.json({ ok: false, error: 'Invalid session' });
-    }
-  }
-
-  // Load player raw_data
-  const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
-  if (!pRow) {
-    return res.json({ ok: false, error: 'Player not found' });
-  }
-
-  let playerObj;
   try {
-    playerObj = JSON.parse(pRow.raw_data);
-  } catch (e) {
-    playerObj = { line_uid };
+    // 1. Xác thực session token
+    const userRow = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
+    if (!userRow) {
+      return res.status(401).json({ ok: false, error: 'Unauthorized: Invalid session_token' });
+    }
+
+    // 2. Load player data
+    const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
+    if (!pRow) {
+      return res.json({ ok: false, error: 'Player not found' });
+    }
+
+    let playerObj;
+    try {
+      playerObj = JSON.parse(pRow.raw_data);
+    } catch (e) {
+      playerObj = { line_uid };
+    }
+
+    // 3. Action: 'war_log'
+    if (action === 'war_log') {
+      if (kind === 'gw') {
+        const logRes = gwarManager.getWarLog('gw');
+        return res.json(logRes);
+      }
+      const logRes = cwarManager.getWarLog(kind || 'cw');
+      return res.json(logRes);
+    }
+
+    // 4. Action: 'cwar_join'
+    if (action === 'cwar_join') {
+      const joinRes = cwarManager.joinWar(playerObj);
+      if (!joinRes.ok) {
+        return res.json(joinRes);
+      }
+
+      // Cập nhật vị trí Map 4 và thông tin tham chiến vào Database
+      db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(
+        JSON.stringify(playerObj), line_uid
+      );
+      db.save();
+
+      return res.json(joinRes);
+    }
+
+    // Fallback response for unknown actions
+    res.json({ ok: false, error: 'Unknown action' });
+  } catch (err) {
+    db.data = snapshot;
+    try { db.save(); } catch (e) {}
+    console.error('Lỗi router CWar:', err);
+    return res.status(500).json({ ok: false, error: 'Lỗi chiến trường: ' + (err.message || 'Lỗi hệ thống') });
+  } finally {
+    release();
   }
-
-  if (action === 'war_log') {
-    let myName = pRow.name || 'Tôi';
-    if (playerObj.display_name) myName = playerObj.display_name;
-
-    const mockFeed = [
-      { t: Math.floor(Date.now() / 1000) - 300, k: "Knight_Legend", kt: 1, v: "Dark_Soul", vt: 2, p: 5 },
-      { t: Math.floor(Date.now() / 1000) - 150, k: "Master_Shooter", kt: 2, v: "Valkyrie_Fan", vt: 1, p: 5 },
-      { t: Math.floor(Date.now() / 1000) - 10, k: myName, kt: 1, v: "Enemy_Bot", vt: 2, p: 5 }
-    ];
-
-    return res.json({ 
-      ok: true, 
-      feed: mockFeed, 
-      ppk: 5, 
-      mlv: 50 
-    });
-  }
-
-  if (action === 'cwar_join') {
-    playerObj.home_return = { map: playerObj.map || 1, x: playerObj.x || 1125, y: playerObj.y || 1125 };
-    playerObj.map = 11; // Warp to Map 11 (Guild Castle / Battlefield)
-    playerObj.x = 1000;
-    playerObj.y = 1000;
-
-    db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(playerObj), line_uid);
-    db.save();
-
-    return res.json({
-      ok: true,
-      map: 11,
-      x: 1000,
-      y: 1000
-    });
-  }
-
-  // Fallback response for other actions
-  res.json({ ok: true, msg: 'Tính năng đang bảo trì.' });
 });
 
 module.exports = router;

@@ -98,7 +98,10 @@ class WorldManager {
     this.spawnMvps();
     
     // Vòng lặp hồi sinh và di chuyển chạy mỗi 1 giây để kiểm tra queue hồi sinh nhanh chóng
-    setInterval(() => this.tick(), 1000);
+    this.tickInterval = setInterval(() => this.tick(), 1000);
+    if (this.tickInterval && this.tickInterval.unref) {
+      this.tickInterval.unref();
+    }
   }
 
   getSpotsForMap(mapId) {
@@ -208,6 +211,86 @@ class WorldManager {
     });
   }
 
+  /**
+   * GM Admin: Triệu hồi Boss MVP tùy chỉnh tức thì lên bản đồ cụ thể
+   */
+  spawnCustomBoss(mapId, bossData = {}) {
+    const id = parseInt(mapId);
+    if (!id || id < 1 || id > 13) {
+      return { ok: false, error: 'Bản đồ không hợp lệ (hỗ trợ Map 1 - 13)' };
+    }
+
+    if (!this.maps[id]) {
+      this.maps[id] = { monsters: [], nextMonsterId: 1 };
+    }
+    const map = this.maps[id];
+
+    // Giới hạn tối đa 15 custom boss còn sống trên cùng một map để chống spam/lạm dụng
+    const activeCustomBosses = map.monsters.filter(m => m.custom_spawn && m.hp > 0).length;
+    if (activeCustomBosses >= 15) {
+      return { ok: false, error: 'Đã đạt giới hạn tối đa 15 Boss tùy chỉnh còn sống trên bản đồ này' };
+    }
+
+    const mid = parseInt(bossData.mid) || 27;
+    const monMaster = this.monMastersCache[mid] || {};
+
+    const name = String(bossData.name || monMaster.n || `Boss MVP #${mid}`);
+    const lv = Math.max(1, Math.min(150, parseInt(bossData.lv) || parseInt(monMaster.lv) || 50));
+    const emoji = String(bossData.emoji || monMaster.e || '💀');
+    const sprite_emoji = emoji;
+
+    // Tính toán máu Boss
+    const defaultHpMax = this.getMonsterHpMax(lv) * 5;
+    const hp_max = Math.max(100, Math.min(100000000, parseInt(bossData.hp) || defaultHpMax));
+
+    // Tọa độ
+    const spots = this.getSpotsForMap(id);
+    const defaultSpot = spots.length > 0 ? spots[0] : { cx: 1125, cy: 1125, radius: 200 };
+    let x = (bossData.x !== undefined && bossData.x !== null) ? parseInt(bossData.x) : defaultSpot.cx;
+    let y = (bossData.y !== undefined && bossData.y !== null) ? parseInt(bossData.y) : defaultSpot.cy;
+
+    if (isNaN(x) || x < 50 || x > 2200) x = defaultSpot.cx;
+    if (isNaN(y) || y < 50 || y > 2200) y = defaultSpot.cy;
+
+    const monsterObj = {
+      id: map.nextMonsterId++,
+      mid: mid,
+      lv: lv,
+      hp: hp_max,
+      hp_max: hp_max,
+      x: Math.round(x),
+      y: Math.round(y),
+      name: name,
+      is_mvp: true,
+      mvp: 1,
+      emoji: emoji,
+      sprite_emoji: sprite_emoji,
+      spot_cx: x,
+      spot_cy: y,
+      spot_radius: 150,
+      custom_spawn: true,
+      spawned_at: Math.floor(Date.now() / 1000)
+    };
+
+    map.monsters.push(monsterObj);
+
+    return {
+      ok: true,
+      boss: {
+        id: monsterObj.id,
+        mid: monsterObj.mid,
+        name: monsterObj.name,
+        lv: monsterObj.lv,
+        hp: monsterObj.hp,
+        hp_max: monsterObj.hp_max,
+        map: id,
+        x: monsterObj.x,
+        y: monsterObj.y,
+        emoji: monsterObj.emoji
+      }
+    };
+  }
+
   spawnMvps() {
     console.log("[WorldManager] Spawning hourly MVP bosses...");
     // Clear any existing MVP monsters to prevent stacking
@@ -266,13 +349,20 @@ class WorldManager {
     }));
   }
 
-  updatePlayerPosition(line_uid, name, x, y, lv, mapId) {
+  updatePlayerPosition(line_uid, name, x, y, lv, mapId, wc = 'VN', gid = 0, hp = null, hp_max = null, col_sh_until = 0) {
+    const existing = this.activePlayers[line_uid] || {};
+    const defaultMaxHp = hp_max || existing.hp_max || (100 + (lv || 1) * 30);
     this.activePlayers[line_uid] = {
       name,
       x,
       y,
       lv,
       map: mapId,
+      wc: String(wc || 'VN').toUpperCase(),
+      gid: parseInt(gid) || 0,
+      hp: (hp != null) ? hp : (existing.hp != null ? existing.hp : defaultMaxHp),
+      hp_max: defaultMaxHp,
+      col_sh_until: (col_sh_until != null) ? col_sh_until : (existing.col_sh_until || 0),
       lastSeen: Date.now()
     };
   }
@@ -285,16 +375,35 @@ class WorldManager {
       const p = this.activePlayers[uid];
       if (p.map === mapId && now - p.lastSeen < 15000) {
         list.push({
+          uid: uid,
+          line_uid: uid,
           name: p.name,
           x: p.x,
           y: p.y,
           lv: p.lv,
           map: p.map,
+          wc: p.wc || 'VN',
+          gid: p.gid || 0,
+          hp: p.hp,
+          hp_max: p.hp_max,
+          col_sh_until: p.col_sh_until || 0,
           ts: Math.floor(p.lastSeen / 1000)
         });
       }
     }
     return list;
+  }
+
+  getPlayersCountOnMap(mapId) {
+    const now = Date.now();
+    let count = 0;
+    for (let uid in this.activePlayers) {
+      const p = this.activePlayers[uid];
+      if (p.map === mapId && now - p.lastSeen < 15000) {
+        count++;
+      }
+    }
+    return count;
   }
 
   tick() {

@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   const { line_uid, session_token } = req.body;
   if (!line_uid || !session_token) {
-    return res.json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
+    return res.status(401).json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
   }
 
   const release = await acquireLock(line_uid);
@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
   try {
     const userRow = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
     if (!userRow) {
-      return res.json({ ok: false, error: 'Unauthorized: Invalid session_token' });
+      return res.status(401).json({ ok: false, error: 'Unauthorized: Invalid session_token' });
     }
 
     // Thu hồi session token (đặt null)
@@ -31,8 +31,8 @@ router.post('/', async (req, res) => {
   } catch (err) {
     db.data = snapshot;
     try { db.save(); } catch (e) {}
-    console.error('Lỗi khi đăng xuất:', err);
-    return res.json({ ok: false, error: 'Lỗi máy chủ khi đăng xuất: ' + (err.message || 'Lỗi hệ thống') });
+    console.error('Lỗi khi đăng xuất line_uid %s: %s', line_uid, err.message);
+    return res.status(500).json({ ok: false, error: 'Lỗi máy chủ khi đăng xuất: ' + (err.message || 'Lỗi hệ thống') });
   } finally {
     release();
   }

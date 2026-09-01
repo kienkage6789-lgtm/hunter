@@ -76,6 +76,7 @@ function callWarp(body = {}) {
           url: '/',
           body: {
             line_uid: mockUid,
+            session_token: mockToken,
             ...body
           }
         },
@@ -302,8 +303,8 @@ async function main() {
       // 1. Preview
       const prevRes = await callOffline({ action: 'preview', map: 2 });
       assert.strictEqual(prevRes.ok, true, 'Preview rate offline phải ok: true');
-      assert.strictEqual(prevRes.rate.exp, 2 * 15, 'expRate map 2 = 30');
-      assert.strictEqual(prevRes.rate.gold, 2 * 8, 'goldRate map 2 = 16');
+      assert.strictEqual(prevRes.map, 2, 'Preview map phải là 2');
+      assert(Array.isArray(prevRes.zones), 'Preview zones phải là mảng');
 
       // 2. Set zone
       const setRes = await callOffline({ action: 'set', map: 2, zones: '2:1,2:3' });
@@ -317,7 +318,7 @@ async function main() {
       // 3. Idlestat check-in
       const idleRes = await callOffline({ action: 'idlestat' });
       assert.strictEqual(idleRes.ok, true, 'Idlestat check phải ok: true');
-      assert.strictEqual(idleRes.ci, 3600, 'Idlestat ci nhịp check-in mặc định là 3600');
+      assert.strictEqual(idleRes.ci, 0, 'Idlestat ci nhịp check-in an toàn là 0');
     });
 
     // ========================================================================

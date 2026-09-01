@@ -8,7 +8,7 @@ const token = `token_${Date.now()}`;
 function callWarp(body) {
   return Promise.race([
     new Promise((resolve, reject) => warpRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: uid, ...body } },
+      { method: 'POST', url: '/', body: { line_uid: uid, session_token: token, ...body } },
       { json: resolve },
       reject
     )),

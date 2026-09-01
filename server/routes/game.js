@@ -8,6 +8,9 @@ const dropSystem = require('../game/DropSystem');
 const pvpManager = require('../game/PvPManager');
 const raidManager = require('../game/RaidManager');
 const arenaManager = require('../game/ArenaManager');
+const cwarManager = require('../game/CWarManager');
+const gwarManager = require('../game/GWarManager');
+const { settleOrionExpedition } = require('./orion_raid');
 
 const router = express.Router();
 
@@ -595,14 +598,19 @@ router.post('/', async (req, res) => {
   playerObj.last_tick_at = now;
   processHouseProduction(playerObj, now);
 
+  // Auto-settle Orion Space Expedition nếu có chuyến đi đã hết thời gian
+  if (playerObj.orion_raid && Math.floor(now / 1000) >= (playerObj.orion_raid.end_at | 0)) {
+    settleOrionExpedition(playerObj, Math.floor(now / 1000));
+  }
+
   // Lấy tọa độ mục tiêu (explore_cx/cy)
   let targetCx = parseFloat(explore_cx) || 1125;
   let targetCy = parseFloat(explore_cy) || 1125;
-  let radius = parseFloat(explore_radius) || 300;
-
-  // Anti-cheat: Cap explore_radius
-  if (radius > 300) radius = 300;
-  if (radius < 50) radius = 50;
+  let radius = parseInt(explore_radius);
+  if (![100, 200, 300].includes(radius)) {
+    radius = 300;
+  }
+  playerObj.explore_radius = radius;
   
   // Khởi tạo tọa độ hiện tại của player nếu chưa có
   if (playerObj.x === undefined || playerObj.x === null) playerObj.x = targetCx;
@@ -801,7 +809,23 @@ router.post('/', async (req, res) => {
   const drops = [];
 
   // Đồng bộ vị trí của player vào bộ nhớ để hiển thị cho người chơi khác
-  worldManager.updatePlayerPosition(line_uid, playerObj.display_name || user.username, playerObj.x, playerObj.y, playerObj.lv || pRow.lv || 1, mapId);
+  const playerMaxHp = (100 + (playerObj.vit_eff || 10) * 10 + (playerObj.lv || 1) * 20);
+  if (playerObj.hp == null) {
+    playerObj.hp = playerMaxHp;
+  }
+  worldManager.updatePlayerPosition(
+    line_uid,
+    playerObj.display_name || user.username,
+    playerObj.x,
+    playerObj.y,
+    playerObj.lv || pRow.lv || 1,
+    mapId,
+    playerObj.country || playerObj.last_cc || 'VN',
+    playerObj.guild_id || 0,
+    playerObj.hp,
+    playerMaxHp,
+    playerObj.col_sh_until || 0
+  );
 
   // Tìm quái trong tầm của explorer center
   const localMonsters = worldManager.getMonstersInRadius(mapId, cx, cy, radius);
@@ -2179,6 +2203,180 @@ router.post('/', async (req, res) => {
   // Tích hợp Raid Quota
   const raidQuota = raidManager.getPlayerQuota(playerObj);
 
+  // Tích hợp Country Flag War (CWAR)
+  const cwarStatus = cwarManager.getWarStatus(playerObj);
+  const cwarHolder = cwarManager.getFlagHoldingCountry();
+  const cwarBuff = cwarManager.getFlagBuff(playerObj);
+
+  // Tích hợp Guild Flag War (GWAR)
+  const gwarStatus = gwarManager.getWarStatus(playerObj);
+  const gwarHolderName = gwarManager.getFlagHoldingGuildName();
+  const gwarBuff = gwarManager.getFlagBuff(playerObj);
+  const alliedGuildIds = gwarManager.getAlliedGuildIds(playerObj.guild_id);
+
+  const colCount = worldManager.getPlayersCountOnMap(4);
+  const nowSec = Math.floor(Date.now() / 1000);
+  const spawnShieldSec = (playerObj.col_sh_until && playerObj.col_sh_until > nowSec) ? (playerObj.col_sh_until - nowSec) : 0;
+
+  // Tích hợp Giao tranh Chiến trường Quốc gia trên Map 4 (Server-Authoritative)
+  if (mapId === 4 && cwarManager.state.st === 'fight' && spawnShieldSec === 0) {
+    const myCc = String(playerObj.country || playerObj.last_cc || 'VN').toUpperCase();
+    const enemies = otherPlayers.filter(o => {
+      const oCc = String(o.wc || 'VN').toUpperCase();
+      if (oCc === myCc) return false;
+      const oShieldSec = (o.col_sh_until && o.col_sh_until > nowSec) ? (o.col_sh_until - nowSec) : 0;
+      if (oShieldSec > 0) return false;
+      return true;
+    });
+
+    if (enemies.length > 0) {
+      const targetEnemy = enemies[0];
+      const targetUid = targetEnemy.line_uid || targetEnemy.uid;
+      const baseDmgResult = combatEngine.calculateDamage(
+        playerObj,
+        { lv: targetEnemy.lv || 1 },
+        activeWeapon,
+        { str: playerObj.str_eff, dex: playerObj.dex_eff, agi: playerObj.agi_eff, luk: playerObj.luk_eff },
+        (key) => getEq2FxSum(playerObj, key)
+      );
+      const pvpDmg = Math.max(1, Math.round(baseDmgResult.dmg / 30));
+
+      const activeVictim = (targetUid && worldManager.activePlayers[targetUid]) ? worldManager.activePlayers[targetUid] : null;
+      const targetMaxHp = targetEnemy.hp_max || (100 + (targetEnemy.lv || 1) * 30);
+      let currentVictimHp = activeVictim ? (activeVictim.hp != null ? activeVictim.hp : targetMaxHp) : targetMaxHp;
+      currentVictimHp -= pvpDmg;
+
+      if (currentVictimHp <= 0) {
+        // Hạ gục mục tiêu thành công
+        if (activeVictim) {
+          activeVictim.hp = targetMaxHp;
+          activeVictim.col_sh_until = nowSec + cwarManager.SPAWN_SHIELD_SEC;
+        }
+
+        if (targetUid) {
+          try {
+            const vRow = db.data.players.find(p => p.line_uid === targetUid);
+            if (vRow) {
+              const vObj = JSON.parse(vRow.raw_data);
+              vObj.col_sh_until = nowSec + cwarManager.SPAWN_SHIELD_SEC;
+              vRow.raw_data = JSON.stringify(vObj);
+            }
+          } catch(e) {}
+        }
+
+        const killEventId = `cwk_${line_uid}_${targetUid}_${nowSec}`;
+        const victimPlayerObj = {
+          line_uid: targetUid,
+          name: targetEnemy.name,
+          country: targetEnemy.wc || 'VN',
+          lv: targetEnemy.lv || 1,
+          col_sh_until: 0
+        };
+
+        const killResult = cwarManager.recordKill(playerObj, victimPlayerObj, killEventId);
+
+        events.push({
+          type: 'pvp_kill',
+          dmg: pvpDmg,
+          target: targetEnemy.name,
+          pts: killResult.pts || 0,
+          msg: `⚔️ Bạn đã hạ gục ${targetEnemy.name} trên chiến trường Quốc gia (+${killResult.pts || 0} điểm)!`
+        });
+      } else {
+        // Đánh trúng nhưng chưa hạ gục
+        if (activeVictim) {
+          activeVictim.hp = currentVictimHp;
+        }
+        events.push({
+          type: 'pvp_hit',
+          dmg: pvpDmg,
+          target: targetEnemy.name,
+          msg: `⚔️ Đòn đánh trúng ${targetEnemy.name} gây ${pvpDmg} sát thương (${currentVictimHp}/${targetMaxHp} HP)!`
+        });
+      }
+    }
+  }
+
+  // Tích hợp Giao tranh Bang Hội Chiến trên Map 4 (Server-Authoritative)
+  if (mapId === 4 && gwarManager.state.st === 'fight' && spawnShieldSec === 0 && playerObj.guild_id) {
+    const myGid = Number(playerObj.guild_id);
+    const enemies = otherPlayers.filter(o => {
+      const oGid = Number(o.gid);
+      if (!oGid || oGid === myGid) return false;
+      if (gwarManager.isAllied(myGid, oGid)) return false;
+      const oShieldSec = (o.col_sh_until && o.col_sh_until > nowSec) ? (o.col_sh_until - nowSec) : 0;
+      if (oShieldSec > 0) return false;
+      return true;
+    });
+
+    if (enemies.length > 0) {
+      const targetEnemy = enemies[0];
+      const targetUid = targetEnemy.line_uid || targetEnemy.uid;
+      const baseDmgResult = combatEngine.calculateDamage(
+        playerObj,
+        { lv: targetEnemy.lv || 1 },
+        activeWeapon,
+        { str: playerObj.str_eff, dex: playerObj.dex_eff, agi: playerObj.agi_eff, luk: playerObj.luk_eff },
+        (key) => getEq2FxSum(playerObj, key)
+      );
+      const pvpDmg = Math.max(1, Math.round(baseDmgResult.dmg / 30));
+
+      const activeVictim = (targetUid && worldManager.activePlayers[targetUid]) ? worldManager.activePlayers[targetUid] : null;
+      const targetMaxHp = targetEnemy.hp_max || (100 + (targetEnemy.lv || 1) * 30);
+      let currentVictimHp = activeVictim ? (activeVictim.hp != null ? activeVictim.hp : targetMaxHp) : targetMaxHp;
+      currentVictimHp -= pvpDmg;
+
+      if (currentVictimHp <= 0) {
+        // Hạ gục mục tiêu thành công
+        if (activeVictim) {
+          activeVictim.hp = targetMaxHp;
+          activeVictim.col_sh_until = nowSec + gwarManager.SPAWN_SHIELD_SEC;
+        }
+
+        if (targetUid) {
+          try {
+            const vRow = db.data.players.find(p => p.line_uid === targetUid);
+            if (vRow) {
+              const vObj = JSON.parse(vRow.raw_data);
+              vObj.col_sh_until = nowSec + gwarManager.SPAWN_SHIELD_SEC;
+              vRow.raw_data = JSON.stringify(vObj);
+            }
+          } catch(e) {}
+        }
+
+        const killEventId = `gwk_${line_uid}_${targetUid}_${nowSec}`;
+        const victimPlayerObj = {
+          line_uid: targetUid,
+          name: targetEnemy.name,
+          guild_id: targetEnemy.gid,
+          lv: targetEnemy.lv || 1,
+          col_sh_until: 0
+        };
+
+        const killResult = gwarManager.recordKill(playerObj, victimPlayerObj, killEventId);
+
+        events.push({
+          type: 'pvp_kill',
+          dmg: pvpDmg,
+          target: targetEnemy.name,
+          pts: killResult.pts || 0,
+          msg: `🚩 Bạn đã kết liễu ${targetEnemy.name} trên chiến trường Bang hội (+${killResult.pts || 0} điểm)!`
+        });
+      } else {
+        // Đánh trúng nhưng chưa hạ gục
+        if (activeVictim) {
+          activeVictim.hp = currentVictimHp;
+        }
+        events.push({
+          type: 'pvp_hit',
+          dmg: pvpDmg,
+          target: targetEnemy.name,
+          msg: `🚩 Đòn đánh công thành trúng ${targetEnemy.name} gây ${pvpDmg} sát thương (${currentVictimHp}/${targetMaxHp} HP)!`
+        });
+      }
+    }
+  }
+
   // Trả về JSON chuẩn của game
   const responseData = {
     ok: 1,
@@ -2186,7 +2384,7 @@ router.post('/', async (req, res) => {
     monsters: finalMonsters,
     bosses: bossesList,
     others: otherPlayers,
-    ally: [],
+    ally: alliedGuildIds,
     events: events,
     drop_fx: drops,
     equipment_bonus: eq2Bonus,
@@ -2201,9 +2399,14 @@ router.post('/', async (req, res) => {
     ts: Math.floor(Date.now() / 1000),
     map: mapId,
     ev: { e: 2, d: 1.5, g: 1.5, n: "NEW COME" },
-    gwn: "Server Mới",
-    cwc: "VN",
-    col_n: 0,
+    gwn: gwarHolderName,
+    gw: gwarStatus,
+    gwf: gwarBuff,
+    cwc: cwarHolder,
+    cw: cwarStatus,
+    cwf: cwarBuff,
+    col_n: colCount,
+    col_sh: spawnShieldSec,
     chat_n: 0, 
     dm_n: 0, 
     gchat_n: 0,

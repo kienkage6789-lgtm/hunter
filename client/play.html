@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Ragnalok Client (Anti-Idle Proxy)</title>
 <link rel="stylesheet" href="/css/xhrpg_style.css">
-<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js" defer></script>
 <script src="/js/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -375,6 +375,7 @@ document.getElementById('loading-msg').textContent = 'Đang kết nối qua prox
 function startGame(player, token, offlineReward) {
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('game-screen').style.display    = 'flex';
+  window.xhrpg = xhrpg;
   xhrpg.init(player, BASE_URL, token);
   if (offlineReward && offlineReward.kills > 0) {
     setTimeout(() => xhrpg.showOfflineReward(offlineReward), 800);

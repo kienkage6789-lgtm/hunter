@@ -67,24 +67,29 @@ Active:  None (đang chờ chốt TASK tiếp theo)
 Scope:   Xác minh hoạt động hệ thống game trên môi trường thực tế.
 ```
 
+## WORK LOG & NEXT PLAN
+```
+ĐÃ HOÀN TẤT:
+- TASK-021→TASK-036: hoàn thiện các hệ thống Market, Trade, Upgrade, Auth/Admin, Endpoint Coverage, Chat/Image, Offline opt-in, PvP, Raid, Arena, CWAR, Guild Log, GWAR/Ranking, GM Admin và Logout token revocation.
+- TASK-037: release-readiness hardening; master regression 25/25 PASS, syntax/diff check sạch, database sạch, test runner có process exit và đã dọn các runner Node còn sót trong phiên QC.
+
+ĐANG HOÃN:
+- Premium Shop/VIP audit: DEFERRED cho tới khi có phương thức thanh toán; không triển khai payment khi chưa có provider/contract.
+
+KẾ HOẠCH TIẾP THEO:
+1. Giữ payment endpoints ở safe 501 và không cho UI báo giao dịch thành công giả.
+2. Khi có payment provider: lập task riêng audit Premium/VIP, idempotency giao dịch, webhook/signature, replay protection, refund/rollback và test sandbox.
+3. Trước phát hành production: chạy lại `node tests/run_all_tests.js`, kiểm tra database/temp artifacts, đóng test file/terminal/background runner và xác nhận không còn process test.
+4. Sau khi có payment contract: cập nhật `PROJECT_CONTEXT.md`, `docs/PLAN.md` và release checklist.
+```
+
 ## RECENT COMPLETED (last 5)
 ```
-[TASK-023] Hoàn thiện Chat backend + session security  DONE  30/08/2026
-[TASK-024] Hoàn thiện Upgrade backend: đủ 9 action + session/rollback  DONE  30/08/2026
-[TASK-025] Chuẩn hóa session auth + bảo mật Admin API  DONE  30/08/2026
-[TASK-026] Phủ endpoint backlog P1: Phase A + safe 501 contracts  DONE  30/08/2026
-[TASK-027] Hoàn thiện Chat Image Storage an toàn  DONE  30/08/2026
-[TASK-028] P1 Offline Farming opt-in, không ép offline  DONE  30/08/2026
-[TASK-029] Hoàn thiện PvP 1v1 server-authoritative  DONE  30/08/2026
-[TASK-030] Hoàn thiện Raid/cướp nhà server-authoritative  DONE  30/08/2026
-[TASK-031] Hoàn thiện Arena Boss server-authoritative  DONE  30/08/2026
-[TASK-022] Hoàn thiện Trade 1-1 backend + atomic rollback  DONE  30/08/2026
-[TASK-021] Hoàn thiện Market backend + atomic rollback  DONE  30/08/2026
-[TASK-020] Khắc phục hiện tượng quái vật trong zone tự chết & đồng bộ hiển thị Client  DONE  27/08/2026
-[TASK-019] Sửa lỗi tính năng Khóa vị trí tấn công (Lock Attack) không hoạt động  DONE  27/08/2026
-[TASK-018] Hoàn thiện tính năng Mỏ khoáng Phi thuyền (Airship Mining System)  DONE  27/08/2026
-[TASK-017] Sửa lỗi Boss MVP giờ tròn (:00) không xuất hiện & phát sóng Boss toàn map  DONE  27/08/2026
-[TASK-016] Khắc phục lỗi di chuyển giữa các Zone (Spots) & đóng băng lưu dữ liệu do SQL mismatch  DONE  26/08/2026
+[TASK-037] Release-Readiness Hardening, Security Audit & Master Regression Suite (25/25 PASS)  DONE  30/08/2026
+[TASK-036] Hoàn thiện Logout session token revocation (P2)  DONE  30/08/2026
+[TASK-035] Hoàn thiện GM Admin give-item & spawn-boss  DONE  30/08/2026
+[TASK-034] Hoàn thiện Guild War / GWAR server-authoritative & Guild Ranking  DONE  30/08/2026
+[TASK-033] Hoàn thiện Guild Audit Log (P2)  DONE  30/08/2026
 ```
 
 ## KNOWN ISSUES
@@ -100,18 +105,22 @@ DONE:
 - P1 Offline farming: đã dùng dữ liệu monster/spot thực tế, session auth, opt-in zone/start; tab hidden/inactivity/d.idle/OTB không còn dừng poll hoặc ép offline; test offline PASS 100% x2.
 - P1 PvP 1v1: đã mount route thay 501, state invite/count/fight/end, combat tick/HP/damage, timeout/forfeit, auth, lock/rollback, history/rank; test 8/8 PASS.
 - P1 Raid/cướp nhà: đã triển khai list/feed/hist/start, combat guard→owner, quota VIP, shield, settlement crop/gold, auth, lock/rollback và raidpop; test 7/7 x2 PASS.
-- P1 Arena: đã thay cấp thưởng trực tiếp bằng state machine boss `IDLE→ENTER→ACTIVE→WIN/LOSE/TIMEOUT`, combat HP/damage server-side, ticket/quota, skip có điều kiện, reward idempotent, auth/lock/rollback và poll events; test 9/9 x2 PASS.
+- P1 Arena (TASK-031): đã thay cấp thưởng trực tiếp bằng state machine boss `IDLE→ENTER→ACTIVE→WIN/LOSE/TIMEOUT`, combat HP/damage server-side, ticket/quota, skip có điều kiện, reward idempotent, auth/lock/rollback và poll events; test 9/9 x2 PASS.
+- P1 Nation War/CWAR (TASK-032): đã triển khai Country Flag War server-authoritative, Map 4 Colosseum, state machine `IDLE→PRE→OPEN→FIGHT→ENDED`, PvP `PVP_DIV=30`, chặn friendly fire, spawn shield 5s, tính điểm hạ gục Lv>=20 (+5 pts), tie-break timestamp, quorum min 2 countries + 4 players, flag holder (`cwc`), flag buff (`cwf`), auto-return `home_return` sau ended, feed `war_log`, session auth 401, lock/rollback; test 11/11 x2 PASS.
+- P2 Guild Log (TASK-033): đã triển khai endpoint `action: 'log'` và tự động ghi nhật ký tại tất cả 12 điểm đột biến (`create`, `join`, `leave`, `kick`, `donate`, `levelup`, `promote`, `demote`, `transfer`, `emblem`, `notice`, `disband`), format `created_at` YYYY-MM-DD HH:mm:ss, prune limit tối đa 50 bản ghi, phân quyền member-only chống rò rỉ bang hội khác, session auth 401, acquireLock và snapshot rollback; test 11/11 x2 PASS.
+- P2 Guild War & Ranking (TASK-034): đã triển khai Guild Flag War server-authoritative, Map 4 Colosseum, state machine `IDLE→PRE→OPEN→FIGHT→ENDED`, PvP `PVP_DIV=30`, chặn friendly fire cùng bang và liên minh (alliance), cooldown 48h gia nhập bang (`can: false`, `cd_h`), tính điểm hạ gục target Lv>=40 (+1 pt), chống farm lặp (max 3 pts/nạn nhân/trận chiến), tie-break timestamp, quorum min 2 guilds + 4 players, flag holder & streak, flag buff `gwf = {e: 1.1, g: 1.1}` cho bang và liên minh, auto-return `home_return` sau ended, feed `war_log`, guild ranking real flag holder, tích hợp server-authoritative kill & HP tracking trực tiếp trong game loop `/xhrpg_game.php`, tự động lưu & khôi phục trạng thái runtime (`gwar_runtime`: state, scores, participants, victimKills, processedKills) khi server restart, session auth 401, acquireLock và snapshot rollback; test 14/14 x2 PASS.
+- P2 GM Admin (TASK-035): đã bổ sung đủ `give-item` (resources, boxes, cards, eggs, modules max 30 slots, eq2 max 50 slots) và `spawn-boss` (tích hợp WorldManager, map 1-13, tọa độ, custom stats, giới hạn 15 boss/map), bảo mật Header-only API key, chặn query/body key, idempotency `req_id`, admin audit log `admin_logs`, acquireLock và snapshot rollback; test 14/14 x2 PASS.
+- P2 Logout (TASK-036): đã chuẩn hóa hàm `logout()` trên Client cho tất cả nhánh (Google, LIFF, Local) gửi POST `xhrpg_logout.php` với timeout 3000ms và fail-safe cleanup; Server thu hồi `session_token = null`, chặn 401 khi token sai/đã thu hồi, chặn 100% token cũ trên mọi game routes, acquireLock và snapshot rollback; test 8/8 x2 PASS.
+- TASK-037 Release-readiness Hardening & Security Audit: Master Test Matrix chạy toàn diện 25/25 test suites PASS 100% (48.51s); lifecycle test runner chuẩn hóa process exit sạch sẽ, 0 dangling processes, 0 rò rỉ database, hệ thống sẵn sàng phát hành.
 
 TODO theo ưu tiên:
-- P1 Chat images: `xhrpg_chat_upload.php` và `xhrpg_chat_img.php` chưa có storage backend; `report_img` hiện trả `storage_unavailable` có chủ đích.
-- P1 Nation War/CWAR: mới warp map 11 và battle feed mô phỏng.
-- P2 Guild: client gọi `log` nhưng server chưa xử lý; war/rank còn mô phỏng.
-- P2 GM Admin: còn thiếu `give-item` và `spawn-boss`; chưa có E2E/security audit cho Admin và Premium Shop.
-- P2 Logout: mới xóa trạng thái trình duyệt; server chưa thu hồi session token.
+- P2 Premium Shop / VIP audit — DEFERRED, chờ tích hợp phương thức thanh toán.
 ```
 
 ## LOG
 ```
+[2026-08-30] Hoàn thiện Guild Flag War (TASK-034), Guild Audit Log (TASK-033), Nation War / CWAR (TASK-032), Arena Boss (TASK-031); chuẩn hóa server-authoritative, audit log persistence, session auth 401, atomic rollback và kiểm thử hồi quy 100% PASS.
+[2026-08-30] Hoàn thiện TASK-035 GM Admin, TASK-036 Logout token revocation và TASK-037 Release-Readiness Hardening; Premium Shop/VIP tạm hoãn vì chưa có payment provider. Master regression 25/25 PASS, database và test runner đã dọn sạch.
 [2026-08-30] Hoàn thiện Market (TASK-021), Trade 1-1 (TASK-022), Chat + session security (TASK-023), Upgrade (TASK-024), Auth/Admin security (TASK-025), Endpoint Coverage (TASK-026), Chat Image Storage (TASK-027); mỗi hệ thống có test route, atomic rollback và cleanup DB.
 [2026-08-27] Khắc phục triệt để lỗi quái vật tự chết trong zone: bỏ ép bật Thần hộ mệnh Anubis/Đồng hành từ Lv.1 trong routes/game.js, bổ sung getMonstersInView gửi đầy đủ quái bao phủ màn hình, phân biệt quái chết thật vs quái ra khỏi tầm nhìn (fade out) trên Client xhrpg_canvas.js, và áp dụng hồi sinh so le ngẫu nhiên 3-7s trong WorldManager.js.
 [2026-08-27] Khắc phục lỗi chức năng Lock Attack: trích xuất lock_pos trên server routes/game.js, đóng băng di chuyển khi isLocked = true, tự động ưu tiên target quái vật lọt vào tầm đánh (attackRange) và đồng bộ _syncLockBtn trên client.

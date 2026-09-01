@@ -18845,18 +18845,48 @@ const xhrpg = (() => {
   function logout() {
     _pollStopped = true;
     if (pollTimer) clearTimeout(pollTimer);
+    if (typeof _bmTimer !== 'undefined' && _bmTimer) {
+      clearInterval(_bmTimer);
+      _bmTimer = null;
+    }
+    _bmOn = false;
     closePanel();
-    const isGoogle = player && String(player.line_uid ?? '').startsWith('google_');
-    if (isGoogle) {
-      // ล้าง PHP session แล้ว reload หน้าปกติ (ไม่มี ?auth=google)
-      $.post(baseUrl + 'xhrpg_logout.php').always(() => {
+
+    const currentUid = player ? player.line_uid : null;
+    const currentToken = typeof sessionToken !== 'undefined' ? sessionToken : null;
+    const isGoogle = currentUid && String(currentUid).startsWith('google_');
+    let isLiff = false;
+    if (typeof liff !== 'undefined' && typeof liff.isLoggedIn === 'function') {
+      try { isLiff = !!liff.isLoggedIn(); } catch (e) { isLiff = false; }
+    }
+
+    const finalizeClientLogout = () => {
+      if (typeof sessionToken !== 'undefined') sessionToken = null;
+      player = null;
+      _chClear();
+      _bmClose();
+
+      if (isGoogle || isLiff) {
+        if (isLiff) {
+          try { liff.logout(); } catch (e) {}
+        }
         window.location.replace(window.location.pathname);
+      } else {
+        startDemo(baseUrl);
+      }
+    };
+
+    if (currentUid && currentToken) {
+      $.ajax({
+        url: baseUrl + 'xhrpg_logout.php',
+        type: 'POST',
+        data: { line_uid: currentUid, session_token: currentToken },
+        timeout: 3000
+      }).always(() => {
+        finalizeClientLogout();
       });
-    } else if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
-      liff.logout();
-      window.location.replace(window.location.pathname);
     } else {
-      startDemo(baseUrl);
+      finalizeClientLogout();
     }
   }
 
@@ -20975,7 +21005,7 @@ const xhrpg = (() => {
   function _aucPost(data, cb) {
     $.post(baseUrl + 'xhrpg_auction.php', Object.assign({ line_uid: player.line_uid, lang: LANG(), session_token: sessionToken || '' }, data))
       .done(res => { let d; try { d = typeof res === 'string' ? JSON.parse(res) : res; } catch (e) { return; } if (cb) cb(d); })
-      .fail(() => { if (cb) cb(null); });
+      .fail(xhr => { let d = null; try { d = JSON.parse(xhr.responseText); } catch (e) {} if (cb) cb(d); });
   }
   let _aucState = null, _aucTimer = null, _aucTab = 'today';
   // ⏰ ชดเชยนาฬิกาเครื่องผู้เล่นที่เดินไม่ตรงเซิร์ฟเวอร์ (เจอจริง 2026-07-28: นับถอยหลังถึง 00:00 แล้วของยังไม่มา)
@@ -21369,7 +21399,7 @@ const xhrpg = (() => {
   function _oraidPost(data, cb) {
     $.post(baseUrl + 'xhrpg_orion_raid.php', Object.assign({ line_uid: player.line_uid, lang: LANG(), session_token: sessionToken || '' }, data))
       .done(res => { let d; try { d = typeof res === 'string' ? JSON.parse(res) : res; } catch (e) { return; } if (cb) cb(d); })
-      .fail(() => { if (cb) cb(null); });
+      .fail(xhr => { let d = null; try { d = JSON.parse(xhr.responseText); } catch (e) {} if (cb) cb(d); });
   }
   function _oraidCdStop() { if (_oraidCd) { clearInterval(_oraidCd); _oraidCd = null; } }
   function _oraidCdTick() {
@@ -21821,7 +21851,7 @@ const xhrpg = (() => {
   function _vcPost(data, cb) {
     $.post(baseUrl + 'xhrpg_voucher.php', Object.assign({ line_uid: player.line_uid, lang: LANG(), session_token: sessionToken || '' }, data))
       .done(res => { let d; try { d = typeof res === 'string' ? JSON.parse(res) : res; } catch (e) { d = null; } if (cb) cb(d); })
-      .fail(() => { if (cb) cb(null); });
+      .fail(xhr => { let d = null; try { d = JSON.parse(xhr.responseText); } catch (e) {} if (cb) cb(d); });
   }
   function _vcClose() { document.getElementById('vc-panel')?.remove(); }
   function openVoucherPanel() {
@@ -22997,7 +23027,7 @@ const xhrpg = (() => {
   function _gachaPost(data, cb) {
     $.post(baseUrl + 'xhrpg_gacha.php', Object.assign({ line_uid: player.line_uid, lang: LANG(), session_token: sessionToken || '' }, data))
       .done(res => { let d; try { d = typeof res === 'string' ? JSON.parse(res) : res; } catch (e) { return; } if (cb) cb(d); })
-      .fail(() => { if (cb) cb(null); });
+      .fail(xhr => { let d = null; try { d = JSON.parse(xhr.responseText); } catch (e) {} if (cb) cb(d); });
   }
   function _gachaClose() { document.getElementById('gacha-panel')?.remove(); document.getElementById('gacha-result')?.remove(); }
   let _gachaBusy = false;
@@ -23018,7 +23048,14 @@ const xhrpg = (() => {
     </div>`;
     el.addEventListener('click', e => { if (e.target === el) _gachaClose(); });
     document.body.appendChild(el);
-    _gachaPost({ action: 'info' }, d => { if (d && d.ok) _gachaRender(d); });
+    _gachaPost({ action: 'info' }, d => {
+      if (d && d.ok) {
+        _gachaRender(d);
+      } else {
+        const b = document.getElementById('gacha-body');
+        if (b) b.innerHTML = `<div style="text-align:center;color:#dc2626;padding:20px 8px;font-size:12px">${_gdEsc((d && d.error) || T('Tính năng đang tạm đóng để nâng cấp'))}</div>`;
+      }
+    });
   }
   function _gachaRender(d) {
     const bd = document.getElementById('gacha-body');

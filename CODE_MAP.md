@@ -1,126 +1,234 @@
-# Sơ đồ Code (Code Map) — Ragnalok Private Server
+# Code Map — `client/xhrpg_canvas.js`
 
-_Cập nhật lần cuối: 23/08/2026_
+_Cập nhật lần cuối: 31/08/2026_
 
-## Tổng quan (Overview)
-Dự án này là một máy chủ riêng (Private Server) hoàn toàn độc lập dành cho game **Ragnalok Online (XHRPG)**, giúp chạy game nội bộ không phụ thuộc vào máy chủ chính thức `ragnalok.online`. Hệ thống được thiết kế theo mô hình Client-Server: Client là game HTML5 Canvas nguyên bản (được sửa đổi cơ chế đăng nhập và liên kết URL), giao tiếp thông qua giao thức HTTP POST/GET giả lập các API PHP cũ; Server viết bằng Node.js + Express, xử lý mọi logic chiến đấu, phụ bản, vật phẩm, nông trại, bang hội và lưu trữ trạng thái người chơi vào cơ sở dữ liệu dạng JSON.
+## Tổng quan
 
----
+`client/xhrpg_canvas.js` là client game HTML5 Canvas chính của Ragnalok/XHRPG. Toàn bộ mã được bọc trong IIFE và xuất ra global `xhrpg`, vì vậy file này đồng thời đóng vai trò game runtime, renderer, UI controller và API client.
 
-## Cây thư mục dự án (File Tree)
-```
-ragnalok-private-server/
-├── client/                     ← Game client (từ game gốc, đã patch URL & Auth)
-│   ├── xhrpg_canvas.js         ← Engine game Canvas chính (chứa toàn bộ logic render & gửi API)
-│   ├── xhrpg_lang_vi.js        ← Từ điển dịch thuật Việt hóa Thái → Việt
-│   ├── play.html               ← Giao diện đăng nhập local & khung chứa game canvas
-│   ├── play_battle.html        ← Giao diện phụ phục vụ đấu trường PVP
-│   └── assets/                 ← Hình ảnh sprites quái vật, nhân vật, hiệu ứng, âm thanh
-├── server/                     ← Mã nguồn máy chủ Node.js + Express
-│   ├── index.js                ← Điểm khởi chạy (Entry Point) của Express server
-│   ├── db/                     ← Module quản lý cơ sở dữ liệu
-│   │   ├── init.js             ← Khởi tạo schema & seed dữ liệu người chơi mặc định
-│   │   └── queries.js          ← Engine truy vấn & ghi cơ sở dữ liệu dạng JSON
-│   ├── game/                   ← Core logic tính toán trong game
-│   │   ├── WorldManager.js     ← Quản lý spawn/respawn quái vật & vị trí live players
-│   │   ├── CombatEngine.js     ← Tính toán sát thương, crit, double attack
-│   │   └── DropSystem.js       ← Tính toán tỷ lệ rớt đồ (nguyên liệu, thẻ, trứng, module, trang bị)
-│   └── routes/                 ← Định tuyến API giả lập các file PHP của game gốc
-├── data/                       ← Dữ liệu tĩnh và tệp lưu trữ DB
-│   ├── database.json           ← Database chính lưu thông tin tài khoản và người chơi
-│   ├── maps_cache.json         ← Dữ liệu cache của 13 bản đồ game
-│   ├── spots_cache.json        ← Tọa độ và thông tin các zone quái vật trên map
-│   └── mon_masters_cache.json  ← Dữ liệu cấu trúc quái vật (Level, tên, emoji)
-├── tests/                      ← Bộ kiểm thử tự động (Unit Test Suite)
-│   └── test_4_skill_trees.js   ← Kiểm thử tự động 17 test case cho 4 nhánh kỹ năng
-└── docs/                       ← Tài liệu phân tích và đảo ngược mã nguồn (Reverse Engineering)
+File hiện có khoảng **27.179 dòng**, **~2,9 MB**, với khoảng **382 hàm/thuộc tính public** trong object `return` cuối file. Không nên đọc tuần tự toàn bộ file; hãy bắt đầu từ vùng chức năng bên dưới rồi lần theo hàm được gọi.
+
+## Cấu trúc module
+
+```text
+client/xhrpg_canvas.js
+└── const xhrpg = (() => {
+    ├── Constants / công thức / cấu hình                    1–131
+    ├── Audio SFX WebAudio                                  132–181
+    ├── Sprite, skin, icon và asset loader                  182–592
+    ├── Ground/terrain/map builders                         593–1830
+    ├── Tile map, camera, zoom                              1895–2141
+    ├── Canvas renderer và entity renderer                  2142–4487
+    ├── Bullet, animation, effect, smoothing                 4488–5270
+    ├── HUD và công thức client                              5271–5510
+    ├── Player UI: stats, ammo, potion, weapon/module       5511–6534
+    ├── Item, module, card, egg, pet, divine pet            6535–9088
+    ├── Leaderboard, chat, log                               9089–10550+
+    ├── Gameplay actions, panels, payment, trade              10550–18991
+    ├── Demo mode                                             18992–19326
+    ├── Init, polling, movement, offline/PvP/arena            19327–20037
+    ├── Equipment, crafting, gacha, auction, guild, VIP        20038–24838
+    ├── Market                                               24839–26300
+    ├── Guide / release notes                                 26300–27178
+    └── return { ...public API }                              27179
 ```
 
----
+> Các mốc trên là mốc tra cứu gần đúng theo vùng code; khi file thay đổi lớn nên cập nhật lại số dòng.
 
-## Liên kết Client-Server (Client-Server Route Mapping)
+## Entry point và lifecycle
 
-Dưới đây là bảng ánh xạ chi tiết giữa **hành động/hàm trên Client [xhrpg_canvas.js](file:///e:/game/ragnalok-private-server/client/xhrpg_canvas.js)** và **route xử lý của Server**:
+| Hàm | Dòng | Mục đích |
+|---|---:|---|
+| `init(p, url, token)` | 19328 | Gắn player/session, khởi tạo canvas, tải asset, dựng map và bắt đầu client runtime. |
+| `startDemo(url)` | 19262 | Chạy game demo phía client trước đăng nhập, không ghi state lên server. |
+| `startAnim()` | 4914 | Bật `requestAnimationFrame` loop; idempotent. |
+| `_renderLoop(ts)` | 4906 | Cập nhật animation/effect và gọi `render()` mỗi frame. |
+| `render()` | 5046 | Render toàn bộ scene: nền, vùng, entity, projectile, loot, text và HUD overlay. |
+| `toggleBot()` | 19428 | Bật/tắt AUTO; thay đổi việc client gửi hướng/di chuyển và hiển thị D-pad. |
+| `logout()` | 18845 | Gọi logout endpoint, dọn session và quay về màn hình đăng nhập. |
 
-| Endpoint gốc (PHP) | Route xử lý tương ứng | Hàm Client kích hoạt | Chức năng chính |
-| :--- | :--- | :--- | :--- |
-| `GET /xhrpg_google_auth.php` | [auth.js](file:///e:/game/ragnalok-private-server/server/routes/auth.js) | Khởi chạy game ban đầu | Đăng nhập tài khoản, xác thực phiên (Local Auth thay thế Google LIFF SDK). |
-| `POST /xhrpg_game.php` | [game.js](file:///e:/game/ragnalok-private-server/server/routes/game.js) | `xhrpg.postGame()` (gọi liên tục mỗi 900ms) | **Vòng lặp game cốt lõi:** Đồng bộ vị trí player, tìm quái gần nhất, tính sát thương đòn đánh/hồi máu, xử lý kinh nghiệm, nhặt đồ và cấp độ. |
-| `POST /xhrpg_warp.php` | [warp.js](file:///e:/game/ragnalok-private-server/server/routes/warp.js) | `xhrpg.warpToMap(mapId)` | Kiểm tra cấp độ yêu cầu của map đích và dịch chuyển tọa độ người chơi (13 Maps). |
-| `POST /xhrpg_upgrade.php` | [upgrade.js](file:///e:/game/ragnalok-private-server/server/routes/upgrade.js) | Nút nâng cấp chỉ số, nút dùng Potion thủ công, menu phi thuyền, thu hoạch farm | **Xử lý nâng cấp đa năng:** Cộng stat (`stat_up`), cộng kỹ năng (`skill_up`), nâng đệ tử (Cat, Drone, Priest, Robot), trồng trọt (`home_plant`/`home_harvest`), cộng điểm pet (`pet_up`), xây dựng mỏ (`mine_build`/`mine_up`). |
-| `POST /xhrpg_offline.php` | [offline.js](file:///e:/game/ragnalok-private-server/server/routes/offline.js) | Nút `🌙 OFFLINE` (`xhrpg.openOfflinePanel()`) | Tính toán tài nguyên, vàng và kinh nghiệm tích lũy khi người chơi treo máy offline (tối đa 8 giờ). |
-| `POST /xhrpg_market.php` | [market.js](file:///e:/game/ragnalok-private-server/server/routes/market.js) | Khung chợ giao dịch (Market) | Lấy danh sách đang bán (`get_listings`), mua vật phẩm (`buy`), đăng bán đồ hoặc hủy bán. |
-| `POST /xhrpg_arena.php` | [arena.js](file:///e:/game/ragnalok-private-server/server/routes/arena.js) | Menu Đấu trường (Arena) | Khiêu chiến boss 1v1 đấu trường, xem lịch sử đấu trường. |
-| `POST /xhrpg_vip.php` | [vip.js](file:///e:/game/ragnalok-private-server/server/routes/vip.js) | Cửa hàng VIP | Nhận rương VIP hàng ngày, mua các đặc quyền VIP. |
-| `POST /xhrpg_guild.php` | [guild.js](file:///e:/game/ragnalok-private-server/server/routes/guild.js) | Bảng Bang hội (Guild) | Tạo bang hội, gia nhập, đóng góp tài nguyên bang hội. |
-| `POST /xhrpg_cwar.php` | [cwar.js](file:///e:/game/ragnalok-private-server/server/routes/cwar.js) | Công thành chiến / Nation War | Tham gia hoạt động công thành chiến bang hội. |
-| `GET /xhrpg_leaderboard.php` | [leaderboard.js](file:///e:/game/ragnalok-private-server/server/routes/leaderboard.js) | `xhrpg.lbShow(uid)` | Xem hồ sơ trang bị chi tiết của người chơi khác (Profile Inspect) hoặc bảng xếp hạng. |
-| `POST /xhrpg_trade.php` | [trade.js](file:///e:/game/ragnalok-private-server/server/routes/trade.js) | Giao diện giao dịch trực tiếp | Tìm kiếm người chơi khác theo tên (`search`), bắt đầu giao dịch an toàn. |
-| `POST /xhrpg_droplog.php` | [droplog.js](file:///e:/game/ragnalok-private-server/server/routes/droplog.js) | Nhật ký nhặt đồ | Xem lịch sử nhận trang bị/vật phẩm quý hiếm (Lưu tối đa 100 dòng). |
-| `POST /xhrpg_chat.php` | [chat.js](file:///e:/game/ragnalok-private-server/server/routes/chat.js) | Khung chat thế giới / DM | Tải tin nhắn mới (`fetch`/`dms`) và gửi tin nhắn chat (`send`). |
-| `GET /xhrpg_online_count.php` | [online_count.js](file:///e:/game/ragnalok-private-server/server/routes/online_count.js) | HUD đếm người chơi | Trả về tổng số bot/player thực tế đang kết nối. |
-| `POST /xhrpg_translate.php` | [translate.js](file:///e:/game/ragnalok-private-server/server/routes/translate.js) | Tính năng dịch chat tự động | Dịch tự động ngôn ngữ giữa các người chơi (đã chuyển tiếp không đổi). |
+## 1. Constants, state và công thức
 
----
+### Hằng số và state chính — dòng 1–131, 182–207
 
-## Chi tiết các Module quan trọng (Module Specifications)
+- Công thức skill/ATK/AGI cooldown: `aoeM`, `toughHpMul`, `armorUpMul`, `knifeAtkMul`, `swordDblPct`, `turretMul`, `lukDropPct`, `agiCdPct`.
+- State runtime: `player`, `monsters`, `others`, `bosses`, `targetMonsterId`, `currentMap`, `canvas`, `ctx`, `groundCanvas`.
+- State animation: `bullets`, `explosions`, `floatTexts`, `lootPops`, `groundLoot`, `monGhosts`, `deathMarkers` và các bảng smoothing/effect theo entity id.
+- Tài nguyên map: `SPR_TREES`, `SPR_STONE`, `SPR_GREEN`, `SPR_DECOR`, `MON_SIZE`, `SUM`.
 
-### 1. Engine cốt lõi máy chủ (Server Core)
-*   **[WorldManager.js](file:///e:/game/ragnalok-private-server/server/game/WorldManager.js):**
-    *   *Nhiệm vụ:* Quản lý trạng thái sống của quái vật và Boss MVP trên 13 bản đồ.
-    *   *Logic:* Spawn mặc định 36 quái cho mỗi zone (spot) khi khởi động. Sinh Boss MVP loại hiếm mỗi giờ tròn (`spawnMvps()`) cho tất cả bản đồ và cung cấp phương thức `getBossesForMap(mapId)` lấy danh sách Boss toàn map. Chạy một hàm `tick()` mỗi 1 giây để xử lý hàng đợi hồi sinh quái vật (`respawnQueue`) và di chuyển quái vật ngẫu nhiên.
-    *   *Đồng bộ:* Lưu trữ danh sách vị trí người chơi thời gian thực (`activePlayers`) phục vụ hiển thị các nhân vật khác cùng bản đồ.
-*   **[CombatEngine.js](file:///e:/game/ragnalok-private-server/server/game/CombatEngine.js):**
-    *   *Nhiệm vụ:* Tính toán sát thương chi tiết mỗi đòn đánh của nhân vật.
-    *   *Logic:* 
-        *   Sử dụng công thức nâng cấp Đao Kiếm gốc: `ATK = (STR - 5) * 3 + 10 + (knife_lv - 1) * 8 + knife_atk_lv * 6` (kèm Auto Double Swing: $1\%/\text{cấp} + 1\%$ mỗi 30 AGI).
-        *   Sử dụng công thức Phi Đao gốc: `ATK = (DEX - 5) * 3 + 10 + (gun_pistol_lv - 1) * 8 + crit_shot_lv * 10` (+2% mỗi cấp).
-        *   Tính tỷ lệ chí mạng chuẩn theo công thức game gốc: $\text{critChance} = (\min(50, \lfloor\frac{STR + LUK}{10}\rfloor) + \text{rag\_crit} \times 0.1) / 100$, nhân đôi sát thương khi chí mạng và trả về định dạng `{ dmg, crit }`.
-        *   Giảm trừ qua thủ của quái (`DEF = monster.lv * 1.5`), dao động ngẫu nhiên biên độ $\pm10\%$.
-*   **[DropSystem.js](file:///e:/game/ragnalok-private-server/server/game/DropSystem.js):**
-    *   *Nhiệm vụ:* Sinh phần thưởng khi tiêu diệt quái vật.
-    *   *Công thức nhân tỷ lệ (Multiplier):*
-        $$\text{mult} = 1.0 + \text{premium\_drop} + \text{premium\_boost} + \text{vip\_bonus} + \text{luk\_bonus}$$
-    *   *Các loại drop:* Nguyên liệu map (Gỗ/Đá/Thảo dược/Đồng/Sắt), Kim cương xanh/đỏ (tỷ lệ $0.035\%$/$0.014\%$), Thẻ bài & Trứng thú cưng (giảm dần từ $0.08\%$ xuống $0.002\%$ dựa theo lv quái), Module T1-T5, Trang bị eq2 (Đầu, Thân, Chân, Nhẫn kèm 1-3 affixes ngẫu nhiên).
+### Skin và icon — dòng 214–499
 
-### 2. Quản lý dữ liệu (JSON Database Interface)
-*   **[queries.js](file:///e:/game/ragnalok-private-server/server/db/queries.js):**
-    *   *Nhiệm vụ:* Giả lập thư viện SQLite thông thường nhưng lưu trữ dạng tệp tin phẳng [database.json](file:///e:/game/ragnalok-private-server/data/database.json) để tối giản cài đặt.
-    *   *Phương thức:*
-        *   `prepare(query).get(...args)`: Tìm kiếm tài khoản hoặc dữ liệu nhân vật bằng hàm `find()` của Javascript.
-        *   `prepare(query).run(...args)`: Thêm tài khoản mới, tạo nhân vật mới hoặc cập nhật trạng thái (`UPDATE players SET`). Tự động parse và ghi dữ liệu đồng bộ vào file JSON.
+| Nhóm | Hàm tiêu biểu | Vai trò |
+|---|---|---|
+| Skin stat/XP | `_rollGlobal`, `_skinLv`, `_skinXp`, `_skinCap`, `_skinTier` | Chuẩn hóa stat skin, tính level/XP/cap và tier. |
+| Skin size | `_robotBig`, `_heroBig`, `_petBig` | Tính hệ số kích thước theo giá skin. |
+| Skin navigation | `skinGrpOpen`, `skinGrpBack` | Mở/thoát nhóm skin trong Premium panel. |
+| Icon | `_icoHtml`, `_icoPotionHtml`, `_icoGemHtml`, `_resSvg` | Chuyển emoji/item type thành pixel icon hoặc SVG fallback. |
+| Asset | `loadSummerTiles()` | Preload tileset, decor, icon và các asset map. |
 
----
+## 2. Map, terrain và background bake
 
-## Hướng dẫn dựng lại máy chủ từ đầu (Server Setup & Reconstruction)
+| Hàm | Dòng | Mục đích |
+|---|---:|---|
+| `buildGround()` | 1529 | Chọn builder theo `currentMap`, bake nền vào offscreen canvas. |
+| `buildGroundDesert()` | 713 | Dựng map sa mạc, cồn cát, oasis và decor. |
+| `buildGroundWinter()` | 838 | Dựng map băng tuyết, hồ băng/nước và decor mùa đông. |
+| `buildGroundSeabed()` | 1014 | Dựng map đáy biển sâu, cát/sỏi, san hô và landmark. |
+| `buildGroundDragon()` | 1056 | Dựng map rừng/đá rồng cổ đại. |
+| `buildGroundHome()` | 1345 | Dựng khu nhà người chơi, đường đá, cây và object cố định. |
+| `buildGroundGdun()` / `buildGroundCastle()` | 1159–1166 | Dựng dungeon/guild castle. |
+| `drawOasisWater()` / `drawOasisTree()` | 665–712 | Vẽ overlay động của oasis. |
+| `drawWinterTree()` | 987 | Vẽ cây băng/landmark trung tâm theo frame. |
+| `drawSeabedCenter()` / `drawDragonCenter()` | 1040–1090 | Vẽ landmark trung tâm map biển/rồng. |
+| `drawHomeOverlay()` | 1454 | Vẽ khói, ruộng, cây trồng và object nhà phụ thuộc state. |
+| `drawCastleOverlay()` | 1283 | Vẽ guild emblem, bảng thành viên và hiệu ứng castle. |
 
-Nếu bạn cần dựng lại máy chủ này trên một môi trường mới, hãy thực hiện tuần tự các bước sau:
+Nền tĩnh được bake một lần; entity, nước/ripple, cây trung tâm, nhà và hiệu ứng được vẽ tiếp trong render loop. Đây là điểm cần giữ khi tối ưu performance.
 
-### Bước 1: Chuẩn bị môi trường
-Yêu cầu cài đặt sẵn **Node.js** (Phiên bản khuyến nghị: >= 16.x).
+## 3. Camera, tile và render loop
 
-### Bước 2: Tải và cài đặt các thư viện phụ thuộc
-Di chuyển vào thư mục gốc dự án và chạy lệnh sau để tải các package cần thiết (`express`, `cors`):
-```bash
-npm install
+| Hàm | Dòng | Mục đích |
+|---|---:|---|
+| `buildTiles()` | 1896 | Tạo dữ liệu tile/object/terrain cho map hiện tại. |
+| `resizeCanvas()` | 2102 | Đồng bộ kích thước canvas với viewport/device pixel ratio. |
+| `zoom(dir)` | 2089 | Tăng/giảm zoom camera. |
+| `getCameraTransform()` | 2124 | Tính scale và offset camera theo player. |
+| `toScreen(wx, wy)` | 2137 | Đổi world coordinates sang screen coordinates. |
+| `drawTiles()` | 2143 | Blit ground canvas và vẽ decor/object trên nền. |
+| `drawZones()` | 2187 | Vẽ vùng farm/zone và thông tin khu vực. |
+| `drawRange()` / `drawRobotRanges()` | 2235–2297 | Vẽ tầm đánh của player/robot theo weapon, hardware, house bonus. |
+| `drawMinimap()` | 4432 | Vẽ minimap, player, monster và marker. |
+
+## 4. Entity rendering
+
+### Player và companion
+
+| Hàm | Dòng | Mục đích |
+|---|---:|---|
+| `drawPlayer()` | 3655 | Vẽ hero, hướng nhìn, skin, VIP aura, animation attack/move/death. |
+| `drawDog()` | 2299 | Vẽ pet companion của player hiện tại. |
+| `drawCat()` / `drawDrone()` | 2892–3080 | Vẽ Cat/Drone và animation theo state server. |
+| `drawPriest()` / `drawKnight()` / `drawDivine()` / `drawArcher()` | 2603–2814 | Vẽ các companion Premium/Divine của player. |
+| `drawRobot()` | 3089 | Vẽ Titan robot, skin, animation, energy và attack state. |
+| `drawHouse()` | 3385 | Vẽ Orion gunship/nhà bay của player. |
+| `drawOthers()` | 3944 | Vẽ người chơi khác và các companion tương ứng. |
+| `drawOtherDogs()` / `drawOtherPriests()` / `drawOtherArchers()` | 2368–2824 | Vẽ companion của người chơi khác bằng presence snapshot. |
+| `drawOtherHouses()` / `drawOtherTurrets()` | 3396 / 24202 | Vẽ gunship và guild turrets của người chơi khác. |
+
+### Monster, combat FX và loot
+
+| Hàm | Dòng | Mục đích |
+|---|---:|---|
+| `drawMonsters()` | 4091 | Vẽ monster/MVP, HP bar, animation, target và trạng thái combat. |
+| `drawMonGhosts()` / `drawDyingMons()` | 4331–4379 | Giữ corpse/fade transition khi monster biến mất giữa các poll. |
+| `spawnBullet()` / `updateBullets()` / `drawBullets()` | 4517 / 4575 / 4594 | Tạo, cập nhật và vẽ projectile theo loại vũ khí/skin. |
+| `drawExplosions()` | 4921 | Vẽ AoE/explosion effect. |
+| `drawTargetLine()` / `drawOthersTargets()` | 4977–5045 | Vẽ đường nhắm và target line của player/others. |
+| `drawGroundLoot()` / `drawLootPops()` | 5114 / 5253 | Vẽ item rơi trên đất và popup loot. |
+| `spawnFloatText()` / `drawFloatTexts()` | 5221 / 5229 | Pool text cho damage, MISS, EXP và thông báo combat. |
+
+## 5. HUD, stats và combat calculations
+
+| Hàm | Dòng | Mục đích |
+|---|---:|---|
+| `updateHUD()` | 5316 | Đồng bộ HP/EXP/G/P/level/target và trạng thái AUTO lên DOM. |
+| `expNext()` / `expNextHero()` | 5399–5413 | Tính EXP cần cho player và hero. |
+| `knifeAtk()` | 5441 | Tính ATK cơ bản của vũ khí cận chiến. |
+| `gunUpgCostV2()` / `canUpgGun()` | 6122–6144 | Tính cost và điều kiện nâng cấp súng. |
+| `_ammoCarryCap()` / `_potionCarryCap()` | 6159–6164 | Tính sức chứa đạn/potion theo level, house và EQ2. |
+| `renderStats()` | 5700 | Render bảng stat, bonus, weapon và thông tin chiến đấu. |
+| `renderSkills()` / `upgradeSkill()` | 24268 / 24404 | Render skill tree và gửi nâng cấp skill. |
+
+## 6. Item, module, card, egg, pet và crafting
+
+| Khu vực | Dòng | API public tiêu biểu |
+|---|---:|---|
+| Module/weapon module | 6249–7052 | `moduleEquip`, `moduleUnequip`, `moduleEnhance`, `openModuleBox`, `moduleDiscard`. |
+| Card socket/sacrifice | 6900–8320 | `cardSocket`, `cardUnsocket`, `cardMvpExchange`, `cardSacrifice`. |
+| Egg box/sacrifice | 6779–8320 | `openEggBox`, `eggMvpExchange`, `eggSacrifice`. |
+| Pet | 8080–8810 | `renderPet`, `petHatchAsk`, `petUpgrade`, `petResetUp`, `petCardSocket`. |
+| Divine pet | 8321–9088 | `dvAwaken`, `dvUp`, `dvResetUp`, `dvCardSocket`. |
+| Equipment EQ2 | 20038–21000 | `openEq2Panel`, `_eq2Act`, `_eq2Enhance`, `_eqcCraft`, `_eqcRoll`. |
+| MDC crafting | 20428–20836 | `_mdcCraft`, `_mdcUpT`, `_mdcUnlock`, `_mdcDestroy`. |
+
+## 7. Gameplay actions và panel systems
+
+Các hàm public ở phần này thường được gọi trực tiếp từ `onclick` trong HTML được tạo bằng `innerHTML`.
+
+| Hệ thống | Hàm chính |
+|---|---|
+| Player upgrade | `upgradeKnife`, `upgradeGun`, `upgradeArmor`, `upgradeRobot`, `upgradeHouse`, `upgradeCat`, `upgradeDrone`, `priestUp`, `knightUp`, `archerUp`. |
+| Movement/map | `setDir`, `warpToMap`, `warpHome`, `warpCenter`, `goToSpot`, `goToBoss`, `openMapSelect`. |
+| Potion/ammo | `usePotion`, `usePotionManual`, `toggleAutoPotion`, `setAutoPotionThreshold`, `toggleGunUse`, `toggleAmmTier`. |
+| Mine/farm/house | `mineBuild`, `mineUp`, `mineSelectOre`, `mineToggle`, `homePlant`, `homeHarvest`, `homeUp`, `homeVisit`. |
+| Offline | `openOfflinePanel`, `_offClose`, `_offRnGo`, `showOfflineReward`. |
+| PvP/raid/arena | `openPvpPanel`, `_pvpChallenge`, `raidStart`, `openRaidPanel`, `openArenaPanel`, `_arenaGo`. |
+| Guild/castle | `openGuildPanel`, `_gdCreate`, `_gdJoin`, `_gdDonate`, `_gdEmblemSave`, `castleEnter`, `castleExit`. |
+| Market/trade/auction | `renderMarket`, `_mktDoSell`, `_mktDoBuy`, `_mktCancel`, `_trInvite`, `_trConfirm`, `openAucPanel`. |
+| Gacha/VIP/voucher | `openGachaPanel`, `_gachaSpin`, `openVipPanel`, `vipBoxBuy`, `openVoucherPanel`, `_vcRedeem`. |
+
+## 8. Leaderboard, chat, log và guide
+
+| Hàm | Mục đích |
+|---|---|
+| `lbShow(uid)` | Mở profile/leaderboard và xem trang bị người chơi. |
+| `renderChat()` / `chatSend()` | Render chat, gửi tin nhắn và cập nhật DM/guild chat. |
+| `chatPickImage()` / `_chatUploadImg()` | Chọn, upload và preview ảnh chat. |
+| `renderLogPanel()` | Render mini log/drop log trong panel. |
+| `renderGuide()` / `_guideSetChap()` / `_guideToggle()` | Render guide theo chapter, item mở rộng và pagination. |
+| `toggleLang()` | Mở language picker và đổi ngôn ngữ UI. |
+| Onboarding/release-note block | 26253–26430 | Carousel onboarding và release note cho người chơi mới. |
+
+## 9. Network/API contract
+
+File dùng các endpoint PHP legacy làm contract với server. Khi sửa payload hoặc action, cần đối chiếu route server tương ứng. Bảng đối chiếu chi tiết đầy đủ 36 route xem tại [`docs/API_CONTRACT.md`](file:///e:/game/ragnalok-private-server/docs/API_CONTRACT.md).
+
+| Nhóm | Endpoint được gọi thật | Ghi chú / Deferred 501 / Unmounted |
+|---|---|---|
+| Core/auth | `xhrpg_game.php`, `xhrpg_logout.php`, `xhrpg_warp.php`, `xhrpg_online_count.php` (và `/api/login`, `/api/register`, `xhrpg_google_auth.php`) | `xhrpg_config.php` chỉ là mirror hằng số / comment (0 active call). |
+| Upgrade/items | `xhrpg_upgrade.php`, `xhrpg_eq2.php`, `xhrpg_mdc.php`, `xhrpg_premium.php`, `xhrpg_vip.php` | `xhrpg_voucher.php` thuộc backlog 501. |
+| Social | `xhrpg_chat.php`, `xhrpg_chat_upload.php`, `xhrpg_chat_img.php`, `xhrpg_trade.php`, `xhrpg_guild.php` | Đã implement 100% router thật. |
+| PvP/events | `xhrpg_pvp.php`, `xhrpg_raid.php`, `xhrpg_arena.php`, `xhrpg_cwar.php`, `xhrpg_gwar.php`, `xhrpg_orion_raid.php` | Đã implement 100% router thật; các file `*_logic.php` chỉ là comment. |
+| Economy/payment | `xhrpg_market.php`, `xhrpg_gacha.php`, `xhrpg_auction.php` | `xhrpg_stripe_topup.php`, `xhrpg_topup_promo.php`, `xhrpg_xsolla_token.php`, `xhrpg_coda_paycode.php`, `xhrpg_migrate.php` thuộc backlog 501; `*_lib.php` chỉ là comment. |
+| Data/history | `xhrpg_leaderboard.php`, `xhrpg_droplog.php`, `xhrpg_phistory.php`, `xhrpg_offline.php`, `xhrpg_translate.php` | `xhrpg_report.php` đã thay bằng Chat DM Admin (0 active call). |
+
+### Polling và đồng bộ state
+
+- `POLL_MS = 1250`; game poll gửi trạng thái player/action và nhận snapshot monster/others/events.
+- Có cơ chế **hot/cold split**: poll thường giữ lại dữ liệu inventory/card/egg/cold state khi server không gửi lại.
+- Các hiệu ứng client như bullet, corpse ghost, floating text, smoothing và optimistic throw chỉ là hiển thị; không được xem là authoritative game state.
+- `MON_SEND_R`/`MON_DEAD_R` dùng để phân biệt monster chết với monster chỉ rời vùng snapshot.
+
+## 10. Public API
+
+Object `xhrpg` ở cuối file export toàn bộ entry point được HTML/panel gọi. Các tên public được chia theo nhóm ở trên; danh sách export đầy đủ nằm tại dòng cuối `return { ... }`.
+
+Một số entry point quan trọng nhất:
+
+```js
+xhrpg.init(p, url, token)
+xhrpg.startDemo(url)
+xhrpg.toggleBot()
+xhrpg.warpToMap(mapId)
+xhrpg.openOfflinePanel()
+xhrpg.openPvpPanel(tab)
+xhrpg.openArenaPanel()
+xhrpg.openGuildPanel()
+xhrpg.renderMarket()
+xhrpg.openEq2Panel()
+xhrpg.openGachaPanel()
+xhrpg.openVipPanel()
+xhrpg.renderChat()
+xhrpg.lbShow(uid)
 ```
 
-### Bước 3: Khởi tạo Cơ sở dữ liệu JSON
-Chạy script khởi tạo cơ sở dữ liệu để tạo tệp [database.json](file:///e:/game/ragnalok-private-server/data/database.json) cùng tài khoản seed mẫu mặc định:
-```bash
-node server/db/init.js
-```
-*Lưu ý:* Script này sẽ đọc dữ liệu mẫu `xhrpg_game_sample_utf8.json` từ thư mục `data/captured_responses/` để tạo nhân vật mẫu đầy đủ trang bị.
+## Notes / điểm cần cẩn thận
 
-### Bước 4: Khởi chạy máy chủ game
-Khởi động server trên cổng mặc định (3000):
-```bash
-npm start
-```
-
-### Bước 5: Kết nối và trải nghiệm game
-Mở trình duyệt Web của bạn và truy cập đường dẫn:
-```
-http://localhost:3000/
-```
-Giao diện đăng nhập cục bộ sẽ xuất hiện. Bạn có thể sử dụng tính năng **Đăng ký** tài khoản mới hoặc đăng nhập bằng tài khoản đã được khởi tạo trong database để vào thế giới Ragnalok độc lập hoàn toàn.
+1. Đây là **god module**: gameplay, rendering, DOM UI, API và payment nằm chung một IIFE. Thay đổi nhỏ ở state hoặc helper dùng chung có thể ảnh hưởng nhiều panel.
+2. Server mới là nguồn sự thật cho combat, inventory, cooldown và tài nguyên. Công thức trong client chủ yếu để hiển thị/preview; các công thức có comment `sync PHP` phải giữ đồng bộ với server.
+3. Không đổi tên hàm trong `return { ... }` nếu chưa sửa toàn bộ `onclick="xhrpg...."` và các HTML page liên quan.
+4. Nhiều UI được dựng lại bằng `innerHTML`; khi thêm event cần kiểm tra vấn đề mất node/click trong lúc poll re-render.
+5. Icon/item từ dữ liệu server phải đi qua helper escape/icon (`_icoHtml`, `_escHtml` và các helper liên quan), không chèn raw value vào `innerHTML`.
+6. Terrain tĩnh nên tiếp tục bake vào `groundCanvas`; chỉ vẽ per-frame những phần thực sự animated hoặc phụ thuộc state.
+7. Demo mode (dòng 18992–19326) là client-only và không phản ánh đầy đủ server flow.
+8. Khi cập nhật file, nên sửa đúng section liên quan trong map này; chỉ đổi lại toàn bộ map sau khi cấu trúc lớn thay đổi.

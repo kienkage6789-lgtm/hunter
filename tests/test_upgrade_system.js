@@ -148,64 +148,75 @@ async function runTests() {
       to: 'TH',
       pay: 'g'
     });
-    assert.strictEqual(ccChangeFree.ok, true);
-    assert.strictEqual(ccChangeFree.player.country, 'TH');
-    assert.strictEqual(ccChangeFree.player.cc_moves, 1);
-    assert.strictEqual(ccChangeFree.player.gold, initialAlice.gold, 'Lần đầu chuyển phải miễn phí Gold');
 
-    // Chuyển lại ngay lập tức -> bị chặn do cooldown
-    const ccChangeCooldown = await callUpgrade({
-      line_uid: aliceUid,
-      session_token: aliceToken,
-      action: 'cc_change',
-      to: 'VN',
-      pay: 'g'
-    });
-    assert.strictEqual(ccChangeCooldown.ok, false);
-    assert.strictEqual(ccChangeCooldown.error, 'cc_cooldown');
+    const nowUtcHour = (new Date()).getUTCHours();
+    const vnHour = (nowUtcHour + 7) % 24;
+    const isWarHours = vnHour >= 21 && vnHour < 23;
 
-    // Chuyển sang cùng quốc gia hiện tại -> bị chặn cc_same
-    const ccChangeSame = await callUpgrade({
-      line_uid: aliceUid,
-      session_token: aliceToken,
-      action: 'cc_change',
-      to: 'TH',
-      pay: 'g'
-    });
-    assert.strictEqual(ccChangeSame.ok, false);
-    assert.strictEqual(ccChangeSame.error, 'cc_same');
+    if (isWarHours) {
+      assert.strictEqual(ccChangeFree.ok, false);
+      assert.strictEqual(ccChangeFree.error, 'cc_war_hours');
+      console.log('  ✓ Đã chặn cc_change đúng quy tắc trong giờ chiến tranh quốc gia (21:00 - 23:00 VN).');
+    } else {
+      assert.strictEqual(ccChangeFree.ok, true);
+      assert.strictEqual(ccChangeFree.player.country, 'TH');
+      assert.strictEqual(ccChangeFree.player.cc_moves, 1);
+      assert.strictEqual(ccChangeFree.player.gold, initialAlice.gold, 'Lần đầu chuyển phải miễn phí Gold');
 
-    // Chuyển sang quốc gia không hợp lệ -> cc_bad
-    const ccChangeBad = await callUpgrade({
-      line_uid: aliceUid,
-      session_token: aliceToken,
-      action: 'cc_change',
-      to: 'INVALID',
-      pay: 'g'
-    });
-    assert.strictEqual(ccChangeBad.ok, false);
-    assert.strictEqual(ccChangeBad.error, 'cc_bad');
+      // Chuyển lại ngay lập tức -> bị chặn do cooldown
+      const ccChangeCooldown = await callUpgrade({
+        line_uid: aliceUid,
+        session_token: aliceToken,
+        action: 'cc_change',
+        to: 'VN',
+        pay: 'g'
+      });
+      assert.strictEqual(ccChangeCooldown.ok, false);
+      assert.strictEqual(ccChangeCooldown.error, 'cc_cooldown');
 
-    // Reset cooldown của Alice và test thanh toán bằng Gold
-    db.load();
-    const pAlice = db.data.players.find(p => p.line_uid === aliceUid);
-    const pAliceObj = JSON.parse(pAlice.raw_data);
-    pAliceObj.cc_at = 0; // Hết cooldown
-    pAlice.raw_data = JSON.stringify(pAliceObj);
-    db.save();
+      // Chuyển sang cùng quốc gia hiện tại -> bị chặn cc_same
+      const ccChangeSame = await callUpgrade({
+        line_uid: aliceUid,
+        session_token: aliceToken,
+        action: 'cc_change',
+        to: 'TH',
+        pay: 'g'
+      });
+      assert.strictEqual(ccChangeSame.ok, false);
+      assert.strictEqual(ccChangeSame.error, 'cc_same');
 
-    const ccChangeGold = await callUpgrade({
-      line_uid: aliceUid,
-      session_token: aliceToken,
-      action: 'cc_change',
-      to: 'PH',
-      pay: 'g'
-    });
-    assert.strictEqual(ccChangeGold.ok, true);
-    assert.strictEqual(ccChangeGold.player.country, 'PH');
-    assert.strictEqual(ccChangeGold.player.gold, initialAlice.gold - 1000000, 'Trừ 1,000,000 Gold thành công');
+      // Chuyển sang quốc gia không hợp lệ -> cc_bad
+      const ccChangeBad = await callUpgrade({
+        line_uid: aliceUid,
+        session_token: aliceToken,
+        action: 'cc_change',
+        to: 'INVALID',
+        pay: 'g'
+      });
+      assert.strictEqual(ccChangeBad.ok, false);
+      assert.strictEqual(ccChangeBad.error, 'cc_bad');
 
-    // Bob không đủ tiền / đang cooldown -> bị chặn
+      // Reset cooldown của Alice và test thanh toán bằng Gold
+      db.load();
+      const pAlice = db.data.players.find(p => p.line_uid === aliceUid);
+      const pAliceObj = JSON.parse(pAlice.raw_data);
+      pAliceObj.cc_at = 0; // Hết cooldown
+      pAlice.raw_data = JSON.stringify(pAliceObj);
+      db.save();
+
+      const ccChangeGold = await callUpgrade({
+        line_uid: aliceUid,
+        session_token: aliceToken,
+        action: 'cc_change',
+        to: 'PH',
+        pay: 'g'
+      });
+      assert.strictEqual(ccChangeGold.ok, true);
+      assert.strictEqual(ccChangeGold.player.country, 'PH');
+      assert.strictEqual(ccChangeGold.player.gold, initialAlice.gold - 1000000, 'Trừ 1,000,000 Gold thành công');
+    }
+
+    // Bob không đủ tiền / đang cooldown / giờ chiến tranh -> bị chặn
     const bobCcChange = await callUpgrade({
       line_uid: bobUid,
       session_token: bobToken,
@@ -541,7 +552,9 @@ async function runTests() {
   }
 }
 
-runTests().catch(err => {
+runTests().then(() => {
+  process.exit(0);
+}).catch(err => {
   console.error('\n❌ TEST FAILED:', err);
   process.exit(1);
 });

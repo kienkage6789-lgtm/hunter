@@ -1,8 +1,40 @@
 const express = require('express');
 const db = require('../db/queries');
 const worldManager = require('../game/WorldManager');
+const { acquireLock } = require('../utils/lock');
+const gwarManager = require('../game/GWarManager');
 
 const router = express.Router();
+
+// Helper to format log timestamp (YYYY-MM-DD HH:mm:ss)
+function formatLogTime(d = new Date()) {
+  const pad = (n) => String(n).padStart(2, '0');
+  const YYYY = d.getFullYear();
+  const MM = pad(d.getMonth() + 1);
+  const DD = pad(d.getDate());
+  const HH = pad(d.getHours());
+  const mm = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+  return `${YYYY}-${MM}-${DD} ${HH}:${mm}:${ss}`;
+}
+
+// Helper to add guild audit log entry and prune to max 50
+function addGuildLog(guild, action, meta, now = new Date()) {
+  if (!guild) return;
+  if (!Array.isArray(guild.log)) {
+    guild.log = [];
+  }
+  const entry = {
+    action,
+    meta,
+    created_at: formatLogTime(now)
+  };
+  guild.log.unshift(entry);
+  if (guild.log.length > 50) {
+    guild.log = guild.log.slice(0, 50);
+  }
+  return entry;
+}
 
 // Helper to calculate guild level up cost
 function guildExpNext(lv) {
@@ -11,24 +43,40 @@ function guildExpNext(lv) {
 
 // Helper to get active player online status
 function isPlayerOnline(uid) {
-  const active = worldManager.activePlayers.get(uid);
+  const active = worldManager.activePlayers && worldManager.activePlayers[uid];
   if (!active) return false;
   return (Date.now() - active.lastSeen) < 60000; // Online if active in the last 60 seconds
 }
 
-router.post('/', (req, res) => {
+// Helper to update player in-memory data safely without calling load()
+function savePlayerData(uid, playerObj) {
+  if (!db.data || !Array.isArray(db.data.players)) return;
+  const p = db.data.players.find(p => p.line_uid === uid);
+  if (p) {
+    p.raw_data = JSON.stringify(playerObj);
+    if (playerObj.gold !== undefined) p.gold = playerObj.gold;
+    if (playerObj.lv !== undefined) p.lv = playerObj.lv;
+    if (playerObj.exp !== undefined) p.exp = playerObj.exp;
+    if (playerObj.map !== undefined) p.map = playerObj.map;
+  }
+}
+
+router.post('/', async (req, res) => {
   const { line_uid, session_token, action } = req.body;
   if (!line_uid || !session_token) {
-    return res.json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
+    return res.status(401).json({ ok: false, error: 'Unauthorized: Missing line_uid or session_token' });
   }
 
+  const release = await acquireLock(line_uid);
   db.load();
-  
-  // Verify user session
-  const user = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
-  if (!user) {
-    return res.json({ ok: false, error: 'Unauthorized: Invalid session_token' });
-  }
+  const snapshot = JSON.parse(JSON.stringify(db.data));
+
+  try {
+    // Verify user session
+    const user = db.prepare('SELECT * FROM users WHERE line_uid = ? AND session_token = ?').get(line_uid, session_token);
+    if (!user) {
+      return res.status(401).json({ ok: false, error: 'Unauthorized: Invalid session_token' });
+    }
 
   // Load player raw_data
   const pRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(line_uid);
@@ -62,7 +110,8 @@ router.post('/', (req, res) => {
     if (!meInGuild) {
       // Inconsistent state, reset player guild_id
       player.guild_id = 0;
-      db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(player), line_uid);
+      savePlayerData(line_uid, player);
+      db.save();
       return res.json({ ok: true, none: true, msg: 'Hiện chưa có Bang hội.' });
     }
 
@@ -222,6 +271,23 @@ router.post('/', (req, res) => {
     });
   }
 
+  // 1.1. LOG Action
+  if (action === 'log') {
+    if (!guild) {
+      return res.status(403).json({ ok: false, error: 'Bạn không thuộc bang hội nào.' });
+    }
+    const isMember = guild.members.some(m => m.uid === player.line_uid);
+    if (!isMember) {
+      return res.status(403).json({ ok: false, error: 'Bạn không phải là thành viên của bang hội này.' });
+    }
+
+    const logs = Array.isArray(guild.log) ? guild.log : [];
+    return res.json({
+      ok: true,
+      log: logs
+    });
+  }
+
   // 2. BROWSE Action
   if (action === 'browse') {
     const { q, page } = req.body;
@@ -293,6 +359,8 @@ router.post('/', (req, res) => {
     // Deduct gold
     player.gold -= goldCost;
 
+    const pName = player.display_name || player.name || user.username || 'Chiến binh';
+
     const newG = {
       id: Date.now(),
       name: gName,
@@ -306,6 +374,7 @@ router.post('/', (req, res) => {
       members: [
         { uid: player.line_uid, role: 'leader', ct: 0, joined_at: Math.floor(Date.now() / 1000) }
       ],
+      log: [],
       turrets: [],
       turret_fund: 0,
       turret_history: [],
@@ -321,10 +390,12 @@ router.post('/', (req, res) => {
       gdun_mvp: 1
     };
 
+    addGuildLog(newG, 'create', `${pName} đã tạo bang hội ${gName}`);
+
     db.data.guilds.push(newG);
     player.guild_id = newG.id;
 
-    db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(player), line_uid);
+    savePlayerData(line_uid, player);
     db.save();
 
     return res.json({ ok: true });
@@ -364,9 +435,12 @@ router.post('/', (req, res) => {
       joined_at: Math.floor(Date.now() / 1000)
     });
 
+    const pName = player.display_name || player.name || user.username || 'Chiến binh';
+    addGuildLog(targetG, 'join', `${pName} đã gia nhập bang hội`);
+
     player.guild_id = targetG.id;
 
-    db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(player), line_uid);
+    savePlayerData(line_uid, player);
     db.save();
 
     return res.json({ ok: true });
@@ -383,11 +457,14 @@ router.post('/', (req, res) => {
       return res.json({ ok: false, error: 'Chủ bang không thể rời bang! Hãy chuyển chức chủ bang hoặc giải tán bang.' });
     }
 
+    const pName = player.display_name || player.name || user.username || 'Chiến binh';
+    addGuildLog(guild, 'leave', `${pName} đã rời khỏi bang hội`);
+
     guild.members = guild.members.filter(m => m.uid !== player.line_uid);
     player.guild_id = 0;
     player.guild_left_at = Math.floor(Date.now() / 1000);
 
-    db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(player), line_uid);
+    savePlayerData(line_uid, player);
     db.save();
 
     return res.json({ ok: true });
@@ -416,18 +493,25 @@ router.post('/', (req, res) => {
       return res.json({ ok: false, error: 'Không thể trục xuất chủ bang!' });
     }
 
-    guild.members = guild.members.filter(m => m.uid !== uid);
+    const meName = player.display_name || player.name || user.username || 'Chủ bang';
+    let targetName = uid;
 
     // Update target player object
-    const targetRow = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(uid);
+    const targetRow = db.data.players.find(p => p.line_uid === uid);
     if (targetRow) {
       try {
         let tObj = JSON.parse(targetRow.raw_data);
+        targetName = tObj.display_name || tObj.name || targetRow.name || uid;
         tObj.guild_id = 0;
         tObj.guild_left_at = Math.floor(Date.now() / 1000);
-        db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(tObj), uid);
-      } catch(e) {}
+        savePlayerData(uid, tObj);
+      } catch(e) {
+        targetName = targetRow.name || uid;
+      }
     }
+
+    addGuildLog(guild, 'kick', `${meName} đã trục xuất ${targetName} khỏi bang hội`);
+    guild.members = guild.members.filter(m => m.uid !== uid);
 
     db.save();
     return res.json({ ok: true });
@@ -448,14 +532,29 @@ router.post('/', (req, res) => {
       return res.json({ ok: false, error: 'Thành viên không tồn tại trong bang!' });
     }
 
+    const meName = player.display_name || player.name || user.username || 'Chủ bang';
+    const targetRow = db.data.players.find(p => p.line_uid === uid);
+    let targetName = uid;
+    if (targetRow) {
+      try {
+        const tObj = JSON.parse(targetRow.raw_data);
+        targetName = tObj.display_name || tObj.name || targetRow.name || uid;
+      } catch (e) {
+        targetName = targetRow.name || uid;
+      }
+    }
+
     if (action === 'promote') {
       target.role = 'officer';
+      addGuildLog(guild, 'promote', `${meName} đã thăng chức ${targetName} lên Phó Bang Chủ`);
     } else if (action === 'demote') {
       target.role = 'member';
+      addGuildLog(guild, 'demote', `${meName} đã giáng chức ${targetName} xuống Thành viên`);
     } else if (action === 'transfer') {
       me.role = 'officer'; // demote current leader
       target.role = 'leader';
       guild.leader_uid = uid;
+      addGuildLog(guild, 'transfer', `${meName} đã chuyển giao chức Bang Chủ cho ${targetName}`);
     }
 
     db.save();
@@ -476,6 +575,9 @@ router.post('/', (req, res) => {
     guild.co = parseInt(co) || 0;
     guild.ic = parseInt(ic) || 0;
 
+    const meName = player.display_name || player.name || user.username || 'Chủ bang';
+    addGuildLog(guild, 'emblem', `${meName} đã thay đổi biểu tượng bang hội`);
+
     db.save();
     return res.json({ ok: true });
   }
@@ -490,6 +592,9 @@ router.post('/', (req, res) => {
     }
 
     guild.notice = String(text || '').slice(0, 200);
+
+    const meName = player.display_name || player.name || user.username || 'Chủ bang';
+    addGuildLog(guild, 'notice', `${meName} đã cập nhật thông báo bang hội`);
 
     db.save();
     return res.json({ ok: true });
@@ -506,13 +611,13 @@ router.post('/', (req, res) => {
 
     // Reset all members
     guild.members.forEach(m => {
-      const row = db.prepare('SELECT * FROM players WHERE line_uid = ?').get(m.uid);
+      const row = db.data.players.find(p => p.line_uid === m.uid);
       if (row) {
         try {
           let tObj = JSON.parse(row.raw_data);
           tObj.guild_id = 0;
           tObj.guild_left_at = Math.floor(Date.now() / 1000);
-          db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(tObj), m.uid);
+          savePlayerData(m.uid, tObj);
         } catch(e) {}
       }
     });
@@ -541,13 +646,17 @@ router.post('/', (req, res) => {
     me.ct = (me.ct || 0) + amount;
     guild.exp = (guild.exp || 0) + amount;
 
+    const pName = player.display_name || player.name || user.username || 'Chiến binh';
+    addGuildLog(guild, 'donate', `${pName} đã đóng góp ${amount.toLocaleString()} Vàng`);
+
     // Check level up
     while (guild.lv < 100 && guild.exp >= guildExpNext(guild.lv)) {
       guild.exp -= guildExpNext(guild.lv);
       guild.lv = (guild.lv || 1) + 1;
+      addGuildLog(guild, 'levelup', `Bang hội đã thăng cấp lên Lv.${guild.lv}!`);
     }
 
-    db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(player), line_uid);
+    savePlayerData(line_uid, player);
     db.save();
 
     return res.json({ ok: true });
@@ -597,13 +706,22 @@ router.post('/', (req, res) => {
     me.ct = (me.ct || 0) + goldValue;
     guild.exp = (guild.exp || 0) + goldValue;
 
+    const pName = player.display_name || player.name || user.username || 'Chiến binh';
+    const resNames = {
+      wood: 'Gỗ', stone: 'Đá', iron: 'Sắt', copper: 'Đồng', herb: 'Thảo mộc',
+      diamond_blue: 'Kim Cương Xanh', diamond_red: 'Kim Cương Đỏ'
+    };
+    const rName = resNames[key] || key;
+    addGuildLog(guild, 'donate', `${pName} đã đóng góp ${qty} ${rName}`);
+
     // Level up check
     while (guild.lv < 100 && guild.exp >= guildExpNext(guild.lv)) {
       guild.exp -= guildExpNext(guild.lv);
       guild.lv = (guild.lv || 1) + 1;
+      addGuildLog(guild, 'levelup', `Bang hội đã thăng cấp lên Lv.${guild.lv}!`);
     }
 
-    db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(player), line_uid);
+    savePlayerData(line_uid, player);
     db.save();
 
     return res.json({ ok: true });
@@ -630,7 +748,10 @@ router.post('/', (req, res) => {
     guild.ore.have = guild.ore.have || { ore1: 0, ore2: 0, ore3: 0 };
     guild.ore.have[key] = (guild.ore.have[key] || 0) + qty;
 
-    db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(player), line_uid);
+    const pName = player.display_name || player.name || user.username || 'Chiến binh';
+    addGuildLog(guild, 'donate', `${pName} đã đóng góp ${qty} Quặng không gian`);
+
+    savePlayerData(line_uid, player);
     db.save();
 
     return res.json({ ok: true });
@@ -1279,24 +1400,21 @@ router.post('/', (req, res) => {
     return res.json({ ok: true });
   }
 
-  if (action === 'gwar_join') {
-    if (!guild) {
-      return res.json({ ok: false, error: 'Bạn cần ở trong một bang hội để tham gia công thành!' });
-    }
-    player.home_return = { map: player.map || 1, x: player.x || 1125, y: player.y || 1125 };
-    player.map = 11; // Warp to Map 11 (Guild Castle / Battlefield)
-    player.x = 1000;
-    player.y = 1000;
+  if (action === 'war_log') {
+    const logRes = gwarManager.getWarLog(req.body.kind || 'gw');
+    return res.json(logRes);
+  }
 
-    db.prepare('UPDATE players SET raw_data = ? WHERE line_uid = ?').run(JSON.stringify(player), line_uid);
+  if (action === 'gwar_join') {
+    const joinRes = gwarManager.joinWar(player);
+    if (!joinRes.ok) {
+      return res.json(joinRes);
+    }
+
+    savePlayerData(line_uid, player);
     db.save();
 
-    return res.json({
-      ok: true,
-      map: 11,
-      x: 1000,
-      y: 1000
-    });
+    return res.json(joinRes);
   }
 
   if (action === 'rank') {
@@ -1334,8 +1452,9 @@ router.post('/', (req, res) => {
       };
     });
 
-    // Mock flag guild to be the first one in ranks (or none)
-    const flagG = list[0] ? { id: list[0].id } : null;
+    // Lấy cờ bang hội từ GWarManager
+    const flagHolderId = gwarManager.getFlagHoldingGuildId();
+    const flagG = flagHolderId ? { id: flagHolderId } : null;
 
     return res.json({
       ok: true,
@@ -1346,6 +1465,14 @@ router.post('/', (req, res) => {
 
   // Fallback response
   res.json({ ok: true, msg: 'Đang bảo trì.' });
+} catch (err) {
+  db.data = snapshot;
+  try { db.save(); } catch (e) {}
+  console.error('Lỗi router Guild:', err);
+  return res.status(500).json({ ok: false, error: 'Lỗi bang hội: ' + (err.message || 'Lỗi hệ thống') });
+} finally {
+  release();
+}
 });
 
 module.exports = router;

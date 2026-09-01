@@ -53,7 +53,7 @@ async function runTests() {
   // Thử xây slot 1 (Cần house_lv 40, hiện tại 30) -> Phải thất bại
   await new Promise((resolve) => {
     upgradeRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: mockLineUid, action: 'mine_build', slot: 1, ore: 'wood' } },
+      { method: 'POST', url: '/', body: { line_uid: mockLineUid, session_token: 'mock_token', action: 'mine_build', slot: 1, ore: 'wood' } },
       {
         json: (res) => {
           assert.strictEqual(res.ok, false, 'Slot 1 không được phép mở khi house_lv < 40');
@@ -68,7 +68,7 @@ async function runTests() {
   // Thử xây slot 3 (Cần Premium Miner) -> Phải thất bại khi chưa có Premium
   await new Promise((resolve) => {
     upgradeRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: mockLineUid, action: 'mine_build', slot: 3, ore: 'wood' } },
+      { method: 'POST', url: '/', body: { line_uid: mockLineUid, session_token: 'mock_token', action: 'mine_build', slot: 3, ore: 'wood' } },
       {
         json: (res) => {
           assert.strictEqual(res.ok, false, 'Slot 3 không được phép mở khi chưa có Premium Miner');
@@ -84,7 +84,7 @@ async function runTests() {
   console.log('\n▶ Test 2: Xây mỏ Slot 0 với tài nguyên hợp lệ...');
   await new Promise((resolve) => {
     upgradeRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: mockLineUid, action: 'mine_build', slot: 0, ore: 'iron' } },
+      { method: 'POST', url: '/', body: { line_uid: mockLineUid, session_token: 'mock_token', action: 'mine_build', slot: 0, ore: 'iron' } },
       {
         json: (res) => {
           assert.strictEqual(res.ok, true, 'Xây mỏ slot 0 phải thành công');
@@ -107,7 +107,7 @@ async function runTests() {
   console.log('\n▶ Test 3: Nâng cấp mỏ Slot 0 lên Lv.2...');
   await new Promise((resolve) => {
     upgradeRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: mockLineUid, action: 'mine_up', slot: 0 } },
+      { method: 'POST', url: '/', body: { line_uid: mockLineUid, session_token: 'mock_token', action: 'mine_up', slot: 0 } },
       {
         json: (res) => {
           assert.strictEqual(res.ok, true, 'Nâng cấp mỏ slot 0 phải thành công');
@@ -126,7 +126,7 @@ async function runTests() {
   console.log('\n▶ Test 4: Đổi quặng sang copper và tạm dừng mỏ...');
   await new Promise((resolve) => {
     upgradeRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: mockLineUid, action: 'mine_select_ore', slot: 0, ore: 'copper' } },
+      { method: 'POST', url: '/', body: { line_uid: mockLineUid, session_token: 'mock_token', action: 'mine_select_ore', slot: 0, ore: 'copper' } },
       {
         json: (res) => {
           assert.strictEqual(res.ok, true);
@@ -142,7 +142,7 @@ async function runTests() {
 
   await new Promise((resolve) => {
     upgradeRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: mockLineUid, action: 'mine_toggle', slot: 0 } },
+      { method: 'POST', url: '/', body: { line_uid: mockLineUid, session_token: 'mock_token', action: 'mine_toggle', slot: 0 } },
       {
         json: (res) => {
           assert.strictEqual(res.ok, true);
@@ -159,7 +159,7 @@ async function runTests() {
   // Bật lại mỏ
   await new Promise((resolve) => {
     upgradeRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: mockLineUid, action: 'mine_toggle', slot: 0 } },
+      { method: 'POST', url: '/', body: { line_uid: mockLineUid, session_token: 'mock_token', action: 'mine_toggle', slot: 0 } },
       {
         json: (res) => {
           assert.strictEqual(res.ok, true);
@@ -177,7 +177,7 @@ async function runTests() {
   console.log('\n▶ Test 5: Kiểm tra toggle_burn_wood đồng bộ cả house_burn_wood và burn_wood...');
   await new Promise((resolve) => {
     upgradeRoute.handle(
-      { method: 'POST', url: '/', body: { line_uid: mockLineUid, action: 'toggle_burn_wood' } },
+      { method: 'POST', url: '/', body: { line_uid: mockLineUid, session_token: 'mock_token', action: 'toggle_burn_wood' } },
       {
         json: (res) => {
           assert.strictEqual(res.ok, true);

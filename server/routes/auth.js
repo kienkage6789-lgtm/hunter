@@ -145,8 +145,8 @@ router.post('/login', (req, res) => {
   res.json({ ok: true, line_uid: user.line_uid, session_token });
 });
 
-// Mock endpoint gốc để client không lỗi nếu nó gọi
-router.get('/xhrpg_google_auth.php', (req, res) => {
+// Mock endpoint gốc để client không lỗi nếu nó gọi (hỗ trợ cả mount prefix và subpath)
+router.get(['/', '/xhrpg_google_auth.php'], (req, res) => {
   res.json({ ok: false, error: 'Please use local login' });
 });
 

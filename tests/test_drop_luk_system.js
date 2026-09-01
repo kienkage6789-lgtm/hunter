@@ -245,5 +245,6 @@ if (failedTests > 0) {
   process.exit(1);
 } else {
   console.log(`${colors.bright}${colors.green}TẤT CẢ TEST ĐỀU ĐẠT CHUẨN XUẤT SẮC!${colors.reset}`);
+  process.exit(0);
 }
 console.log(`${colors.bright}${colors.cyan}======================================================${colors.reset}\n`);

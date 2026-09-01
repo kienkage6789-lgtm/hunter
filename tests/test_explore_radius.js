@@ -44,10 +44,14 @@ db.prepare(`
   JSON.stringify(initialPlayerObj)
 );
 
-// Lưu trữ quái vật gốc để khôi phục sau khi test xong
+// Lưu trữ quái vật gốc và hàng đợi hồi sinh để khôi phục sau khi test xong
 let originalMonsters = [];
+let originalRespawnQueue = [];
 if (worldManager.maps[1]) {
   originalMonsters = [...worldManager.maps[1].monsters];
+}
+if (worldManager.respawnQueue) {
+  originalRespawnQueue = [...worldManager.respawnQueue];
 }
 
 async function callGame(body) {
@@ -104,10 +108,11 @@ async function runTests() {
   // --- TEST 3: Kiểm tra tự động chọn mục tiêu dựa trên bán kính explore_radius ---
   console.log('\n▶ Test 3: Kiểm tra tự động chọn mục tiêu dựa trên bán kính explore_radius...');
   
-  // Xóa sạch quái cũ của map 1 trong thời gian test để tránh nhiễu từ quái mặc định
+  // Xóa sạch quái cũ của map 1 và hàng đợi hồi sinh trong thời gian test để tránh nhiễu từ background tick
   if (worldManager.maps[1]) {
     worldManager.maps[1].monsters = [];
   }
+  worldManager.respawnQueue = [];
 
   // Tạo quái 1: Khoảng cách ~150px (tại 1150, 1000)
   const mon150 = {
@@ -166,11 +171,14 @@ async function runTests() {
 }
 
 runTests().then(() => {
-  // Cleanup test user & monsters
+  // Cleanup test user & monsters & respawnQueue
   db.prepare('DELETE FROM players WHERE line_uid = ?').run(mockLineUid);
   db.prepare('DELETE FROM users WHERE line_uid = ?').run(mockLineUid);
   if (worldManager.maps[1]) {
     worldManager.maps[1].monsters = originalMonsters;
+  }
+  if (worldManager.respawnQueue) {
+    worldManager.respawnQueue = originalRespawnQueue;
   }
   process.exit(0);
 }).catch(err => {
@@ -178,6 +186,9 @@ runTests().then(() => {
   // Khôi phục ngay cả khi lỗi
   if (worldManager.maps[1]) {
     worldManager.maps[1].monsters = originalMonsters;
+  }
+  if (worldManager.respawnQueue) {
+    worldManager.respawnQueue = originalRespawnQueue;
   }
   process.exit(1);
 });
